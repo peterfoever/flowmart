@@ -14,7 +14,29 @@ hotfix/*   紧急修复。从 main 切出，修完同时合入 main 和 develop
 ```
 
 **铁律：任何人不得直接 push 到 `main` 和 `develop`，一律走 PR。**
-GitHub 上已配置分支保护，你会发现自己想直推也推不上去 —— 这是故意的。
+
+GitHub 上已配置分支保护并实测验证过 —— 直推会被拒绝：
+
+```
+remote: error: GH006: Protected branch update failed for refs/heads/develop.
+remote: - Changes must be made through a pull request.
+```
+
+已生效的保护规则：
+
+| 规则 | develop | main | 说明 |
+|---|---|---|---|
+| 必须走 PR | ✅ | ✅ | 直推一律拒绝 |
+| CI「构建与测试」必须通过 | ✅ | ✅ | 红灯合不了 |
+| 分支须与 base 同步后才能合 | ❌ | ✅ | main 更严：防「各自 CI 通过、合并后却坏掉」 |
+| 禁止 force push | ✅ | ✅ | |
+| 禁止删除分支 | ✅ | ✅ | |
+| 线性历史 | ✅ | ✅ | 合并用 Squash |
+| 管理员同样受限 | ✅ | ✅ | 你是仓库 owner 也绕不过去，这是故意的 |
+
+> 需要临时解除（**仅限确实被卡住时**）：
+> `gh api -X DELETE repos/peterfoever/flowmart/branches/develop/protection`
+> 用完记得加回来。真实工作中这一步需要走审批，别养成随手关保护的习惯。
 
 ## 二、分支命名
 
