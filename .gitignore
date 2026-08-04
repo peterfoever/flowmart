@@ -1,0 +1,35 @@
+# --- 构建产物 ---
+target/
+!.mvn/wrapper/maven-wrapper.jar
+*.jar
+*.war
+!**/src/**/*.jar
+
+# --- IDE ---
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.settings/
+.project
+.classpath
+
+# --- 日志与运行产物 ---
+logs/
+*.log
+*.hprof
+deploy/test/logs/
+deploy/prod/logs/
+
+# --- 敏感配置：绝对不能提交 ---
+# 生产密码进了 git 历史就等于泄露了，即使后来删掉也一样（历史仍可检出）
+.env
+*.env
+!.env.example
+application-local.yml
+**/src/main/resources/application-prod-local.yml
+
+# --- 系统 ---
+.DS_Store
+Thumbs.db

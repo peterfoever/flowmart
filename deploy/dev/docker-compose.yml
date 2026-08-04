@@ -1,0 +1,53 @@
+# 开发环境依赖组件。启动：
+#   cd deploy/dev && docker compose up -d
+# 停止并清空数据（开发环境随时可重来）：
+#   docker compose down -v
+name: flowmart-dev
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: flowmart-mysql-dev
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: flowmart_dev
+      MYSQL_USER: flowmart
+      MYSQL_PASSWORD: flowmart123
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_general_ci
+      - --default-time-zone=+08:00
+      # 开发环境打开慢查询日志，阈值调到 200ms —— 你需要习惯看这个文件
+      - --slow_query_log=ON
+      - --long_query_time=0.2
+      - --slow_query_log_file=/var/lib/mysql/slow.log
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot123"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    container_name: flowmart-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  mysql-data:
+  redis-data:

@@ -1,0 +1,58 @@
+# 生产环境。与 test 的关键差异：
+#   1. 没有任何默认值 —— 所有敏感配置必须在 .env 里显式提供，缺一个就起不来
+#   2. 镜像 tag 必须是 release tag（v1.2.0），禁止用 latest 或 commit sha
+#   3. 双实例 + 资源限制，用于演练灰度发布
+#   4. 数据库和 Redis 不在这里编排 —— 真实生产用云数据库(RDS)，不会和应用放一起
+#
+# 发布前必须先读 docs/ops/DEPLOY.md 第四节的四道关卡。
+name: flowmart-prod
+
+services:
+  app-1: &app-base
+    image: flowmart:${IMAGE_TAG:?IMAGE_TAG 必须显式指定，禁止使用 latest}
+    container_name: flowmart-app-prod-1
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: ${DB_HOST:?缺少 DB_HOST}
+      DB_PORT: ${DB_PORT:?缺少 DB_PORT}
+      DB_NAME: ${DB_NAME:?缺少 DB_NAME}
+      DB_USERNAME: ${DB_USERNAME:?缺少 DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD:?缺少 DB_PASSWORD}
+      REDIS_HOST: ${REDIS_HOST:?缺少 REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT:?缺少 REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?缺少 REDIS_PASSWORD}
+      LOG_PATH: /app/logs
+      JAVA_OPTS: >-
+        -Xms1g -Xmx1g -XX:+UseG1GC -XX:MaxGCPauseMillis=200
+        -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/app/logs
+        -XX:+ExitOnOutOfMemoryError
+    volumes:
+      - ./logs/app-1:/app/logs
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health/readiness"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 60s
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "5"
+
+  # 第二个实例，用于演练「先发一个观察，再发另一个」的灰度流程
+  app-2:
+    <<: *app-base
+    container_name: flowmart-app-prod-2
+    ports:
+      - "8082:8080"
+    volumes:
+      - ./logs/app-2:/app/logs

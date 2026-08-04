@@ -1,0 +1,87 @@
+# 测试环境。刻意用不同端口(3307/6380)，让它能和 dev 同时跑在你机器上 ——
+# 这样你才能真实体验「代码在 dev 好好的，到 test 就挂了」这类问题。
+#
+# 与 dev 的关键差异：
+#   1. 应用本身也跑在容器里（dev 是 IDE 直接跑），走的是真实的构建产物 jar
+#   2. 配置全部来自环境变量，而不是配置文件里的默认值
+#   3. 数据卷不随手删，模拟「测试数据要留着」的真实约束
+#
+# 发布流程见 docs/ops/DEPLOY.md，不要手工 docker compose up —— 用 deploy/deploy.sh
+name: flowmart-test
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: flowmart-mysql-test
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123}
+      MYSQL_DATABASE: flowmart_test
+      MYSQL_USER: flowmart
+      MYSQL_PASSWORD: ${DB_PASSWORD:-flowmart123}
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_general_ci
+      - --default-time-zone=+08:00
+      - --slow_query_log=ON
+      - --long_query_time=1
+    volumes:
+      - mysql-test-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-root123}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    container_name: flowmart-redis-test
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-test-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    image: flowmart:${IMAGE_TAG:-latest}
+    container_name: flowmart-app-test
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8081:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: test
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: flowmart_test
+      DB_USERNAME: flowmart
+      DB_PASSWORD: ${DB_PASSWORD:-flowmart123}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      LOG_PATH: /app/logs
+      JAVA_OPTS: "-Xms512m -Xmx512m -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/app/logs"
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health/readiness"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+volumes:
+  mysql-test-data:
+  redis-test-data:
