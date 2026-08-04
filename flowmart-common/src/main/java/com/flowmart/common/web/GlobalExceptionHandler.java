@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.stream.Collectors;
 
@@ -95,6 +96,20 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public R<Void> handleNoHandlerFound(NoHandlerFoundException e) {
         return R.fail(CommonErrorCode.RESOURCE_NOT_FOUND, "接口不存在: " + e.getRequestURL());
+    }
+
+    /**
+     * 静态资源找不到时抛的异常（Spring 6.1+）。
+     * <p>
+     * 为什么要单独处理它：我们保留了静态资源映射（Knife4j 的 /doc.html 依赖它），
+     * 因此未匹配的请求会先落到 ResourceHttpRequestHandler，抛出的是本异常而不是
+     * {@link NoHandlerFoundException}。不接住它，前端拿到的就是 Spring 默认错误页，
+     * 而不是我们约定的 {@code R} 结构。
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public R<Void> handleNoResourceFound(NoResourceFoundException e) {
+        return R.fail(CommonErrorCode.RESOURCE_NOT_FOUND, "接口不存在: /" + e.getResourcePath());
     }
 
     /**
