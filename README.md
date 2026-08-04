@@ -53,6 +53,7 @@ flowmart/
 | 我想… | 看这个 |
 |---|---|
 | 了解整个训练怎么安排的 | [docs/TRAINING-PLAN.md](docs/TRAINING-PLAN.md) |
+| 看看已经踩过哪些坑 | [docs/retro/](docs/retro/) |
 | 开始今天的需求 | [docs/prd/](docs/prd/) 里找当天编号 |
 | 知道怎么提交代码、提 PR | [docs/standards/GIT.md](docs/standards/GIT.md) |
 | 知道代码该怎么写 | [docs/standards/CODING.md](docs/standards/CODING.md) |
