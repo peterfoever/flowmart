@@ -17,7 +17,9 @@ java -version && mvn -v && docker -v
 cd deploy/dev && docker compose up -d && docker compose ps
 
 # 2. 启动应用
-cd ../.. && mvn -pl flowmart-bootstrap -am spring-boot:run -Dspring-boot.run.profiles=dev
+#    首次、或改动了 flowmart-common 之后，要先 install 一次让下游模块拿到最新产物
+cd ../.. && mvn install -DskipTests
+mvn -pl flowmart-bootstrap spring-boot:run -Dspring-boot.run.profiles=dev
 
 # 3. 验证
 curl -s localhost:8080/actuator/health      # {"status":"UP"}

@@ -55,11 +55,14 @@ Maven 和 gh 是手动装的，不在系统 PATH 的默认位置：
 ## 常用命令
 
 ```bash
-mvn clean compile                                                    # 编译
-mvn clean test                                                       # 测试
-mvn -pl flowmart-bootstrap -am spring-boot:run -Dspring-boot.run.profiles=dev   # 启动
-cd deploy/dev && docker compose up -d                                # 起本地依赖
+mvn clean compile                                                       # 编译
+mvn clean test                                                          # 测试
+mvn install -DskipTests                                                 # 首次/改过 common 后
+mvn -pl flowmart-bootstrap spring-boot:run -Dspring-boot.run.profiles=dev   # 启动
+cd deploy/dev && docker compose up -d                                   # 起本地依赖
 ```
+
+⚠️ 启动不要加 `-am`：会把 packaging=pom 的父模块也选进来，`spring-boot:run` 在父模块上执行会失败。
 
 ## 进度追踪
 

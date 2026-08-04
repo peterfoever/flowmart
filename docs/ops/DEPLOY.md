@@ -31,7 +31,12 @@ cd deploy/dev && docker compose up -d
 docker compose ps            # STATUS 都是 healthy 才继续
 
 # 3. 启动应用（IDE 里跑 FlowmartApplication，或命令行）
-cd ../.. && mvn -pl flowmart-bootstrap -am spring-boot:run -Dspring-boot.run.profiles=dev
+cd ../.. && mvn install -DskipTests          # 首次 / 改过 common 后需要
+mvn -pl flowmart-bootstrap spring-boot:run -Dspring-boot.run.profiles=dev
+
+# ⚠️ 不要写成 mvn -pl flowmart-bootstrap -am spring-boot:run
+#    -am 会把父 POM 一起选进来，spring-boot:run 会先在 packaging=pom 的父模块上执行而报错。
+#    多模块项目里 -am 用于 compile/test/package 没问题，但不适用于 run 这类只能作用于单模块的目标。
 
 # 4. 验证
 curl -s localhost:8080/actuator/health | jq
