@@ -1,9 +1,6 @@
 package com.flowmart.product.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.flowmart.common.mybatis.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -11,6 +8,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @TableName("product_category")
 @EqualsAndHashCode(callSuper = true)
+
 public class ProductCategory extends BaseEntity {
 
     /** 主键，雪花 ID。 */
