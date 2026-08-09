@@ -1,13 +1,13 @@
 package com.flowmart.product.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 @Data
 public class CreateCategoryDTO {
     @NotNull(message = "父类目ID不能为空")
+    @Min(value = 0, message = "父类id最小为0")
+    @Max(value = 5, message = "父类id最大为5")
     private Long parentId;
 
     @NotBlank(message = "类目名称不能为空")
@@ -20,5 +20,7 @@ public class CreateCategoryDTO {
 
     private Integer sortNo = 0;
 
+    @Min(value = 0, message = "类目状态只能为0或1")
+    @Max(value = 1, message = "类目状态只能为0或1")
     private Integer status = 1;
 }

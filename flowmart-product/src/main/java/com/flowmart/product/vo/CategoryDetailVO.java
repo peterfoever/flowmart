@@ -1,5 +1,6 @@
 package com.flowmart.product.vo;
 
+import com.flowmart.product.enums.CategoryStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -42,7 +43,7 @@ public class CategoryDetailVO {
      * 构造状态文本
      */
     public String getStatusText() {
-        return status != null && status == 1 ? "启用" : "禁用";
+        return CategoryStatus.values()[status].name();
     }
 
 }

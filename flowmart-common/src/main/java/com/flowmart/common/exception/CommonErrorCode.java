@@ -18,6 +18,7 @@ public enum CommonErrorCode implements ErrorCode {
     UNAUTHORIZED(10401, "未登录或登录已失效"),
     FORBIDDEN(10403, "无权限执行该操作"),
     RATE_LIMITED(10429, "请求过于频繁"),
+
     ;
 
     private final int code;
