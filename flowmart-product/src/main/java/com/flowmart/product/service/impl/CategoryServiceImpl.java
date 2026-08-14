@@ -76,15 +76,15 @@ public class CategoryServiceImpl implements CategoryService {
 
         entity.setLevel(level);
 
-        // 审计字段手动填充（如果没有拦截器）
-        Long currentUserId = getCurrentUserId();
-        LocalDateTime now = LocalDateTime.now();
-        entity.setCreatedBy(currentUserId);
-        entity.setCreatedAt(now);
-        entity.setUpdatedBy(currentUserId);
-        entity.setUpdatedAt(now);
-        entity.setDeleted(0L);
-        entity.setVersion(0);
+//        // 审计字段手动填充（如果没有拦截器）
+//        Long currentUserId = getCurrentUserId();
+//        LocalDateTime now = LocalDateTime.now();
+//        entity.setCreatedBy(currentUserId);
+//        entity.setCreatedAt(now);
+//        entity.setUpdatedBy(currentUserId);
+//        entity.setUpdatedAt(now);
+//        entity.setDeleted(0L);
+//        entity.setVersion(0);
 
         try {
             int rows = productCategoryMapper.insert(entity);
@@ -107,15 +107,14 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public List<CategoryTreeVO> listChildren(Long parentId) {
         List<ProductCategory> productCategories = productCategoryMapper.selectByParentId(parentId);
         if (productCategories == null || productCategories.isEmpty()) {
 
-            log.warn("该类目下不存在子类目，id={}", parentId);
-
-            throw new BizException(ProductErrorCode.CATEGORY_NOT_FOUND);
-
+//            log.warn("该类目下不存在子类目，id={}", parentId);
+//
+//            throw new BizException(ProductErrorCode.CATEGORY_NOT_FOUND);
+            return List.of();
         }
         return categoryConverter.toTreeVOList(productCategories);
 

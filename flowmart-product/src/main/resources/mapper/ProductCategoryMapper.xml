@@ -27,24 +27,8 @@
         created_by, created_at, updated_by, updated_at, deleted, version
     </sql>
 
-    <!-- ========== 插入 ========== -->
-    <insert id="insert" parameterType="com.example.entity.ProductCategory">
-        INSERT INTO product_category (
-            id, parent_id, name, icon_url, level, sort_no, status,
-            created_by, created_at, updated_by, updated_at, deleted, version
-        ) VALUES (
-                     #{id}, #{parentId}, #{name}, #{iconUrl}, #{level}, #{sortNo}, #{status},
-                     #{createdBy}, #{createdAt}, #{updatedBy}, #{updatedAt}, #{deleted}, #{version}
-                 )
-    </insert>
 
-    <!-- ========== 根据 ID 查询（未删除） ========== -->
-    <select id="selectById" resultMap="BaseResultMap">
-        SELECT <include refid="BaseColumns"/>
-        FROM product_category
-        WHERE id = #{id}
-        AND deleted = 0
-    </select>
+
 
     <!-- ========== ✅ 自定义方法1：检查同级是否存在同名类目 ========== -->
     <select id="existsByNameAndParent" resultType="boolean">

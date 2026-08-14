@@ -1,7 +1,9 @@
 package com.flowmart.product.enums;
 
 import com.flowmart.common.exception.ErrorCode;
+import lombok.Getter;
 
+@Getter
 public enum ProductErrorCode implements ErrorCode {
     // 商品类目错误 (20001-29999)
 
@@ -13,10 +15,11 @@ public enum ProductErrorCode implements ErrorCode {
     CATEGORY_HAS_CHILDREN(20006, "类目下存在子类目，请先处理子类目"),
     CATEGORY_NAME_TOO_LONG(20007, "类目名称不能超过64个字符"),
     CATEGORY_STATUS_CHANGE_FAILED(20008, "类目状态变更失败"),
+    CATEGORY_CREATE_FAILED(20009,"类目创建失败"),
     PRODUCT_NOT_FOUND(20100, "商品不存在"),
     PRODUCT_OFF_SHELF(20101, "商品已下架"),
     PRODUCT_STOCK_INSUFFICIENT(20102, "商品库存不足"),
-    CATEGORY_CREATE_FAILED(20103,"类目创建失败"),
+
     ;
 
     private final int code;
@@ -49,13 +52,5 @@ public enum ProductErrorCode implements ErrorCode {
     }
 
 
-    @Override
-    public int getCode() {
-        return 0;
-    }
 
-    @Override
-    public String getMessage() {
-        return "";
-    }
 }
