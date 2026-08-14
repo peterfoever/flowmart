@@ -1,9 +1,12 @@
 package com.flowmart.product.enums;
 
 
+import lombok.Getter;
+
 import java.util.Arrays;
 import java.util.Objects;
 
+@Getter
 public enum CategoryStatus {
     DISABLED(0, "禁用"),
     ENABLED(1, "启用");

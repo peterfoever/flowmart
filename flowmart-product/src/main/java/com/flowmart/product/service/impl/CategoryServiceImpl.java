@@ -1,7 +1,6 @@
 package com.flowmart.product.service.impl;
 
-import cn.hutool.core.lang.Snowflake;
-import cn.hutool.core.lang.generator.SnowflakeGenerator;
+
 import com.flowmart.common.exception.BizException;
 import com.flowmart.product.convert.CategoryConverter;
 import com.flowmart.product.dto.CreateCategoryDTO;
@@ -11,15 +10,17 @@ import com.flowmart.product.enums.ProductErrorCode;
 import com.flowmart.product.mapper.ProductCategoryMapper;
 import com.flowmart.product.service.CategoryService;
 
-import com.flowmart.product.vo.CategoryDetailVO;
+
 import com.flowmart.product.vo.CategoryTreeVO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+
 import java.util.List;
-import java.util.UUID;
+
 
 @Slf4j
 @Service
@@ -27,7 +28,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final ProductCategoryMapper productCategoryMapper;
     private final CategoryConverter categoryConverter;
-    /** 类目最大层级 */
+    /**
+     * 类目最大层级
+     */
     private static final int MAX_LEVEL = 5;
 
     public CategoryServiceImpl(ProductCategoryMapper productCategoryMapper, CategoryConverter categoryConverter) {
@@ -38,11 +41,11 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long creat(CreateCategoryDTO categoryDTO) {
+    public Long create(CreateCategoryDTO categoryDTO) {
         Integer level;
         if (categoryDTO.getParentId() == null || categoryDTO.getParentId() == 0) {
             // 一级类目
-            level = 0;
+            level = 1;
         } else {
 //            非一级类目
             ProductCategory parent = productCategoryMapper.selectById(categoryDTO.getParentId());
@@ -82,16 +85,17 @@ public class CategoryServiceImpl implements CategoryService {
         entity.setUpdatedAt(now);
         entity.setDeleted(0L);
         entity.setVersion(0);
-        int rows = productCategoryMapper.insert(entity);
+
         try {
+            int rows = productCategoryMapper.insert(entity);
             if (rows != 1) {
                 log.error("插入类目失败: rows={}, entity={}", rows, entity);
                 throw new BizException(ProductErrorCode.CATEGORY_CREATE_FAILED);
             }
-        } catch (BizException e) {
+        } catch (DuplicateKeyException e) {
             // 并发兜底：唯一索引 uk_parent_name_deleted 触发
             // 这是数据库层面的最后一道防线
-            log.warn("并发创建同名类目冲突：parentId={}, name={}", categoryDTO.getParentId(), categoryDTO.getName(),e);
+            log.warn("并发创建同名类目冲突：parentId={}, name={}", categoryDTO.getParentId(), categoryDTO.getName(), e);
             throw new BizException(ProductErrorCode.CATEGORY_NAME_DUPLICATE);
         }
         // ========== 6. 日志 ==========
@@ -107,12 +111,16 @@ public class CategoryServiceImpl implements CategoryService {
     public List<CategoryTreeVO> listChildren(Long parentId) {
         List<ProductCategory> productCategories = productCategoryMapper.selectByParentId(parentId);
         if (productCategories == null || productCategories.isEmpty()) {
+
             log.warn("该类目下不存在子类目，id={}", parentId);
+
             throw new BizException(ProductErrorCode.CATEGORY_NOT_FOUND);
+
         }
         return categoryConverter.toTreeVOList(productCategories);
 
     }
+
     /**
      * 获取当前用户 ID
      * <p>

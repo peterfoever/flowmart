@@ -2,16 +2,13 @@ package com.flowmart.product.controller;
 
 import com.flowmart.product.dto.CreateCategoryDTO;
 import com.flowmart.product.service.CategoryService;
-import com.flowmart.product.vo.CategoryDetailVO;
 import com.flowmart.product.vo.CategoryTreeVO;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController("api/product")
+@RestController()
+@RequestMapping("api/product")
 public class ProductCategoryController {
 
     private final CategoryService categoryService;
@@ -21,8 +18,8 @@ public class ProductCategoryController {
     }
 
     @PostMapping("/categories")
-    public void createCategory(CreateCategoryDTO request) {
-        categoryService.creat(request);
+    public void createCategory(@RequestBody CreateCategoryDTO request) {
+        categoryService.create(request);
     }
 
     @GetMapping("/categories?parentId=")

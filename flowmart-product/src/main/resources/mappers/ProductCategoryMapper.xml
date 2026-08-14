@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.mapper.ProductCategoryMapper">
+
+    <!-- ========== ResultMap：字段映射 ========== -->
+    <resultMap id="BaseResultMap" type="com.example.entity.ProductCategory">
+        <id column="id" property="id"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="name" property="name"/>
+        <result column="icon_url" property="iconUrl"/>
+        <result column="level" property="level"/>
+        <result column="sort_no" property="sortNo"/>
+        <result column="status" property="status"/>
+        <result column="created_by" property="createdBy"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_by" property="updatedBy"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="deleted" property="deleted"/>
+        <result column="version" property="version"/>
+    </resultMap>
+
+    <!-- ========== 通用字段列表 ========== -->
+    <sql id="BaseColumns">
+        id, parent_id, name, icon_url, level, sort_no, status,
+        created_by, created_at, updated_by, updated_at, deleted, version
+    </sql>
+
+    <!-- ========== 插入 ========== -->
+    <insert id="insert" parameterType="com.example.entity.ProductCategory">
+        INSERT INTO product_category (
+            id, parent_id, name, icon_url, level, sort_no, status,
+            created_by, created_at, updated_by, updated_at, deleted, version
+        ) VALUES (
+                     #{id}, #{parentId}, #{name}, #{iconUrl}, #{level}, #{sortNo}, #{status},
+                     #{createdBy}, #{createdAt}, #{updatedBy}, #{updatedAt}, #{deleted}, #{version}
+                 )
+    </insert>
+
+    <!-- ========== 根据 ID 查询（未删除） ========== -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/>
+        FROM product_category
+        WHERE id = #{id}
+        AND deleted = 0
+    </select>
+
+    <!-- ========== ✅ 自定义方法1：检查同级是否存在同名类目 ========== -->
+    <select id="existsByNameAndParent" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM product_category
+        WHERE parent_id = #{parentId}
+        AND name = #{name}
+        AND deleted = 0
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+    </select>
+
+    <!-- ========== ✅ 自定义方法2：根据父 ID 查询子类目列表 ========== -->
+    <select id="selectByParentId" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/>
+        FROM product_category
+        WHERE parent_id = #{parentId}
+        AND deleted = 0
+        ORDER BY sort_no ASC, id ASC
+    </select>
+
+</mapper>
