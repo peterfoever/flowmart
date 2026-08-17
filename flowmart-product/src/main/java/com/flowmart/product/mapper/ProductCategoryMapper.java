@@ -32,4 +32,9 @@ public interface ProductCategoryMapper extends BaseMapper<ProductCategory> {
 
     List<ProductCategory> selectByParentId(@Param("parentId") Long parentId);
 
+    /**
+     * 查询所有未删除类目，按 sort_no ASC, id ASC 排序
+     */
+    List<ProductCategory> selectAllUndeletedOrdered();
+
 }

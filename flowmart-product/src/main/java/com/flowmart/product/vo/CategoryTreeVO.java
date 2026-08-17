@@ -29,4 +29,11 @@ public class CategoryTreeVO {
         return children == null || children.isEmpty();
     }
 
+    /**
+     * 后台树专用：标记该节点在前台是否可见
+     * <p>
+     * true = 整条祖先链路均为启用，前台会展示
+     * false = 自身或祖先被禁用，前台不可见
+     */
+    private Boolean visibleInFront;
 }

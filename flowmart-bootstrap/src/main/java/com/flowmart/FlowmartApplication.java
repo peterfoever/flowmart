@@ -1,5 +1,6 @@
 package com.flowmart;
 
+import com.flowmart.product.mapper.ProductCategoryMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
@@ -13,7 +14,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Slf4j
 @SpringBootApplication
 @EnableTransactionManagement
-@MapperScan("com.flowmart.**.mapper")
+@MapperScan("com.flowmart.product.mapper")
 public class FlowmartApplication {
 
     public static void main(String[] args) {
