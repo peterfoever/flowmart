@@ -6,12 +6,14 @@ import com.flowmart.product.service.CategoryService;
 import com.flowmart.product.vo.CategoryTreeVO;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController()
+@RestController
 @RequestMapping("/api/product")
+@Validated
 @Slf4j
 public class ProductCategoryController {
 
