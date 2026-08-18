@@ -51,7 +51,9 @@ public interface CategoryConverter {
 
     /** 实体转换为树节点；children 由 Service 一次全量查询后在内存中组装。 */
     @Mapping(target = "children", ignore = true)
+    @Mapping(target = "visibleInFront", ignore = true)
     CategoryTreeVO toTreeVO(ProductCategory entity);
+
 
     List<CategoryTreeVO> toTreeVOList(List<ProductCategory> entities);
 }

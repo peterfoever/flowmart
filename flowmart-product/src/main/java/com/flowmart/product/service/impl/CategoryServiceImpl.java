@@ -80,15 +80,6 @@ public class CategoryServiceImpl implements CategoryService {
 
         entity.setLevel(level);
 
-//        // 审计字段手动填充（如果没有拦截器）
-//        Long currentUserId = getCurrentUserId();
-//        LocalDateTime now = LocalDateTime.now();
-//        entity.setCreatedBy(currentUserId);
-//        entity.setCreatedAt(now);
-//        entity.setUpdatedBy(currentUserId);
-//        entity.setUpdatedAt(now);
-//        entity.setDeleted(0L);
-//        entity.setVersion(0);
 
         try {
             int rows = productCategoryMapper.insert(entity);
@@ -115,9 +106,6 @@ public class CategoryServiceImpl implements CategoryService {
         List<ProductCategory> productCategories = productCategoryMapper.selectByParentId(parentId);
         if (productCategories == null || productCategories.isEmpty()) {
 
-//            log.warn("该类目下不存在子类目，id={}", parentId);
-//
-//            throw new BizException(ProductErrorCode.CATEGORY_NOT_FOUND);
             return List.of();
         }
         return categoryConverter.toTreeVOList(productCategories);
@@ -137,7 +125,7 @@ public class CategoryServiceImpl implements CategoryService {
         //构建parentId -> list<categories>映射
         Map<Long, List<ProductCategory>> parentMap = productCategories.stream().collect(Collectors.groupingBy(ProductCategory::getParentId));
 
-        return buildChildren(0L, parentMap, true);
+        return buildChildren(0L, parentMap, true,true);
     }
 
     @Override
@@ -150,68 +138,36 @@ public class CategoryServiceImpl implements CategoryService {
         }
         //构建parentId -> list<categories>映射
         Map<Long, List<ProductCategory>> parentMap = productCategories.stream().collect(Collectors.groupingBy(ProductCategory::getParentId));
-        return buildChildren(0L, parentMap, false);
+        return buildChildren(0L, parentMap, false,true);
     }
 
-    private List<CategoryTreeVO> buildChildren(Long parentId, Map<Long, List<ProductCategory>> parentMap, boolean frontend) {
+    private List<CategoryTreeVO> buildChildren(Long parentId, Map<Long, List<ProductCategory>> parentMap, boolean frontend,boolean parentVisibleInFront) {
         List<ProductCategory> children = parentMap.getOrDefault(parentId, Collections.emptyList());
         List<CategoryTreeVO> result = new ArrayList<>();
         for (ProductCategory category : children) {
             //前台模式，禁用节点直接跳过，不递归子节点
-            if (frontend && CategoryStatus.DISABLED.matches(category.getStatus())) {
+            boolean currentVisible = parentVisibleInFront && CategoryStatus.ENABLED.matches(category.getStatus());
+
+            // ✅ 前台模式：不可见节点直接跳过，不递归其子孙
+            if (frontend && !currentVisible) {
                 continue;
             }
             CategoryTreeVO treeVO = categoryConverter.toTreeVO(category);
             // 递归构建子节点
             // 前台模式：只有当前节点启用才会走到这里，子节点继续按规则过滤
             // 后台模式：不过滤，全部返回
-            List<CategoryTreeVO> childrenVOS = buildChildren(category.getId(), parentMap, frontend);
+            List<CategoryTreeVO> childrenVOS = buildChildren(category.getId(), parentMap, frontend,true);
             // ✅ 叶子节点返回空数组，不返回 null
             treeVO.setChildren(childrenVOS != null ? childrenVOS : Collections.emptyList());
             // ✅ 后台模式：标记该节点在前台是否可见
-//            if (!frontend) {
-//                treeVO.setVisibleInFront(isVisibleInFront(category, parentMap));
-//            }
+            if (!frontend) {
+                treeVO.setVisibleInFront(currentVisible);
+            }
             result.add(treeVO);
         }
         return result;
     }
 
-    /**
-     * 判断某个类目在前台是否可见（整条祖先链路均为启用）
-     * <p>
-     * 用于后台树中标记 visibleInFront
-     *
-     * @param category  当前类目
-     * @param parentMap 类目映射
-     * @return true 如果整条祖先链路均为启用
-     */
-//    private boolean isVisibleInFront(ProductCategory category,
-//                                     Map<Long, List<ProductCategory>> parentMap) {
-//        // 如果当前节点禁用，前台不可见
-//        if (CategoryStatus.DISABLED.matches(category.getStatus())) {
-//            return false;
-//        }
-//
-//        // 如果是一级类目，且已启用 → 前台可见
-//        if (category.getParentId() == null || category.getParentId() == 0L) {
-//            return true;
-//        }
-//
-//        // 递归检查父类目是否启用
-//        // 从 parentMap 中查找父类目
-//        List<ProductCategory> siblings = parentMap.get(category.getParentId());
-//        if (siblings == null || siblings.isEmpty()) {
-//            return false;
-//        }
-//        ProductCategory parent = siblings.stream().filter(c -> c.getId().equals(category.getParentId())).findFirst().orElse(null);
-//        if (parent == null) {
-//            return false;
-//        }
-//
-//        return isVisibleInFront(parent, parentMap);
-
-//    }
 
     /**
      * 获取当前用户 ID
