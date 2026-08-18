@@ -1,5 +1,6 @@
 package com.flowmart.product.servisice.impl;
 
+import com.flowmart.product.convert.CategoryConverter;
 import com.flowmart.product.entity.ProductCategory;
 import com.flowmart.product.enums.CategoryStatus;
 import com.flowmart.product.mapper.ProductCategoryMapper;
@@ -28,6 +29,9 @@ class CategoryServiceImplTest {
     private CategoryServiceImpl categoryService;
 
     private List<ProductCategory> mockCategories;
+
+    @Mock
+    private CategoryConverter categoryConverter;
 
     @BeforeEach
     void setUp() {
