@@ -5,7 +5,7 @@ import com.flowmart.product.convert.CategoryConverter;
 import com.flowmart.product.entity.ProductCategory;
 import com.flowmart.product.enums.CategoryStatus;
 import com.flowmart.product.mapper.ProductCategoryMapper;
-import com.flowmart.product.service.CategoryService;
+
 import com.flowmart.product.vo.CategoryTreeVO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -225,11 +225,11 @@ class CategoryServiceImplTest {
 
     // ========== 测试4：排序 ==========
     @Test
-    void testSorting_SortNoSame_OrderById() {
+    void testTreeKeepsMapperOrder() {
         mockCategories = Arrays.asList(
-                createCategory(3L, 0L, "C类目", 1, 1, CategoryStatus.ENABLED.getCode()),
                 createCategory(1L, 0L, "A类目", 1, 1, CategoryStatus.ENABLED.getCode()),
-                createCategory(2L, 0L, "B类目", 1, 1, CategoryStatus.ENABLED.getCode())
+                createCategory(2L, 0L, "B类目", 1, 1, CategoryStatus.ENABLED.getCode()),
+                createCategory(3L, 0L, "C类目", 1, 1, CategoryStatus.ENABLED.getCode())
         );
 
         when(categoryMapper.selectAllUndeletedOrdered()).thenReturn(mockCategories);

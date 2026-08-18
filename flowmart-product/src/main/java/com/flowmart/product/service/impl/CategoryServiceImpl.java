@@ -156,7 +156,7 @@ public class CategoryServiceImpl implements CategoryService {
             // 递归构建子节点
             // 前台模式：只有当前节点启用才会走到这里，子节点继续按规则过滤
             // 后台模式：不过滤，全部返回
-            List<CategoryTreeVO> childrenVOS = buildChildren(category.getId(), parentMap, frontend,true);
+            List<CategoryTreeVO> childrenVOS = buildChildren(category.getId(), parentMap, frontend,currentVisible);
             // ✅ 叶子节点返回空数组，不返回 null
             treeVO.setChildren(childrenVOS != null ? childrenVOS : Collections.emptyList());
             // ✅ 后台模式：标记该节点在前台是否可见
@@ -169,13 +169,4 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
 
-    /**
-     * 获取当前用户 ID
-     * <p>
-     * TODO: 从 ThreadLocal 或 SecurityContext 中获取真实用户
-     */
-    private Long getCurrentUserId() {
-        // 临时兜底，后续接入登录上下文
-        return 0L;
-    }
 }
