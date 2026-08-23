@@ -1,5 +1,6 @@
 package com.flowmart.product.service;
 
+import com.flowmart.product.command.DeleteCategoryCommand;
 import com.flowmart.product.dto.CreateCategoryDTO;
 
 import com.flowmart.product.vo.CategoryTreeVO;
@@ -13,4 +14,6 @@ public interface CategoryService {
     List<CategoryTreeVO> listFrontTree();
 
     List<CategoryTreeVO> listAdminTree();
+
+    void delete(DeleteCategoryCommand command);
 }

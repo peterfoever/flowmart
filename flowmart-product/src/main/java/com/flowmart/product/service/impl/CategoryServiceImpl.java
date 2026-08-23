@@ -2,6 +2,9 @@ package com.flowmart.product.service.impl;
 
 
 import com.flowmart.common.exception.BizException;
+import com.flowmart.product.checker.CategoryDeleteChecker;
+import com.flowmart.product.command.DeleteCategoryCommand;
+import com.flowmart.product.context.CategoryDeleteContext;
 import com.flowmart.product.convert.CategoryConverter;
 import com.flowmart.product.dto.CreateCategoryDTO;
 import com.flowmart.product.entity.ProductCategory;
@@ -32,14 +35,18 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final ProductCategoryMapper productCategoryMapper;
     private final CategoryConverter categoryConverter;
+    private final CategoryDeleteChecker categoryDeleteChecker;
+    private final CategoryDeleteContext categoryDeleteContext;
     /**
      * 类目最大层级
      */
     private static final int MAX_LEVEL = 5;
 
-    public CategoryServiceImpl(ProductCategoryMapper productCategoryMapper, CategoryConverter categoryConverter) {
+    public CategoryServiceImpl(ProductCategoryMapper productCategoryMapper, CategoryConverter categoryConverter, CategoryDeleteChecker categoryDeleteChecker, CategoryDeleteContext categoryDeleteContext) {
         this.productCategoryMapper = productCategoryMapper;
         this.categoryConverter = categoryConverter;
+        this.categoryDeleteChecker = categoryDeleteChecker;
+        this.categoryDeleteContext = categoryDeleteContext;
     }
 
 
@@ -139,6 +146,41 @@ public class CategoryServiceImpl implements CategoryService {
         //构建parentId -> list<categories>映射
         Map<Long, List<ProductCategory>> parentMap = productCategories.stream().collect(Collectors.groupingBy(ProductCategory::getParentId));
         return buildChildren(0L, parentMap, false,true);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void delete(DeleteCategoryCommand command) {
+        ProductCategory productCategory = productCategoryMapper.selectById(command.getCategoryId());
+        if (productCategory == null) {
+            throw new BizException(ProductErrorCode.CATEGORY_NOT_FOUND);
+        }
+        categoryDeleteContext.setCategory(productCategory);
+
+        List<ProductCategory> directChildren = productCategoryMapper.selectByParentId(command.getCategoryId());
+        if (!CollectionUtils.isEmpty(directChildren)) {
+            categoryDeleteContext.setDirectChildren(directChildren);
+        }
+
+        List<ProductCategory> targetParentChildren = productCategoryMapper.selectByParentId(productCategory.getParentId());
+        if (!CollectionUtils.isEmpty(targetParentChildren)) {
+            categoryDeleteContext.setTargetParentChildren(targetParentChildren);
+        }
+
+        List<ProductCategory> subtreeIds = productCategoryMapper.selectSubtreeIds(command.getCategoryId());
+        if(!CollectionUtils.isEmpty(subtreeIds)) {
+            categoryDeleteContext.setSubtree(subtreeIds);
+        }
+
+        categoryDeleteChecker.check(categoryDeleteContext);
+
+        for (ProductCategory children : directChildren) {
+            children.setParentId(productCategory.getParentId());
+        }
+
+        for (ProductCategory subtreeId : subtreeIds) {
+            subtreeId.setLevel(subtreeId.getLevel() - 1);
+        }
     }
 
     private List<CategoryTreeVO> buildChildren(Long parentId, Map<Long, List<ProductCategory>> parentMap, boolean frontend,boolean parentVisibleInFront) {

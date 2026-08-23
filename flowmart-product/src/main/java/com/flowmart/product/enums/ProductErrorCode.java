@@ -16,6 +16,7 @@ public enum ProductErrorCode implements ErrorCode {
     CATEGORY_NAME_TOO_LONG(20007, "类目名称不能超过64个字符"),
     CATEGORY_STATUS_CHANGE_FAILED(20008, "类目状态变更失败"),
     CATEGORY_CREATE_FAILED(20009,"类目创建失败"),
+    CATEGORY_REPARENT_NAME_DUPLICATE(20010, "子类目上提后名称与目标父类目下已有类目冲突：{0}"),
     PRODUCT_NOT_FOUND(20100, "商品不存在"),
     PRODUCT_OFF_SHELF(20101, "商品已下架"),
     PRODUCT_STOCK_INSUFFICIENT(20102, "商品库存不足"),

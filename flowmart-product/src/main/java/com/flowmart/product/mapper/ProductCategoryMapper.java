@@ -37,4 +37,13 @@ public interface ProductCategoryMapper extends BaseMapper<ProductCategory> {
      */
     List<ProductCategory> selectAllUndeletedOrdered();
 
+    /**
+     * 递归查询子树类别
+     * @param rootId 待删除类目id
+     * @return
+     */
+    List<ProductCategory> selectSubtreeIds(
+            @Param("rootId") Long rootId
+    );
+
 }

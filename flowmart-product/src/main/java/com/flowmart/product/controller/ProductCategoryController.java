@@ -1,10 +1,13 @@
 package com.flowmart.product.controller;
 
 import com.flowmart.common.result.R;
+import com.flowmart.product.command.DeleteCategoryCommand;
 import com.flowmart.product.dto.CreateCategoryDTO;
 import com.flowmart.product.service.CategoryService;
 import com.flowmart.product.vo.CategoryTreeVO;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -46,5 +49,14 @@ public class ProductCategoryController {
         log.info("请求后台类目树");
         List<CategoryTreeVO> categoryTreeVOS = categoryService.listAdminTree();
         return R.ok(categoryTreeVOS);
+    }
+
+    @DeleteMapping("/admin/categories/{id}")
+    public R<Void> deleteCategory(@PathVariable @NotNull @Min(1) Long id,@RequestParam boolean deleteChildren) {
+        DeleteCategoryCommand command = new DeleteCategoryCommand();
+        command.setCategoryId(id);
+        command.setDeleteChildren(deleteChildren);
+        categoryService.delete(command);
+        return R.ok();
     }
 }

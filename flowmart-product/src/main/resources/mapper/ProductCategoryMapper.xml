@@ -58,4 +58,22 @@
         WHERE deleted = 0
         ORDER BY sort_no ASC, id ASC
     </select>
+
+    <!-- 递归查询类目下的所有子类目 -->
+    <select id="selectSubtreeIds" resultMap="BaseResultMap">
+        WITH RECURSIVE category_tree AS (
+            SELECT id, parent_id, level, name
+            FROM product_category
+            WHERE id = #{categoryId} AND deleted = 0
+
+            UNION ALL
+
+            SELECT c.id, c.parent_id, c.level, c.name
+            FROM product_category c
+                     JOIN category_tree t ON c.parent_id = t.id
+            WHERE c.deleted = 0
+        )
+        SELECT id, parent_id, level, name
+        FROM category_tree;
+    </select>
 </mapper>

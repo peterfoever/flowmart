@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -240,6 +241,7 @@ class CategoryServiceImplTest {
         assertEquals("A类目", tree.get(0).getName());
         assertEquals("B类目", tree.get(1).getName());
         assertEquals("C类目", tree.get(2).getName());
+
     }
 
     // ========== 测试5：验证 SQL 只调用一次 ==========
