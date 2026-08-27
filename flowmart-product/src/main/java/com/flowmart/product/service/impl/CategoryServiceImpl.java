@@ -35,17 +35,18 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final ProductCategoryMapper productCategoryMapper;
     private final CategoryConverter categoryConverter;
-    private final CategoryDeleteChecker categoryDeleteChecker;
+    private final List<CategoryDeleteChecker> categoryDeleteCheckers;
     private final CategoryDeleteContext categoryDeleteContext;
     /**
      * 类目最大层级
      */
     private static final int MAX_LEVEL = 5;
 
-    public CategoryServiceImpl(ProductCategoryMapper productCategoryMapper, CategoryConverter categoryConverter, CategoryDeleteChecker categoryDeleteChecker, CategoryDeleteContext categoryDeleteContext) {
+    public CategoryServiceImpl(ProductCategoryMapper productCategoryMapper, CategoryConverter categoryConverter, CategoryDeleteChecker categoryDeleteChecker, List<CategoryDeleteChecker> categoryDeleteCheckers, CategoryDeleteContext categoryDeleteContext) {
         this.productCategoryMapper = productCategoryMapper;
         this.categoryConverter = categoryConverter;
-        this.categoryDeleteChecker = categoryDeleteChecker;
+        this.categoryDeleteCheckers = categoryDeleteCheckers;
+
         this.categoryDeleteContext = categoryDeleteContext;
     }
 
@@ -172,7 +173,9 @@ public class CategoryServiceImpl implements CategoryService {
             categoryDeleteContext.setSubtree(subtreeIds);
         }
 
-        categoryDeleteChecker.check(categoryDeleteContext);
+        for (CategoryDeleteChecker categoryDeleteChecker : categoryDeleteCheckers) {
+            categoryDeleteChecker.check(categoryDeleteContext);
+        }
 
         for (ProductCategory children : directChildren) {
             children.setParentId(productCategory.getParentId());
