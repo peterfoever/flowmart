@@ -36,18 +36,17 @@ public class CategoryServiceImpl implements CategoryService {
     private final ProductCategoryMapper productCategoryMapper;
     private final CategoryConverter categoryConverter;
     private final List<CategoryDeleteChecker> categoryDeleteCheckers;
-    private final CategoryDeleteContext categoryDeleteContext;
+
     /**
      * 类目最大层级
      */
     private static final int MAX_LEVEL = 5;
 
-    public CategoryServiceImpl(ProductCategoryMapper productCategoryMapper, CategoryConverter categoryConverter, CategoryDeleteChecker categoryDeleteChecker, List<CategoryDeleteChecker> categoryDeleteCheckers, CategoryDeleteContext categoryDeleteContext) {
+    public CategoryServiceImpl(ProductCategoryMapper productCategoryMapper, CategoryConverter categoryConverter, CategoryDeleteChecker categoryDeleteChecker, List<CategoryDeleteChecker> categoryDeleteCheckers) {
         this.productCategoryMapper = productCategoryMapper;
         this.categoryConverter = categoryConverter;
         this.categoryDeleteCheckers = categoryDeleteCheckers;
 
-        this.categoryDeleteContext = categoryDeleteContext;
     }
 
 
@@ -152,6 +151,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(DeleteCategoryCommand command) {
+        CategoryDeleteContext categoryDeleteContext = new CategoryDeleteContext();
         ProductCategory productCategory = productCategoryMapper.selectById(command.getCategoryId());
         if (productCategory == null) {
             throw new BizException(ProductErrorCode.CATEGORY_NOT_FOUND);
@@ -168,7 +168,7 @@ public class CategoryServiceImpl implements CategoryService {
             categoryDeleteContext.setTargetParentChildren(targetParentChildren);
         }
 
-        List<ProductCategory> subtreeIds = productCategoryMapper.selectSubtreeIds(command.getCategoryId());
+        List<ProductCategory> subtreeIds = productCategoryMapper.selectSubtree(command.getCategoryId());
         if(!CollectionUtils.isEmpty(subtreeIds)) {
             categoryDeleteContext.setSubtree(subtreeIds);
         }
@@ -177,13 +177,13 @@ public class CategoryServiceImpl implements CategoryService {
             categoryDeleteChecker.check(categoryDeleteContext);
         }
 
-        for (ProductCategory children : directChildren) {
-            children.setParentId(productCategory.getParentId());
-        }
+        log.info("开始删除类目，categoryId={}, deleteChildren={}", command.getCategoryId(), categoryDeleteContext);
+        productCategoryMapper.batchLogicDelete(subtreeIds.stream().map(ProductCategory::getId).collect(Collectors.toList()));
 
-        for (ProductCategory subtreeId : subtreeIds) {
-            subtreeId.setLevel(subtreeId.getLevel() - 1);
-        }
+        productCategoryMapper.batchUpdateParentId(directChildren.stream().map(ProductCategory::getId).collect(Collectors.toList()), command.getCategoryId());
+
+        productCategoryMapper.batchDecreaseLevel(subtreeIds.stream().map(ProductCategory::getId).collect(Collectors.toList()));
+
     }
 
     private List<CategoryTreeVO> buildChildren(Long parentId, Map<Long, List<ProductCategory>> parentMap, boolean frontend,boolean parentVisibleInFront) {

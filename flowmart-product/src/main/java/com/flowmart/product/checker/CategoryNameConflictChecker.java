@@ -28,7 +28,7 @@ public class CategoryNameConflictChecker implements CategoryDeleteChecker {
 
         // 3. 同名校验
         for (ProductCategory directChild : context.getDirectChildren()) {
-            if (context.getCategory().getName() == directChild.getName()) {
+            if (Objects.equals(context.getCategory().getName(),directChild.getName())){
                 throw new BizException(ProductErrorCode.CATEGORY_REPARENT_NAME_DUPLICATE);
             }
 

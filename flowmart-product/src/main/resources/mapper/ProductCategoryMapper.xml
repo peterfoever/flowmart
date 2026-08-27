@@ -60,11 +60,11 @@
     </select>
 
     <!-- 递归查询类目下的所有子类目 -->
-    <select id="selectSubtreeIds" resultMap="BaseResultMap">
+    <select id="selectSubtree" resultMap="BaseResultMap">
         WITH RECURSIVE category_tree AS (
             SELECT id, parent_id, level, name
             FROM product_category
-            WHERE id = #{categoryId} AND deleted = 0
+            WHERE id = #{rootId} AND deleted = 0
 
             UNION ALL
 
@@ -76,4 +76,47 @@
         SELECT id, parent_id, level, name
         FROM category_tree;
     </select>
+    <update id="batchLogicDelete">
+        UPDATE product_category
+        SET deleted = UNIX_TIMESTAMP(),
+        updated_at = NOW(),
+        updated_by = #{updatedBy}
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND deleted = 0
+    </update>
+
+    <!-- ============================================================ -->
+    <!-- ========== 方法2: 批量更新父类目 ID（子类目上提） ========== -->
+    <!-- ============================================================ -->
+
+    <update id="batchUpdateParentId">
+        UPDATE product_category
+        SET parent_id = #{targetParentId},
+        updated_at = NOW(),
+        updated_by = #{updatedBy}
+        WHERE id IN
+        <foreach collection="childIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND deleted = 0
+    </update>
+
+    <!-- ============================================================ -->
+    <!-- ========== 方法3: 批量层级减 1 ========== -->
+    <!-- ============================================================ -->
+
+    <update id="batchDecreaseLevel">
+        UPDATE product_category
+        SET level = level - 1,
+        updated_at = NOW(),
+        updated_by = #{updatedBy}
+        WHERE id IN
+        <foreach collection="descendantIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND deleted = 0
+    </update>
 </mapper>

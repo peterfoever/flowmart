@@ -42,8 +42,36 @@ public interface ProductCategoryMapper extends BaseMapper<ProductCategory> {
      * @param rootId 待删除类目id
      * @return
      */
-    List<ProductCategory> selectSubtreeIds(
+    List<ProductCategory> selectSubtree(
             @Param("rootId") Long rootId
     );
 
+    /**
+     * 批量逻辑删除（按 ID 列表）
+     *
+     * @param ids       待删除的类目 ID 列表
+     * @return 实际影响行数
+     */
+    int batchLogicDelete(@Param("ids") List<Long> ids
+                         );
+
+    /**
+     * 批量更新父类目 ID（子类目上提）
+     *
+     * @param childIds       待上提的子类目 ID 列表
+     * @param targetParentId 目标父类目 ID
+
+     * @return 实际影响行数
+     */
+    int batchUpdateParentId(@Param("childIds") List<Long> childIds,
+                            @Param("targetParentId") Long targetParentId);
+
+    /**
+     * 批量层级减 1（后代类目上提后层级收缩）
+     *
+     * @param descendantIds 后代类目 ID 列表（含直接子类目）
+
+     * @return 实际影响行数
+     */
+    int batchDecreaseLevel(@Param("descendantIds") List<Long> descendantIds);
 }
