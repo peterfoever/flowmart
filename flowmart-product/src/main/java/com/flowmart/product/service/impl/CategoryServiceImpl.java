@@ -42,11 +42,12 @@ public class CategoryServiceImpl implements CategoryService {
      */
     private static final int MAX_LEVEL = 5;
 
-    public CategoryServiceImpl(ProductCategoryMapper productCategoryMapper, CategoryConverter categoryConverter, CategoryDeleteChecker categoryDeleteChecker, List<CategoryDeleteChecker> categoryDeleteCheckers) {
+    public CategoryServiceImpl(ProductCategoryMapper productCategoryMapper,
+                               CategoryConverter categoryConverter,
+                               List<CategoryDeleteChecker> categoryDeleteCheckers) {
         this.productCategoryMapper = productCategoryMapper;
         this.categoryConverter = categoryConverter;
         this.categoryDeleteCheckers = categoryDeleteCheckers;
-
     }
 
 
@@ -156,82 +157,63 @@ public class CategoryServiceImpl implements CategoryService {
             throw new BizException(ProductErrorCode.CATEGORY_NOT_FOUND);
         }
 
+        List<ProductCategory> directChildren = safeList(productCategoryMapper.selectByParentId(command.getCategoryId()));
+        List<ProductCategory> targetParentChildren = safeList(productCategoryMapper.selectByParentId(productCategory.getParentId()));
+        List<ProductCategory> subtree = safeList(productCategoryMapper.selectSubtree(command.getCategoryId()));
+        if (subtree.isEmpty()) {
+            throw new BizException(ProductErrorCode.CATEGORY_NOT_FOUND);
+        }
 
-        List<ProductCategory> directChildren = productCategoryMapper.selectByParentId(command.getCategoryId());
-
-
-        List<ProductCategory> targetParentChildren = productCategoryMapper.selectByParentId(productCategory.getParentId());
-
-        List<ProductCategory> subtreeIds = productCategoryMapper.selectSubtree(command.getCategoryId());
-
-        // ✅ 一次性构建 Context
         CategoryDeleteContext context = CategoryDeleteContext.builder()
                 .category(productCategory)
                 .deleteChildren(command.isDeleteChildren())
                 .directChildren(directChildren)
                 .targetParentChildren(targetParentChildren)
-                .subtree(subtreeIds)
+                .subtree(subtree)
                 .build();
-        for (CategoryDeleteChecker categoryDeleteChecker : categoryDeleteCheckers) {
+        for (CategoryDeleteChecker categoryDeleteChecker : safeList(categoryDeleteCheckers)) {
             categoryDeleteChecker.check(context);
         }
-        if(command.isDeleteChildren()){
-            log.info("开始删除类目，categoryId={}, deleteChildren={}", command.getCategoryId(), context);
-            if (CollectionUtils.isEmpty(subtreeIds)) {
-                log.debug("ID 列表为空，跳过批量更新");
-                return;
+
+        List<Long> subtreeIds = subtree.stream().map(ProductCategory::getId).toList();
+        if (command.isDeleteChildren()) {
+            ensureAffected(productCategoryMapper.batchLogicDelete(subtreeIds), subtreeIds.size(),
+                    ProductErrorCode.CATEGORY_DELETE_FAILED, "逻辑删除类目子树");
+            log.info("级联删除类目成功: categoryId={}, affected={}", command.getCategoryId(), subtreeIds.size());
+            return;
+        }
+
+        List<Long> childIds = directChildren.stream().map(ProductCategory::getId).toList();
+        if (!childIds.isEmpty()) {
+            try {
+                ensureAffected(productCategoryMapper.batchUpdateParentId(childIds, productCategory.getParentId()), childIds.size(),
+                        ProductErrorCode.CATEGORY_REPARENT_FAILED, "上提直接子类目");
+            } catch (DuplicateKeyException e) {
+                throw new BizException(ProductErrorCode.CATEGORY_REPARENT_NAME_DUPLICATE);
             }
-            int deleted = productCategoryMapper.batchLogicDelete(subtreeIds.stream().map(ProductCategory::getId).collect(Collectors.toList()));
-            if (deleted != 1) {
-                throw new BizException(ProductErrorCode.CATEGORY_DELETE_FAILED,
-                        "删除当前类目失败，期望影响 1 行，实际影响 " + deleted + " 行");
-            }
+        }
 
-        }else {
+        List<Long> descendantIds = subtreeIds.stream()
+                .filter(id -> !id.equals(command.getCategoryId()))
+                .toList();
+        if (!descendantIds.isEmpty()) {
+            ensureAffected(productCategoryMapper.batchDecreaseLevel(descendantIds), descendantIds.size(),
+                    ProductErrorCode.CATEGORY_LEVEL_DECREASE_FAILED, "调整后代类目层级");
+        }
+        ensureAffected(productCategoryMapper.batchLogicDelete(List.of(command.getCategoryId())), 1,
+                ProductErrorCode.CATEGORY_DELETE_FAILED, "逻辑删除当前类目");
+        log.info("删除并上提类目成功: categoryId={}, reparented={}, levelAdjusted={}",
+                command.getCategoryId(), childIds.size(), descendantIds.size());
+    }
 
-            // ===== B2: 批量上提直接子类目 =====
-            List<Long> childIds = directChildren.stream()
-                    .map(ProductCategory::getId)
-                    .collect(Collectors.toList());
+    private <T> List<T> safeList(List<T> values) {
+        return values == null ? Collections.emptyList() : values;
+    }
 
-            // ✅ 目标父类目 ID = category.getParentId()
-            int reparentCount = productCategoryMapper.batchUpdateParentId(childIds, context.getCategory().getParentId());
-            if (reparentCount != childIds.size()) {
-                throw new BizException(ProductErrorCode.CATEGORY_REPARENT_FAILED,
-                        String.format("期望上提 %d 个子类目，实际上提 %d 个", childIds.size(), reparentCount));
-            }
-            log.debug("上提直接子类目: childIds.size={}, targetParentId={}, affected={}",
-                    childIds.size(), context.getCategory().getParentId(), reparentCount);
-
-
-            // ===== B3: 查询所有后代（用于层级调整） =====
-            // ✅ 注意：此时当前节点已被逻辑删除，selectSubtree 只查 deleted=0 的节点
-            // 所以返回的是所有后代（不含当前节点）
-            List<ProductCategory> subtree = productCategoryMapper.selectSubtree(command.getCategoryId());
-            if (subtree == null || subtree.isEmpty()) {
-                log.debug("无后代需要调整层级");
-                return;
-            }
-
-            List<Long> descendantIds = subtree.stream()
-                    .map(ProductCategory::getId)
-                    .collect(Collectors.toList());
-
-            // ✅ 验证：descendantIds 中不包含 categoryId
-            if (descendantIds.contains(command.getCategoryId())) {
-                log.warn("selectSubtree 返回了当前节点，请检查 SQL 的 WHERE deleted=0 条件");
-                descendantIds.remove(command.getCategoryId());
-            }
-
-            // ===== B4: 批量层级减 1 =====
-            int levelDecreased = productCategoryMapper.batchDecreaseLevel(descendantIds);
-            if (levelDecreased != descendantIds.size()) {
-                throw new BizException(ProductErrorCode.CATEGORY_LEVEL_DECREASE_FAILED,
-                        String.format("期望调整 %d 个后代的层级，实际调整 %d 个", descendantIds.size(), levelDecreased));
-            }
-
-            log.info("删除并上提完成: 删除当前节点, 上提 {} 个直接子类目到 parent_id={}, 调整 {} 个后代的层级",
-                    reparentCount, context.getCategory().getParentId(), levelDecreased);
+    private void ensureAffected(int actual, int expected, ProductErrorCode errorCode, String operation) {
+        if (actual != expected) {
+            throw new BizException(errorCode,
+                    String.format("%s失败，期望影响 %d 行，实际影响 %d 行", operation, expected, actual));
         }
     }
 
