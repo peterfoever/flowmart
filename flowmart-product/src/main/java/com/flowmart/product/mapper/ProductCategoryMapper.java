@@ -53,6 +53,7 @@ public interface ProductCategoryMapper extends BaseMapper<ProductCategory> {
      * @return 实际影响行数
      */
     int batchLogicDelete(@Param("ids") List<Long> ids
+
                          );
 
     /**

@@ -34,14 +34,13 @@ class CategoryNameConflictCheckerTest {
     void shouldPass_whenDeleteChildrenIsTrue() {
         // 准备：级联删除，即使有子类目也不检查名称冲突
         CategoryDeleteContext context = CategoryDeleteContext.builder()
-                .currentCategory(createCategory(1L, 0L, "食品饮料", 1))
+                .category(createCategory(1L, 0L, "食品饮料", 1))
                 .deleteChildren(true)
                 .directChildren(Arrays.asList(
                         createCategory(2L, 1L, "休闲零食", 2),
                         createCategory(3L, 1L, "饮料", 2)
                 ))
-                .parentDirectChildren(Collections.emptyList())
-                .currentUserId(1L)
+                .targetParentChildren(Collections.emptyList())
                 .build();
 
         // 执行 + 验证：不抛异常
@@ -55,13 +54,12 @@ class CategoryNameConflictCheckerTest {
     void shouldPass_whenNoDirectChildren() {
         // 准备：无直接子类目
         CategoryDeleteContext context = CategoryDeleteContext.builder()
-                .currentCategory(createCategory(1L, 0L, "食品饮料", 1))
+                .category(createCategory(1L, 0L, "食品饮料", 1))
                 .deleteChildren(false)
                 .directChildren(Collections.emptyList())
-                .parentDirectChildren(Arrays.asList(
+                .targetParentChildren(Arrays.asList(
                         createCategory(4L, 0L, "母婴用品", 1)
                 ))
-                .currentUserId(1L)
                 .build();
 
         // 执行 + 验证：不抛异常
@@ -76,16 +74,15 @@ class CategoryNameConflictCheckerTest {
         // 准备：删除类目 1（食品饮料），其子类目有"休闲零食"
         // 目标父类目（0）下已有"休闲零食"
         CategoryDeleteContext context = CategoryDeleteContext.builder()
-                .currentCategory(createCategory(1L, 0L, "食品饮料", 1))
+                .category(createCategory(1L, 0L, "食品饮料", 1))
                 .deleteChildren(false)
                 .directChildren(Arrays.asList(
                         createCategory(2L, 1L, "休闲零食", 2)
                 ))
-                .parentDirectChildren(Arrays.asList(
+                .targetParentChildren(Arrays.asList(
                         createCategory(4L, 0L, "母婴用品", 1),
                         createCategory(5L, 0L, "休闲零食", 1)  // 同名冲突
                 ))
-                .currentUserId(1L)
                 .build();
 
         // 执行 + 验证：抛异常
@@ -107,18 +104,17 @@ class CategoryNameConflictCheckerTest {
         // 准备：删除类目 1，其子类目有"休闲零食"和"饮料"
         // 目标父类目下已有"休闲零食"和"饮料"
         CategoryDeleteContext context = CategoryDeleteContext.builder()
-                .currentCategory(createCategory(1L, 0L, "食品饮料", 1))
+                .category(createCategory(1L, 0L, "食品饮料", 1))
                 .deleteChildren(false)
                 .directChildren(Arrays.asList(
                         createCategory(2L, 1L, "休闲零食", 2),
                         createCategory(3L, 1L, "饮料", 2)
                 ))
-                .parentDirectChildren(Arrays.asList(
+                .targetParentChildren(Arrays.asList(
                         createCategory(4L, 0L, "母婴用品", 1),
                         createCategory(5L, 0L, "休闲零食", 1),  // 冲突
                         createCategory(6L, 0L, "饮料", 1)       // 冲突
                 ))
-                .currentUserId(1L)
                 .build();
 
         // 执行 + 验证
@@ -142,15 +138,14 @@ class CategoryNameConflictCheckerTest {
         // 目标父类目下已有"食品饮料"（这是待删除节点本身，不应算冲突）
         // 但没有名为"休闲零食"的类目
         CategoryDeleteContext context = CategoryDeleteContext.builder()
-                .currentCategory(createCategory(1L, 0L, "食品饮料", 1))
+                .category(createCategory(1L, 0L, "食品饮料", 1))
                 .deleteChildren(false)
                 .directChildren(Arrays.asList(
                         createCategory(2L, 1L, "休闲零食", 2)
                 ))
-                .parentDirectChildren(Arrays.asList(
+                .targetParentChildren(Arrays.asList(
                         createCategory(1L, 0L, "食品饮料", 1)  // 仅待删除节点自身
                 ))
-                .currentUserId(1L)
                 .build();
 
         // 执行 + 验证：不抛异常
@@ -167,13 +162,12 @@ class CategoryNameConflictCheckerTest {
         // 这个场景验证的是：Mapper 查询时已过滤 deleted=0，
         // Checker 只拿已过滤后的数据做比较
         CategoryDeleteContext context = CategoryDeleteContext.builder()
-                .currentCategory(createCategory(1L, 0L, "食品饮料", 1))
+                .category(createCategory(1L, 0L, "食品饮料", 1))
                 .deleteChildren(false)
                 .directChildren(Arrays.asList(
                         createCategory(2L, 1L, "休闲零食", 2)
                 ))
-                .parentDirectChildren(Collections.emptyList())  // 已删除的不在列表中
-                .currentUserId(1L)
+                .targetParentChildren(Collections.emptyList())  // 已删除的不在列表中
                 .build();
 
         // 执行 + 验证：不抛异常
@@ -188,15 +182,14 @@ class CategoryNameConflictCheckerTest {
         // 准备：删除一级类目 1（食品饮料），其子类目有"休闲零食"
         // 根目录下已有"休闲零食"（另一个一级类目）
         CategoryDeleteContext context = CategoryDeleteContext.builder()
-                .currentCategory(createCategory(1L, 0L, "食品饮料", 1))
+                .category(createCategory(1L, 0L, "食品饮料", 1))
                 .deleteChildren(false)
                 .directChildren(Arrays.asList(
                         createCategory(2L, 1L, "休闲零食", 2)
                 ))
-                .parentDirectChildren(Arrays.asList(
+                .targetParentChildren(Arrays.asList(
                         createCategory(5L, 0L, "休闲零食", 1)  // 根目录下同名
                 ))
-                .currentUserId(1L)
                 .build();
 
         // 执行 + 验证：抛异常（一级类目也检查）
@@ -217,15 +210,14 @@ class CategoryNameConflictCheckerTest {
         // 准备：删除二级类目 2（休闲零食），其子类目有"坚果炒货"
         // 一级目录下已有"坚果炒货"
         CategoryDeleteContext context = CategoryDeleteContext.builder()
-                .currentCategory(createCategory(2L, 1L, "休闲零食", 2))
+                .category(createCategory(2L, 1L, "休闲零食", 2))
                 .deleteChildren(false)
                 .directChildren(Arrays.asList(
                         createCategory(3L, 2L, "坚果炒货", 3)
                 ))
-                .parentDirectChildren(Arrays.asList(
+                .targetParentChildren(Arrays.asList(
                         createCategory(6L, 1L, "坚果炒货", 2)  // 同一父类目下同名
                 ))
-                .currentUserId(1L)
                 .build();
 
         // 执行 + 验证：抛异常

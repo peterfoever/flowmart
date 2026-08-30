@@ -20,7 +20,20 @@ public enum ProductErrorCode implements ErrorCode {
     PRODUCT_NOT_FOUND(20100, "商品不存在"),
     PRODUCT_OFF_SHELF(20101, "商品已下架"),
     PRODUCT_STOCK_INSUFFICIENT(20102, "商品库存不足"),
+    /**
+     * 删除类目失败
+     */
+    CATEGORY_DELETE_FAILED(20011, "删除类目失败，请稍后重试"),
 
+    /**
+     * 子类目上提失败
+     */
+    CATEGORY_REPARENT_FAILED(20012, "子类目上提失败，请稍后重试"),
+
+    /**
+     * 层级调整失败
+     */
+    CATEGORY_LEVEL_DECREASE_FAILED(20013, "层级调整失败，请稍后重试"),
     ;
 
     private final int code;

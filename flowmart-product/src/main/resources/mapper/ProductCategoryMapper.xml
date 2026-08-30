@@ -79,8 +79,7 @@
     <update id="batchLogicDelete">
         UPDATE product_category
         SET deleted = UNIX_TIMESTAMP(),
-        updated_at = NOW(),
-        updated_by = #{updatedBy}
+        updated_at = NOW()
         WHERE id IN
         <foreach collection="ids" item="id" open="(" separator="," close=")">
             #{id}
@@ -95,8 +94,7 @@
     <update id="batchUpdateParentId">
         UPDATE product_category
         SET parent_id = #{targetParentId},
-        updated_at = NOW(),
-        updated_by = #{updatedBy}
+        updated_at = NOW()
         WHERE id IN
         <foreach collection="childIds" item="id" open="(" separator="," close=")">
             #{id}
@@ -111,8 +109,7 @@
     <update id="batchDecreaseLevel">
         UPDATE product_category
         SET level = level - 1,
-        updated_at = NOW(),
-        updated_by = #{updatedBy}
+        updated_at = NOW()
         WHERE id IN
         <foreach collection="descendantIds" item="id" open="(" separator="," close=")">
             #{id}

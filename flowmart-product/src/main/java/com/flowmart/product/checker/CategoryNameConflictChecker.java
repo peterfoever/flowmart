@@ -28,8 +28,13 @@ public class CategoryNameConflictChecker implements CategoryDeleteChecker {
 
         // 3. 同名校验
         for (ProductCategory directChild : context.getDirectChildren()) {
-            if (Objects.equals(context.getCategory().getName(),directChild.getName())){
-                throw new BizException(ProductErrorCode.CATEGORY_REPARENT_NAME_DUPLICATE);
+            for (ProductCategory targetParentChild : context.getTargetParentChildren()) {
+                if(Objects.equals(directChild.getName(), targetParentChild.getName())) {
+                    throw new BizException(
+                            ProductErrorCode.CATEGORY_REPARENT_NAME_DUPLICATE,
+                            "子类目上提后名称与目标父类目下已有类目冲突：" + directChild.getName()
+                    );
+                }
             }
 
         }
