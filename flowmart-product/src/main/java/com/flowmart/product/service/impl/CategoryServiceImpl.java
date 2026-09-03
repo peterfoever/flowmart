@@ -224,7 +224,13 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         // ========== Step 2: 查询目标父类目 ==========
+        if (id.equals(targetParentId)) {
+            throw new BizException(ProductErrorCode.CATEGORY_MOVE_TO_SELF);
+        }
 
+        if (targetParentId.equals(productCategory.getParentId())) {
+            throw new BizException(ProductErrorCode.CATEGORY_PARENT_UNCHANGED);
+        }
         ProductCategory targetParent = null;
         if (targetParentId != 0) {
             targetParent = productCategoryMapper.selectById(targetParentId);
@@ -238,19 +244,21 @@ public class CategoryServiceImpl implements CategoryService {
 
         // ========== Step 3: 移动合法性校验 ==========
         Long currentParentId = productCategory.getParentId();
-        if (targetParentId.equals(currentParentId)) {
-            throw new BizException(ProductErrorCode.CATEGORY_PARENT_UNCHANGED);
-        }
 
         List<ProductCategory> subtree = productCategoryMapper.selectSubtree(id);
-        if (!CollectionUtils.isEmpty(subtree)) {
-            List<Long> descendantIds = subtree.stream()
-                    .map(ProductCategory::getId)
-                    .collect(Collectors.toList());
-            if (descendantIds.contains(targetParentId)) {
-                throw new BizException(ProductErrorCode.CATEGORY_MOVE_TO_DESCENDANT);
-            }
+        if (subtree == null || subtree.isEmpty()) {
+            // 正常数据下 CTE 必然至少返回当前节点；为空代表数据不一致
+            throw new BizException(ProductErrorCode.CATEGORY_MOVE_FAILED,
+                    "查询子树为空，数据可能不一致：categoryId=" + id);
         }
+
+        List<Long> descendantIds = subtree.stream()
+                .map(ProductCategory::getId)
+                .collect(Collectors.toList());
+        if (descendantIds.contains(targetParentId)) {
+            throw new BizException(ProductErrorCode.CATEGORY_MOVE_TO_DESCENDANT);
+        }
+
 
         // ========== Step 4: 检查目标父类目下是否已有同名类目 ==========
         boolean exists = productCategoryMapper.existsByNameAndParent(targetParentId, productCategory.getName(), id);
@@ -269,8 +277,10 @@ public class CategoryServiceImpl implements CategoryService {
                     stream().
                     mapToInt(ProductCategory::getLevel).
                     max().
-                    orElse(currentLevel) - currentLevel + 1;
-            int newMaxDepth = maxDepth + targetLevel;
+                    orElseThrow(() -> new BizException(
+                            ProductErrorCode.CATEGORY_MOVE_FAILED,
+                            "计算子树最大层级失败，数据可能不一致：categoryId=" + id));
+            int newMaxDepth = maxDepth + delta;
             if (newMaxDepth > MAX_LEVEL) {
                 throw new BizException(ProductErrorCode.CATEGORY_LEVEL_EXCEEDED);
             }
@@ -285,20 +295,18 @@ public class CategoryServiceImpl implements CategoryService {
         log.debug("更新父类目成功: id={}, targetParentId={}", id, targetParentId);
 
         //  批量更新层级（delta != 0 时才执行）
-        if(delta!=0){
+        if (delta != 0) {
             List<Long> allIds = new ArrayList<>();
-            if(!CollectionUtils.isEmpty(subtree)) {
-                List<Long> descendantIds = subtree.stream()
-                        .map(ProductCategory::getId).collect(Collectors.toList());
-                allIds.addAll(descendantIds);
-            }
+
+            allIds.addAll(descendantIds);
+
             int batchUpdateLevel = productCategoryMapper.batchUpdateLevel(allIds, delta, operatorId);
             if (batchUpdateLevel != allIds.size()) {
-                throw new BizException(ProductErrorCode.CATEGORY_MOVE_FAILED,String.format("更新层级失败，期望影响 %d 行，实际影响 %d 行",
+                throw new BizException(ProductErrorCode.CATEGORY_MOVE_FAILED, String.format("更新层级失败，期望影响 %d 行，实际影响 %d 行",
                         allIds.size(), batchUpdateLevel));
             }
             log.debug("更新层级成功: 影响 {} 行, delta={}", batchUpdateLevel, delta);
-        }else {
+        } else {
             log.debug("delta=0，跳过层级更新");
         }
         log.info("移动类目成功: id={}, 原父类目={}, 新父类目={}, delta={}",

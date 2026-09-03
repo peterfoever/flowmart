@@ -4,7 +4,7 @@ import com.flowmart.common.result.R;
 import com.flowmart.product.command.DeleteCategoryCommand;
 import com.flowmart.product.dto.CreateCategoryDTO;
 import com.flowmart.product.dto.MoveCategoryDTO;
-import com.flowmart.product.dto.UpdateCategoryDTO;
+
 import com.flowmart.product.service.CategoryService;
 import com.flowmart.product.vo.CategoryTreeVO;
 import jakarta.validation.Valid;
@@ -62,7 +62,7 @@ public class ProductCategoryController {
         return R.ok();
     }
 
-    @PatchMapping("/{id}/parent")
+    @PatchMapping("/admin/categories/{id}/parent")
     public R<Void> moveCategory( @PathVariable @NotNull @Min(1) Long id,@RequestBody @Valid MoveCategoryDTO request) {
         log.info("移动类目请求，id={},targetParentId={}",id,request.getTargetParentId());
         categoryService.move(id,request);
