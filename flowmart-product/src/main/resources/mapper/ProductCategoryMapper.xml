@@ -90,7 +90,7 @@
     </update>
 
     <!-- ============================================================ -->
-    <!-- ========== 方法2: 批量更新父类目 ID（子类目上提） ========== -->
+    <!-- ========== 方法: 批量更新父类目 ID（子类目上提） ========== -->
     <!-- ============================================================ -->
 
     <update id="batchUpdateParentId">
@@ -107,7 +107,7 @@
     </update>
 
     <!-- ============================================================ -->
-    <!-- ========== 方法3: 批量层级减 1 ========== -->
+    <!-- ========== 方法: 批量层级减 1 ========== -->
     <!-- ============================================================ -->
 
     <update id="batchDecreaseLevel">
@@ -118,6 +118,36 @@
             version = version + 1
         WHERE id IN
         <foreach collection="descendantIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND deleted = 0
+    </update>
+
+    <!-- ========== 方法: 更新父类目 ID ========== -->
+    <!-- ============================================================ -->
+
+    <update id="updateParentId">
+        UPDATE product_category
+        SET parent_id = #{parentId},
+            updated_at = NOW(),
+            updated_by = #{updatedBy},
+            version = version + 1
+        WHERE id = #{id}
+          AND deleted = 0
+    </update>
+
+    <!-- ============================================================ -->
+    <!-- ========== 方法: 批量更新层级 ========== -->
+    <!-- ============================================================ -->
+
+    <update id="batchUpdateLevel">
+        UPDATE product_category
+        SET level = level + #{delta},
+        updated_at = NOW(),
+        updated_by = #{updatedBy},
+        version = version + 1
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
         AND deleted = 0

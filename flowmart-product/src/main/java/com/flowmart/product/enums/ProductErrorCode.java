@@ -34,6 +34,25 @@ public enum ProductErrorCode implements ErrorCode {
      * 层级调整失败
      */
     CATEGORY_LEVEL_DECREASE_FAILED(20013, "层级调整失败，请稍后重试"),
+    /**
+     * 不能移动到自己
+     */
+    CATEGORY_MOVE_TO_SELF(20020, "不能将类目移动到自己"),
+
+    /**
+     * 父类目未变化（无需移动）
+     */
+    CATEGORY_PARENT_UNCHANGED(20021, "类目已在目标父类目下，无需移动"),
+
+    /**
+     * 不能移动到自己的后代节点
+     */
+    CATEGORY_MOVE_TO_DESCENDANT(20022, "不能将类目移动到包括自己的子类目下"),
+
+    /**
+     * 移动类目失败
+     */
+    CATEGORY_MOVE_FAILED(20023, "移动类目失败，请稍后重试"),
     ;
 
     private final int code;

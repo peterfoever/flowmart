@@ -7,6 +7,7 @@ import com.flowmart.product.command.DeleteCategoryCommand;
 import com.flowmart.product.context.CategoryDeleteContext;
 import com.flowmart.product.convert.CategoryConverter;
 import com.flowmart.product.dto.CreateCategoryDTO;
+import com.flowmart.product.dto.MoveCategoryDTO;
 import com.flowmart.product.entity.ProductCategory;
 import com.flowmart.product.enums.CategoryStatus;
 import com.flowmart.product.enums.ProductErrorCode;
@@ -36,7 +37,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final ProductCategoryMapper productCategoryMapper;
     private final CategoryConverter categoryConverter;
     private final List<CategoryDeleteChecker> categoryDeleteCheckers;
-
+    private static final Long SYSTEM_OPERATOR_ID = 0L;
     /**
      * 类目最大层级
      */
@@ -133,7 +134,7 @@ public class CategoryServiceImpl implements CategoryService {
         //构建parentId -> list<categories>映射
         Map<Long, List<ProductCategory>> parentMap = productCategories.stream().collect(Collectors.groupingBy(ProductCategory::getParentId));
 
-        return buildChildren(0L, parentMap, true,true);
+        return buildChildren(0L, parentMap, true, true);
     }
 
     @Override
@@ -146,7 +147,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
         //构建parentId -> list<categories>映射
         Map<Long, List<ProductCategory>> parentMap = productCategories.stream().collect(Collectors.groupingBy(ProductCategory::getParentId));
-        return buildChildren(0L, parentMap, false,true);
+        return buildChildren(0L, parentMap, false, true);
     }
 
     @Override
@@ -206,6 +207,105 @@ public class CategoryServiceImpl implements CategoryService {
                 command.getCategoryId(), childIds.size(), descendantIds.size());
     }
 
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void move(Long id, MoveCategoryDTO request) {
+        Long targetParentId = request.getTargetParentId();
+        Long operatorId = SYSTEM_OPERATOR_ID;
+
+        log.info("开始移动类目: id={}, targetParentId={}", id, targetParentId);
+
+        // ========== Step 1: 查询当前类目 ==========
+
+        ProductCategory productCategory = productCategoryMapper.selectById(id);
+        if (productCategory == null) {
+            throw new BizException(ProductErrorCode.CATEGORY_NOT_FOUND);
+        }
+
+        // ========== Step 2: 查询目标父类目 ==========
+
+        ProductCategory targetParent = null;
+        if (targetParentId != 0) {
+            targetParent = productCategoryMapper.selectById(targetParentId);
+            if (targetParent == null) {
+                throw new BizException(ProductErrorCode.CATEGORY_PARENT_NOT_FOUND);
+            }
+            if (CategoryStatus.DISABLED.matches(targetParent.getStatus())) {
+                throw new BizException(ProductErrorCode.CATEGORY_PARENT_DISABLED);
+            }
+        }
+
+        // ========== Step 3: 移动合法性校验 ==========
+        Long currentParentId = productCategory.getParentId();
+        if (targetParentId.equals(currentParentId)) {
+            throw new BizException(ProductErrorCode.CATEGORY_PARENT_UNCHANGED);
+        }
+
+        List<ProductCategory> subtree = productCategoryMapper.selectSubtree(id);
+        if (!CollectionUtils.isEmpty(subtree)) {
+            List<Long> descendantIds = subtree.stream()
+                    .map(ProductCategory::getId)
+                    .collect(Collectors.toList());
+            if (descendantIds.contains(targetParentId)) {
+                throw new BizException(ProductErrorCode.CATEGORY_MOVE_TO_DESCENDANT);
+            }
+        }
+
+        // ========== Step 4: 检查目标父类目下是否已有同名类目 ==========
+        boolean exists = productCategoryMapper.existsByNameAndParent(targetParentId, productCategory.getName(), id);
+        if (exists) {
+            throw new BizException(ProductErrorCode.CATEGORY_NAME_DUPLICATE);
+        }
+
+        // ========== Step 5: 计算层级变化 ==========
+        int targetLevel = (targetParentId == 0L) ? 0 : targetParent.getLevel();
+        int currentLevel = productCategory.getLevel();
+        int delta = targetLevel - currentLevel + 1;
+
+        // ========== Step 6: 检查移动后最大层级 ==========
+        if (!CollectionUtils.isEmpty(subtree)) {
+            int maxDepth = subtree.
+                    stream().
+                    mapToInt(ProductCategory::getLevel).
+                    max().
+                    orElse(currentLevel) - currentLevel + 1;
+            int newMaxDepth = maxDepth + targetLevel;
+            if (newMaxDepth > MAX_LEVEL) {
+                throw new BizException(ProductErrorCode.CATEGORY_LEVEL_EXCEEDED);
+            }
+        }
+
+        // ========== Step 7: 执行更新 ==========
+        int parentUpdated = productCategoryMapper.updateParentId(id, targetParentId, operatorId);
+        if (parentUpdated != 1) {
+            throw new BizException(ProductErrorCode.CATEGORY_MOVE_FAILED,
+                    "更新父类目失败，期望影响1行，实际影响" + parentUpdated + "行");
+        }
+        log.debug("更新父类目成功: id={}, targetParentId={}", id, targetParentId);
+
+        //  批量更新层级（delta != 0 时才执行）
+        if(delta!=0){
+            List<Long> allIds = new ArrayList<>();
+            if(!CollectionUtils.isEmpty(subtree)) {
+                List<Long> descendantIds = subtree.stream()
+                        .map(ProductCategory::getId).collect(Collectors.toList());
+                allIds.addAll(descendantIds);
+            }
+            int batchUpdateLevel = productCategoryMapper.batchUpdateLevel(allIds, delta, operatorId);
+            if (batchUpdateLevel != allIds.size()) {
+                throw new BizException(ProductErrorCode.CATEGORY_MOVE_FAILED,String.format("更新层级失败，期望影响 %d 行，实际影响 %d 行",
+                        allIds.size(), batchUpdateLevel));
+            }
+            log.debug("更新层级成功: 影响 {} 行, delta={}", batchUpdateLevel, delta);
+        }else {
+            log.debug("delta=0，跳过层级更新");
+        }
+        log.info("移动类目成功: id={}, 原父类目={}, 新父类目={}, delta={}",
+                id, currentParentId, targetParentId, delta);
+    }
+
+
     private <T> List<T> safeList(List<T> values) {
         return values == null ? Collections.emptyList() : values;
     }
@@ -217,7 +317,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
     }
 
-    private List<CategoryTreeVO> buildChildren(Long parentId, Map<Long, List<ProductCategory>> parentMap, boolean frontend,boolean parentVisibleInFront) {
+    private List<CategoryTreeVO> buildChildren(Long parentId, Map<Long, List<ProductCategory>> parentMap, boolean frontend, boolean parentVisibleInFront) {
         List<ProductCategory> children = parentMap.getOrDefault(parentId, Collections.emptyList());
         List<CategoryTreeVO> result = new ArrayList<>();
         for (ProductCategory category : children) {
@@ -232,7 +332,7 @@ public class CategoryServiceImpl implements CategoryService {
             // 递归构建子节点
             // 前台模式：只有当前节点启用才会走到这里，子节点继续按规则过滤
             // 后台模式：不过滤，全部返回
-            List<CategoryTreeVO> childrenVOS = buildChildren(category.getId(), parentMap, frontend,currentVisible);
+            List<CategoryTreeVO> childrenVOS = buildChildren(category.getId(), parentMap, frontend, currentVisible);
             // ✅ 叶子节点返回空数组，不返回 null
             treeVO.setChildren(childrenVOS != null ? childrenVOS : Collections.emptyList());
             // ✅ 后台模式：标记该节点在前台是否可见
