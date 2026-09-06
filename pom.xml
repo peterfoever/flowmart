@@ -21,6 +21,7 @@
     <modules>
         <module>flowmart-common</module>
         <module>flowmart-bootstrap</module>
+        <module>flowmart-product</module>
     </modules>
 
     <properties>
