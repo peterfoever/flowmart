@@ -48,4 +48,12 @@
         AND deleted = #{deleted}
     </select>
 
+    <!-- 修改名称时必须排除当前品牌；禁用品牌同样占用名称。 -->
+    <select id="existsByNameExcludingId" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM product_brand
+        WHERE name = #{name}
+          AND deleted = 0
+          AND id &lt;&gt; #{excludeId}
+    </select>
 </mapper>

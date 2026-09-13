@@ -33,7 +33,7 @@ public class BrandController {
     }
 
     @PutMapping("/brands/{id}")
-    public R<Void> updateBrand(@PathVariable Long id, @Valid @RequestBody UpdateBrandDTO request) {
+    public R<Void> updateBrand(@PathVariable @Min(1) Long id, @Valid @RequestBody UpdateBrandDTO request) {
         brandService.updateBrand(id, request);
         return R.ok();
     }
@@ -43,12 +43,15 @@ public class BrandController {
 //    public R<Void> deleteBrand(@PathVariable @Min(1) Long id) {
 //
 //    }
-//
-//    @GetMapping("/brands")
-//    public R<PageResult<BrandVO>> listBrands(@Valid BrandQueryDTO query) {
-//
-//    }
-//
+
+    @GetMapping("/brands")
+    public R<PageResult<BrandVO>> listBrands(@Valid BrandQueryDTO query) {
+        log.info("分页查询品牌: name={}, initial={}, status={}, page={}, size={}",
+                query.getName(), query.getInitial(), query.getStatus(),
+                query.getPage(), query.getSize());
+        return R.ok(brandService.pageBrands(query));
+    }
+
     @GetMapping("/brands/{id}")
     public R<BrandVO> getBrand(@PathVariable @Min(1) Long id) {
         log.info("查询品牌详情: id={}", id);
@@ -62,7 +65,7 @@ public class BrandController {
         brandService.updateBrandStatus(id, request);
         return R.ok();
     }
-//
+
 //    @GetMapping("/categories/{categoryId}/brands")
 //    public R<List<CategoryBrandVO>> listCategoryBrands(
 //            @PathVariable @Min(1) Long categoryId) {

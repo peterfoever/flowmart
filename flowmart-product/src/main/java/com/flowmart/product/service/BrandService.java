@@ -1,5 +1,7 @@
 package com.flowmart.product.service;
 
+import com.flowmart.common.result.PageResult;
+import com.flowmart.product.dto.BrandQueryDTO;
 import com.flowmart.product.dto.CreateBrandDTO;
 import com.flowmart.product.dto.UpdateBrandDTO;
 import com.flowmart.product.dto.UpdateBrandStatusDTO;
@@ -14,4 +16,6 @@ public interface BrandService {
     void updateBrand(Long id, UpdateBrandDTO request);
 
     void updateBrandStatus(Long id, UpdateBrandStatusDTO request);
+
+    PageResult<BrandVO> pageBrands(BrandQueryDTO query);
 }

@@ -1,7 +1,10 @@
 package com.flowmart.product.service.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.flowmart.common.exception.BizException;
+import com.flowmart.common.result.PageResult;
 import com.flowmart.product.convert.BrandConverter;
+import com.flowmart.product.dto.BrandQueryDTO;
 import com.flowmart.product.dto.CreateBrandDTO;
 import com.flowmart.product.dto.UpdateBrandDTO;
 import com.flowmart.product.dto.UpdateBrandStatusDTO;
@@ -16,6 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -77,11 +83,9 @@ public class BrandServiceImpl implements BrandService {
             throw new BizException(ProductErrorCode.BRAND_NOT_FOUND);
         }
 
-        if(request.getName() != productBrand.getName()) {
-            boolean exists = mapper.existsByNameAndDeleted(request.getName(), 0L);
-            if (exists) {
-                throw new BizException(ProductErrorCode.BRAND_NAME_DUPLICATE);
-            }
+        // 由数据库按相同排序规则判重，并排除当前品牌，避免将自己判断为重名。
+        if (mapper.existsByNameExcludingId(request.getName(), id)) {
+            throw new BizException(ProductErrorCode.BRAND_NAME_DUPLICATE);
         }
         productBrand.setName(request.getName());
         productBrand.setLogoUrl(request.getLogoUrl());
@@ -90,7 +94,7 @@ public class BrandServiceImpl implements BrandService {
         int updated;
         try {
             updated = mapper.updateById(productBrand);
-        } catch (Exception e) {
+        } catch (DuplicateKeyException e) {
             // 并发兜底：唯一索引 uk_name_deleted 触发
             log.warn("并发更新品牌名称冲突: id={}, name={}", id, request.getName(), e);
             throw new BizException(ProductErrorCode.BRAND_NAME_DUPLICATE);
@@ -126,8 +130,41 @@ public class BrandServiceImpl implements BrandService {
         if (updated != 1) {
             throw new BizException(ProductErrorCode.BRAND_STATUS_CHANGE_FAILED);
         }
-        log.info("更新品牌状态成功: id={}, oldStatus={}, newStatus={}",
-                id, productBrand.getStatus(), request.getStatus());
+        log.info("更新品牌状态成功: id={}, newStatus={}",
+                id,request.getStatus());
+    }
+
+    @Override
+    public PageResult<BrandVO> pageBrands(BrandQueryDTO query) {
+        log.debug("分页查询品牌：name={},initial={},status={},page={},size={}",
+                query.getName(), query.getInitial(), query.getStatus(),query.getPage(), query.getSize());
+
+        // ========== Step 1: 统计总数 ==========
+        long count = mapper.countByQuery(query);
+        if (count == 0) {
+            // 空结果，直接返回
+            return PageResult.empty(query.getPage(), query.getSize());
+        }
+        // ========== Step 2: 计算偏移量 ==========
+        int offset = (query.getPage() - 1) * query.getSize();
+        // ========== Step 3: 分页查询 ==========
+        List<ProductBrand> productBrands = mapper.selectPage(query, offset, query.getSize());
+
+        if (CollectionUtils.isEmpty(productBrands)) {
+            // 翻到末页之后
+            return
+        }
+        // ========== Step 4: Entity → VO ==========
+        List<BrandVO> records = converter.toVOList(productBrands);
+
+        // ========== Step 5: 填充派生字段 statusText ==========
+        for (BrandVO vo : records) {
+            vo.setStatusText(BrandStatus.getDescByCode(vo.getStatus()));
+        }
+
+        // ========== Step 6: 构建分页结果 ==========
+        return PageResult
+        return null;
     }
 
 }

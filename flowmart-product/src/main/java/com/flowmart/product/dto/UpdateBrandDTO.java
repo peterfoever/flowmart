@@ -16,6 +16,7 @@ public class UpdateBrandDTO {
     @Pattern(regexp = "^[A-Z]$", message = "首字母必须为单个大写字母")
     private String initial;
 
+    @NotNull
     @Min(value = 0, message = "排序值不能为负数")
     private Integer sortNo;
 

@@ -11,6 +11,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
+import java.util.List;
+
 /**
  * 品牌类目转换器
  */
@@ -50,4 +52,9 @@ public interface BrandConverter {
     /** 实体转换为详情响应；额外展示字段由 Service 查询后补充。 */
     @Mapping(target = "statusText", ignore = true)
     BrandVO toDetailVO(ProductBrand entity);
+
+    /**
+     * 实体列表 → VO 列表
+     */
+    List<BrandVO> toVOList(List<ProductBrand> entities);
 }
