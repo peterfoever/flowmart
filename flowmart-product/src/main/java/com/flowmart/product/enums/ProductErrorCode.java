@@ -64,8 +64,8 @@ public enum ProductErrorCode implements ErrorCode {
     CATEGORY_NOT_LEAF(20034,"只能给叶子类目绑定品牌"),
     CATEGORY_BRAND_REPLACE_FAILED(20035,"类目品牌绑定替换失败"),
     BRAND_CREATE_FAILED(20036,"品牌创建失败，请稍后重试"),
-
-
+    BRAND_UPDATE_FAILED(20037,"品牌修改失败，请稍后重试"),
+    BRAND_STATUS_CHANGE_FAILED(20038,"品牌状态更新失败，请稍后重试")
     ;
 
     private final int code;

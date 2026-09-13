@@ -3,6 +3,8 @@ package com.flowmart.product.service.impl;
 import com.flowmart.common.exception.BizException;
 import com.flowmart.product.convert.BrandConverter;
 import com.flowmart.product.dto.CreateBrandDTO;
+import com.flowmart.product.dto.UpdateBrandDTO;
+import com.flowmart.product.dto.UpdateBrandStatusDTO;
 import com.flowmart.product.entity.ProductBrand;
 import com.flowmart.product.enums.BrandStatus;
 import com.flowmart.product.enums.ProductErrorCode;
@@ -64,6 +66,68 @@ public class BrandServiceImpl implements BrandService {
         brandVO.setStatusText(BrandStatus.getDescByCode(productBrand.getStatus()));
         log.debug("查询品牌详情成功: id={}, name={}", id, productBrand.getName());
         return brandVO;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateBrand(Long id, UpdateBrandDTO request) {
+        log.info("更新品牌请求: id={}, name={}", id, request.getName());
+        ProductBrand productBrand = mapper.selectById(id);
+        if (productBrand == null || productBrand.getDeleted() != 0) {
+            throw new BizException(ProductErrorCode.BRAND_NOT_FOUND);
+        }
+
+        if(request.getName() != productBrand.getName()) {
+            boolean exists = mapper.existsByNameAndDeleted(request.getName(), 0L);
+            if (exists) {
+                throw new BizException(ProductErrorCode.BRAND_NAME_DUPLICATE);
+            }
+        }
+        productBrand.setName(request.getName());
+        productBrand.setLogoUrl(request.getLogoUrl());
+        productBrand.setInitial(request.getInitial());
+        productBrand.setSortNo(request.getSortNo());
+        int updated;
+        try {
+            updated = mapper.updateById(productBrand);
+        } catch (Exception e) {
+            // 并发兜底：唯一索引 uk_name_deleted 触发
+            log.warn("并发更新品牌名称冲突: id={}, name={}", id, request.getName(), e);
+            throw new BizException(ProductErrorCode.BRAND_NAME_DUPLICATE);
+        }
+
+        if (updated != 1) {
+            throw new BizException(ProductErrorCode.BRAND_UPDATE_FAILED);
+        }
+        log.info("更新品牌成功: id={}, name={}", id, request.getName());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateBrandStatus(Long id, UpdateBrandStatusDTO request) {
+        log.info("更新品牌状态请求: id={}, status={}", id, request.getStatus());
+
+        ProductBrand productBrand = mapper.selectById(id);
+        if (productBrand == null || productBrand.getDeleted() != 0) {
+            throw new BizException(ProductErrorCode.BRAND_NOT_FOUND);
+        }
+        if(BrandStatus.ENABLED.matches(request.getStatus())
+                && BrandStatus.ENABLED.matches(productBrand.getStatus())) {
+            log.info("品牌状态未变化，跳过更新: id={}, status={}", id, request.getStatus());
+            return;
+        }
+        if(BrandStatus.DISABLED.matches(request.getStatus())
+                && BrandStatus.DISABLED.matches(productBrand.getStatus())) {
+            log.info("品牌状态未变化，跳过更新: id={}, status={}", id, request.getStatus());
+            return;
+        }
+        productBrand.setStatus(request.getStatus());
+        int updated = mapper.updateById(productBrand);
+        if (updated != 1) {
+            throw new BizException(ProductErrorCode.BRAND_STATUS_CHANGE_FAILED);
+        }
+        log.info("更新品牌状态成功: id={}, oldStatus={}, newStatus={}",
+                id, productBrand.getStatus(), request.getStatus());
     }
 
 }

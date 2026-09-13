@@ -31,12 +31,14 @@ public class BrandController {
         Long createBrand = brandService.createBrand(request);
         return R.ok(createBrand);
     }
-//
-//    @PutMapping("/brands/{id}")
-//    public R<Void> updateBrand(@PathVariable Long id, @Valid @RequestBody UpdateBrandDTO request) {
-//
-//    }
-//
+
+    @PutMapping("/brands/{id}")
+    public R<Void> updateBrand(@PathVariable Long id, @Valid @RequestBody UpdateBrandDTO request) {
+        brandService.updateBrand(id, request);
+        return R.ok();
+    }
+
+    //
 //    @DeleteMapping("/brands/{id}")
 //    public R<Void> deleteBrand(@PathVariable @Min(1) Long id) {
 //
@@ -53,12 +55,13 @@ public class BrandController {
         BrandVO brand = brandService.getBrand(id);
         return R.ok(brand);
     }
-//
-//    @PatchMapping("/brands/{id}/status")
-//    public R<Void> updateStatus(@PathVariable @Min(1) Long id,
-//                                     @Valid @RequestBody UpdateBrandStatusDTO request) {
-//
-//    }
+
+    @PatchMapping("/brands/{id}/status")
+    public R<Void> updateStatus(@PathVariable @Min(1) Long id,
+                                @Valid @RequestBody UpdateBrandStatusDTO request) {
+        brandService.updateBrandStatus(id, request);
+        return R.ok();
+    }
 //
 //    @GetMapping("/categories/{categoryId}/brands")
 //    public R<List<CategoryBrandVO>> listCategoryBrands(

@@ -35,7 +35,17 @@ public interface BrandConverter {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "version", ignore = true)
+    @Mapping(target = "status", ignore = true)
     void updateEntity(UpdateBrandDTO dto, @MappingTarget ProductBrand entity);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
+    @Mapping(target = "version", ignore = true)
+    ProductBrand toEntity(UpdateBrandDTO updateBrandDTO);
 
     /** 实体转换为详情响应；额外展示字段由 Service 查询后补充。 */
     @Mapping(target = "statusText", ignore = true)
