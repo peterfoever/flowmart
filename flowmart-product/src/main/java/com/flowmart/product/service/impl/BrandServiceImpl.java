@@ -31,7 +31,7 @@ public class BrandServiceImpl implements BrandService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public Long creatBrand(CreateBrandDTO request) {
+    public Long createBrand(CreateBrandDTO request) {
         log.info("创建品牌请求: name={}, initial={}", request.getName(), request.getInitial());
         boolean exists = mapper.existsByNameAndDeleted(request.getName(), 0L);
         if (exists) {

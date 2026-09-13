@@ -27,9 +27,9 @@ public class BrandController {
     private final CategoryBrandService categoryBrandService;
 
     @PostMapping("/brands")
-    public R<Long> creatBrand(@Valid @RequestBody CreateBrandDTO request) {
-        Long creatBrand = brandService.creatBrand(request);
-        return R.ok(creatBrand);
+    public R<Long> createBrand(@Valid @RequestBody CreateBrandDTO request) {
+        Long createBrand = brandService.createBrand(request);
+        return R.ok(createBrand);
     }
 //
 //    @PutMapping("/brands/{id}")

@@ -13,6 +13,6 @@ public class BrandVO {
     private Integer sortNo;
     private Integer status;
     private String statusText;   // 派生字段，由枚举转换
-    private LocalDateTime createAt;
-    private LocalDateTime updateAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
