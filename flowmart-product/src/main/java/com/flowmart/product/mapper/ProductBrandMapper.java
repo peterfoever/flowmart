@@ -3,6 +3,8 @@ package com.flowmart.product.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.flowmart.product.dto.BrandQueryDTO;
 import com.flowmart.product.entity.ProductBrand;
+import com.flowmart.product.entity.ProductCategoryBrand;
+import com.flowmart.product.vo.CategoryBrandVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -65,5 +67,13 @@ public interface ProductBrandMapper extends BaseMapper<ProductBrand> {
     /**
      * 批量插入绑定
      */
-    int batchInsert(@Param("bindings") List<ProductBrand> bindings);
+    int batchInsert(@Param("bindings") List<ProductCategoryBrand> bindings);
+
+    /**
+     * 查询类目当前绑定的品牌列表
+     * @param categoryId
+     * @return
+     */
+    List<CategoryBrandVO> selectBrandsByCategoryId(@Param("categoryId") Long categoryId);
+
 }

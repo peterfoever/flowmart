@@ -73,7 +73,8 @@
         UPDATE product_category_brand
         SET deleted = id,
             updated_by = #{updatedBy},
-            updated_at = NOW()
+            updated_at = NOW(3),
+            version = version + 1
         WHERE category_id = #{categoryId}
           AND deleted = 0
     </update>
@@ -82,13 +83,13 @@
     <insert id="batchInsert">
         INSERT INTO product_category_brand (
         id, category_id, brand_id,
-        created_by, created_at, updated_by, updated_at, deleted
+        created_by, created_at, updated_by, updated_at, deleted, version
         ) VALUES
         <foreach collection="bindings" item="binding" separator=",">
             (
             #{binding.id}, #{binding.categoryId}, #{binding.brandId},
             #{binding.createdBy}, #{binding.createdAt},
-            #{binding.updatedBy}, #{binding.updatedAt}, #{binding.deleted}
+            #{binding.updatedBy}, #{binding.updatedAt}, #{binding.deleted}, #{binding.version}
             )
         </foreach>
     </insert>
@@ -102,5 +103,22 @@
         <foreach collection="ids" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
+    </select>
+
+    <!-- ========== 查询类目当前绑定的品牌列表 ========== -->
+    <select id="selectBrandsByCategoryId" resultType="com.flowmart.product.vo.CategoryBrandVO">
+        SELECT
+            b.id        AS id,
+            b.name      AS name,
+            b.logo_url  AS logoUrl,
+            b.initial   AS initial,
+            b.sort_no   AS sortNo,
+            b.status    AS status
+        FROM product_category_brand cb
+                 INNER JOIN product_brand b ON cb.brand_id = b.id
+        WHERE cb.category_id = #{categoryId}
+          AND cb.deleted = 0
+          AND b.deleted = 0
+        ORDER BY b.sort_no ASC, b.id ASC
     </select>
 </mapper>

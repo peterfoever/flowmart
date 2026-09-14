@@ -12,6 +12,34 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /** 校验真实 XML 和动态参数绑定，不替代 MySQL 集成测试。 */
 class ProductBrandMapperSqlTest {
+    @Test
+    void bindingSql_mapsEntityFieldsAndUpdatesVersion() throws Exception {
+        Configuration configuration = configuration();
+        var binding = new com.flowmart.product.entity.ProductCategoryBrand();
+        binding.setId(100L);
+        binding.setCategoryId(1L);
+        binding.setBrandId(2L);
+        binding.setCreatedBy(0L);
+        binding.setUpdatedBy(0L);
+        binding.setCreatedAt(java.time.LocalDateTime.now());
+        binding.setUpdatedAt(binding.getCreatedAt());
+        binding.setDeleted(0L);
+        binding.setVersion(0);
+        var params = Map.of("bindings", java.util.List.of(binding));
+        var statement = configuration.getMappedStatement(ProductBrandMapper.class.getName() + ".batchInsert");
+        BoundSql insert = statement.getBoundSql(params);
+        assertTrue(insert.getSql().contains("version"));
+        assertEquals(10, insert.getParameterMappings().size());
+        // 真正读取 foreach 实体属性并绑定 JDBC 参数，防止属性或集合名称拼错。
+        new org.apache.ibatis.scripting.defaults.DefaultParameterHandler(statement, params, insert)
+                .setParameters(org.mockito.Mockito.mock(java.sql.PreparedStatement.class));
+        BoundSql delete = configuration.getMappedStatement(ProductBrandMapper.class.getName() + ".logicDeleteByCategoryId")
+                .getBoundSql(Map.of("categoryId", 1L, "updatedBy", 0L));
+        assertTrue(delete.getSql().contains("deleted = id"));
+        assertTrue(delete.getSql().contains("version = version + 1"));
+        assertTrue(delete.getSql().contains("NOW(3)"));
+    }
+
     private Configuration configuration() throws Exception {
         Configuration configuration = new Configuration();
         String resource = "mapper/ProductBrandMapper.xml";

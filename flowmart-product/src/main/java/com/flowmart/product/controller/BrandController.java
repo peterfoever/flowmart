@@ -66,11 +66,12 @@ public class BrandController {
         return R.ok();
     }
 
-//    @GetMapping("/categories/{categoryId}/brands")
-//    public R<List<CategoryBrandVO>> listCategoryBrands(
-//            @PathVariable @Min(1) Long categoryId) {
-//
-//    }
+    @GetMapping("/categories/{categoryId}/brands")
+    public R<List<CategoryBrandVO>> listCategoryBrands(
+            @PathVariable @Min(1) Long categoryId) {
+        List<CategoryBrandVO> categoryBrands = categoryBrandService.getCategoryBrands(categoryId);
+        return R.ok(categoryBrands);
+    }
 
     @PutMapping("/categories/{categoryId}/brands")
     public R<Void> replaceCategoryBrands(
