@@ -42,4 +42,28 @@ public interface ProductBrandMapper extends BaseMapper<ProductBrand> {
      */
     long countByQuery(@Param("query") BrandQueryDTO query);
 
+    /**
+     * 逻辑删除类目下所有未删除的绑定
+     * <p>
+     * 注意：
+     * - 仅处理 deleted = 0 的记录
+     * - 使用 deleted = id 保证每行删除值唯一
+     * - 返回 0 是正常情况（首次绑定、重复清空）
+     */
+
+    int logicDeleteByCategoryId(@Param("categoryId") Long categoryId,
+                                @Param("updatedBy") Long updatedBy);
+
+    /**
+     * 批量查询未删除的品牌
+     * @param ids
+     * @param deleted
+     * @return
+     */
+    List<ProductBrand> selectByIdsAndDeleted(@Param("ids") List<Long> ids,
+                                             @Param("deleted") Long deleted);
+    /**
+     * 批量插入绑定
+     */
+    int batchInsert(@Param("bindings") List<ProductBrand> bindings);
 }

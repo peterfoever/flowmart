@@ -67,4 +67,40 @@
         ORDER BY sort_no ASC, id ASC
         LIMIT #{limit} OFFSET #{offset}
     </select>
+
+    <!-- 逻辑删除类目下所有未删除的绑定 -->
+    <update id="logicDeleteByCategoryId">
+        UPDATE product_category_brand
+        SET deleted = id,
+            updated_by = #{updatedBy},
+            updated_at = NOW()
+        WHERE category_id = #{categoryId}
+          AND deleted = 0
+    </update>
+
+    <!-- 批量插入绑定 -->
+    <insert id="batchInsert">
+        INSERT INTO product_category_brand (
+        id, category_id, brand_id,
+        created_by, created_at, updated_by, updated_at, deleted
+        ) VALUES
+        <foreach collection="bindings" item="binding" separator=",">
+            (
+            #{binding.id}, #{binding.categoryId}, #{binding.brandId},
+            #{binding.createdBy}, #{binding.createdAt},
+            #{binding.updatedBy}, #{binding.updatedAt}, #{binding.deleted}
+            )
+        </foreach>
+    </insert>
+
+    <!-- ========== 批量查询未删除的品牌 ========== -->
+    <select id="selectByIdsAndDeleted" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/>
+        FROM product_brand
+        WHERE deleted = #{deleted}
+        AND id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

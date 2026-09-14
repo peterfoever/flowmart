@@ -98,4 +98,27 @@ public interface ProductCategoryMapper extends BaseMapper<ProductCategory> {
     int batchUpdateLevel(@Param("ids") List<Long> ids,
                          @Param("delta") Integer delta,
                          @Param("updatedBy") Long updatedBy);
+    /**
+     * 查询类目并加行锁（SELECT ... FOR UPDATE）
+     * <p>
+     * 用于并发控制场景：
+     * - 替换类目品牌绑定：锁定类目行，串行化同一类目的替换请求
+     * - 新增子类目：锁定父类目行，防止"父类目变非叶子"与"绑定"冲突
+     * - 移入子类目：锁定目标父类目行，同上
+     * <p>
+     * 注意：
+     * - 必须在事务中调用，否则 FOR UPDATE 不生效（autocommit 模式下立即释放锁）
+     * - 只查未删除的类目
+     *
+     * @param id 类目 ID
+     * @return 类目实体，不存在或已删除返回 null
+     */
+    ProductCategory selectByIdForUpdate(@Param("id") Long id);
+
+    /**
+     * 判断是否是叶子类目
+     * @param categoryId
+     * @return
+     */
+    boolean isLeafCategory(@Param("categoryId") Long categoryId);
 }

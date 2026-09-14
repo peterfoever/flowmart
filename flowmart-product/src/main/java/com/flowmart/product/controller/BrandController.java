@@ -71,10 +71,12 @@ public class BrandController {
 //            @PathVariable @Min(1) Long categoryId) {
 //
 //    }
-//
-//    @PutMapping("/categories/{categoryId}/brands")
-//    public R<Void> replaceCategoryBrands(
-//            @PathVariable @Min(1) Long categoryId,
-//            @Valid @RequestBody ReplaceCategoryBrandsDTO request) {
-//    }
+
+    @PutMapping("/categories/{categoryId}/brands")
+    public R<Void> replaceCategoryBrands(
+            @PathVariable @Min(1) Long categoryId,
+            @Valid @RequestBody ReplaceCategoryBrandsDTO request) {
+        categoryBrandService.replaceCategoryBrands(categoryId,request);
+        return R.ok();
+    }
 }
