@@ -146,13 +146,13 @@ public class BrandServiceImpl implements BrandService {
             return PageResult.empty(query.getPage(), query.getSize());
         }
         // ========== Step 2: 计算偏移量 ==========
-        int offset = (query.getPage() - 1) * query.getSize();
+        long offset = (query.getPage() - 1L) * query.getSize();
         // ========== Step 3: 分页查询 ==========
-        List<ProductBrand> productBrands = mapper.selectPage(query, offset, query.getSize());
+        List<ProductBrand> productBrands = mapper.selectBrandPage(query, offset, query.getSize());
 
         if (CollectionUtils.isEmpty(productBrands)) {
             // 翻到末页之后
-            return
+            return new PageResult<>(query.getPage(), query.getSize(), count, Collections.emptyList());
         }
         // ========== Step 4: Entity → VO ==========
         List<BrandVO> records = converter.toVOList(productBrands);
@@ -163,8 +163,7 @@ public class BrandServiceImpl implements BrandService {
         }
 
         // ========== Step 6: 构建分页结果 ==========
-        return PageResult
-        return null;
+        return new PageResult<>(query.getPage(), query.getSize(), count, records);
     }
 
 }

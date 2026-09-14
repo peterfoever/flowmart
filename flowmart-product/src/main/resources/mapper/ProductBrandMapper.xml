@@ -27,14 +27,14 @@
     <sql id="QueryCondition">
         <where>
             deleted = 0
-            <if test="name != null and name != ''">
-                AND name LIKE CONCAT('%', #{name}, '%')
+            <if test="query.name != null and query.name != ''">
+                AND name LIKE CONCAT('%', #{query.name}, '%')
             </if>
-            <if test="initial != null and initial != ''">
-                AND initial = #{initial}
+            <if test="query.initial != null and query.initial != ''">
+                AND initial = #{query.initial}
             </if>
-            <if test="status != null">
-                AND status = #{status}
+            <if test="query.status != null">
+                AND status = #{query.status}
             </if>
         </where>
     </sql>
@@ -55,5 +55,16 @@
         WHERE name = #{name}
           AND deleted = 0
           AND id &lt;&gt; #{excludeId}
+    </select>
+    <select id="countByQuery" resultType="long">
+        SELECT COUNT(*) FROM product_brand
+        <include refid="QueryCondition"/>
+    </select>
+
+    <select id="selectBrandPage" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/> FROM product_brand
+        <include refid="QueryCondition"/>
+        ORDER BY sort_no ASC, id ASC
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 </mapper>

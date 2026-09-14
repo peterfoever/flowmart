@@ -30,8 +30,8 @@ public interface ProductBrandMapper extends BaseMapper<ProductBrand> {
      * @param limit  每页条数
      * @return 品牌列表
      */
-    List<ProductBrand> selectPage(@Param("query") BrandQueryDTO query,
-                                  @Param("offset") int offset,
+    List<ProductBrand> selectBrandPage(@Param("query") BrandQueryDTO query,
+                                  @Param("offset") long offset,
                                   @Param("limit") int limit);
 
     /**

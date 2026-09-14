@@ -594,7 +594,7 @@ class BrandServiceImplTest {
         );
 
         when(brandMapper.countByQuery(query)).thenReturn(2L);
-        when(brandMapper.selectPage(eq(query), eq(0), eq(20))).thenReturn(entities);
+        when(brandMapper.selectBrandPage(eq(query), eq(0L), eq(20))).thenReturn(entities);
         when(brandConverter.toVOList(entities)).thenReturn(vos);
 
         // 执行
@@ -602,10 +602,9 @@ class BrandServiceImplTest {
 
         // 验证
         assertNotNull(result);
-        assertEquals(1, result.getPage());
-        assertEquals(20, result.getSize());
+        assertEquals(1, result.getPageNum());
+        assertEquals(20, result.getPageSize());
         assertEquals(2L, result.getTotal());
-        assertEquals(1, result.getTotalPages());
         assertEquals(2, result.getRecords().size());
         assertEquals("启用", result.getRecords().get(0).getStatusText());
         assertEquals("禁用", result.getRecords().get(1).getStatusText());
@@ -626,11 +625,10 @@ class BrandServiceImplTest {
         // 验证
         assertNotNull(result);
         assertEquals(0L, result.getTotal());
-        assertEquals(0, result.getTotalPages());
         assertTrue(result.getRecords().isEmpty());
 
         // 验证：selectPage 未被调用
-        verify(brandMapper, never()).selectPage(any(), anyInt(), anyInt());
+        verify(brandMapper, never()).selectBrandPage(any(), anyLong(), anyInt());
     }
 
     @Test
@@ -641,16 +639,15 @@ class BrandServiceImplTest {
         query.setSize(20);
 
         when(brandMapper.countByQuery(query)).thenReturn(5L);
-        when(brandMapper.selectPage(eq(query), eq((999 - 1) * 20), eq(20)))
+        when(brandMapper.selectBrandPage(eq(query), eq((999 - 1L) * 20), eq(20)))
                 .thenReturn(Collections.emptyList());
 
         // 执行
         PageResult<BrandVO> result = brandService.pageBrands(query);
 
         // 验证
-        assertEquals(999, result.getPage());
+        assertEquals(999, result.getPageNum());
         assertEquals(5L, result.getTotal());
-        assertEquals(1, result.getTotalPages());
         assertTrue(result.getRecords().isEmpty());
 
         // 验证：converter 未被调用
@@ -666,7 +663,7 @@ class BrandServiceImplTest {
         query.setSize(10);
 
         when(brandMapper.countByQuery(query)).thenReturn(1L);
-        when(brandMapper.selectPage(eq(query), eq(0), eq(10)))
+        when(brandMapper.selectBrandPage(eq(query), eq(0L), eq(10)))
                 .thenReturn(Collections.singletonList(createBrand(1L, "华为", "H", 1, 1)));
         when(brandConverter.toVOList(anyList()))
                 .thenReturn(Collections.singletonList(createVO(1L, "华为", 1)));
@@ -676,7 +673,7 @@ class BrandServiceImplTest {
 
         // 验证
         assertEquals(1L, result.getTotal());
-        verify(brandMapper).selectPage(eq(query), eq(0), eq(10));
+        verify(brandMapper).selectBrandPage(eq(query), eq(0L), eq(10));
     }
 
     @Test
@@ -690,7 +687,7 @@ class BrandServiceImplTest {
         query.setSize(10);
 
         when(brandMapper.countByQuery(query)).thenReturn(1L);
-        when(brandMapper.selectPage(eq(query), eq(0), eq(10)))
+        when(brandMapper.selectBrandPage(eq(query), eq(0L), eq(10)))
                 .thenReturn(Collections.singletonList(createBrand(1L, "华为", "H", 1, 1)));
         when(brandConverter.toVOList(anyList()))
                 .thenReturn(Collections.singletonList(createVO(1L, "华为", 1)));
@@ -701,7 +698,7 @@ class BrandServiceImplTest {
         // 验证
         assertEquals(1L, result.getTotal());
         assertEquals(1, result.getRecords().size());
-        verify(brandMapper).selectPage(eq(query), eq(0), eq(10));
+        verify(brandMapper).selectBrandPage(eq(query), eq(0L), eq(10));
     }
 
     @Test
@@ -712,7 +709,7 @@ class BrandServiceImplTest {
         query.setSize(10);
 
         when(brandMapper.countByQuery(query)).thenReturn(100L);
-        when(brandMapper.selectPage(eq(query), eq(20), eq(10)))
+        when(brandMapper.selectBrandPage(eq(query), eq(20L), eq(10)))
                 .thenReturn(Collections.singletonList(createBrand(1L, "华为", "H", 1, 1)));
         when(brandConverter.toVOList(anyList()))
                 .thenReturn(Collections.singletonList(createVO(1L, "华为", 1)));
@@ -721,18 +718,18 @@ class BrandServiceImplTest {
         brandService.pageBrands(query);
 
         // 验证：offset 计算正确
-        verify(brandMapper).selectPage(eq(query), eq(20), eq(10));
+        verify(brandMapper).selectBrandPage(eq(query), eq(20L), eq(10));
     }
 
     @Test
-    void pageBrands_totalPagesCalculationCorrect() {
-        // 准备：总数 25，每页 10 → 3 页
+    void pageBrands_preservesTotalAndPageSize() {
+        // 统一响应提供 total 和 pageSize，由调用方计算总页数。
         BrandQueryDTO query = new BrandQueryDTO();
         query.setPage(1);
         query.setSize(10);
 
         when(brandMapper.countByQuery(query)).thenReturn(25L);
-        when(brandMapper.selectPage(eq(query), eq(0), eq(10)))
+        when(brandMapper.selectBrandPage(eq(query), eq(0L), eq(10)))
                 .thenReturn(Collections.singletonList(createBrand(1L, "华为", "H", 1, 1)));
         when(brandConverter.toVOList(anyList()))
                 .thenReturn(Collections.singletonList(createVO(1L, "华为", 1)));
@@ -740,8 +737,25 @@ class BrandServiceImplTest {
         // 执行
         PageResult<BrandVO> result = brandService.pageBrands(query);
 
-        // 验证：总页数向上取整
-        assertEquals(3, result.getTotalPages());
+        assertEquals(25L, result.getTotal());
+        assertEquals(10L, result.getPageSize());
+        assertEquals(1L, result.getPageNum());
+    }
+
+    @Test
+    void pageBrands_largePage_doesNotOverflowOffset() {
+        BrandQueryDTO query = new BrandQueryDTO();
+        query.setPage(Integer.MAX_VALUE);
+        query.setSize(100);
+        when(brandMapper.countByQuery(query)).thenReturn(5L);
+        when(brandMapper.selectBrandPage(query, 214748364600L, 100))
+                .thenReturn(Collections.emptyList());
+
+        PageResult<BrandVO> result = brandService.pageBrands(query);
+
+        assertEquals(5L, result.getTotal());
+        assertTrue(result.getRecords().isEmpty());
+        verify(brandMapper).selectBrandPage(query, 214748364600L, 100);
     }
 
     // ============================================================
