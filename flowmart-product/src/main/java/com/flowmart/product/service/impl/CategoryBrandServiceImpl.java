@@ -43,7 +43,8 @@ public class CategoryBrandServiceImpl implements CategoryBrandService {
                 || request.getBrandIds().stream().anyMatch(id -> id == null || id <= 0)) {
             throw new BizException(CommonErrorCode.PARAM_INVALID);
         }
-        List<Long> distinctIds = request.getBrandIds().stream().distinct().toList();
+        // 跨批次按统一顺序请求品牌锁，降低重叠品牌集合产生死锁的风险。
+        List<Long> distinctIds = request.getBrandIds().stream().distinct().sorted().toList();
 
         ProductCategory category = categoryMapper.selectByIdForUpdate(categoryId);
         if (category == null) {
@@ -56,7 +57,7 @@ public class CategoryBrandServiceImpl implements CategoryBrandService {
         // 先完成全部品牌校验，再修改旧绑定，避免后面的校验失败产生无用写操作。
         for (int start = 0; start < distinctIds.size(); start += BATCH_SIZE) {
             List<Long> batch = distinctIds.subList(start, Math.min(start + BATCH_SIZE, distinctIds.size()));
-            List<ProductBrand> brands = brandMapper.selectByIdsAndDeleted(batch, 0L);
+            List<ProductBrand> brands = brandMapper.selectByIdsForUpdate(batch);
             Set<Long> foundIds = brands.stream().map(ProductBrand::getId).collect(Collectors.toSet());
             List<Long> missingIds = batch.stream().filter(id -> !foundIds.contains(id)).toList();
             if (!missingIds.isEmpty()) {

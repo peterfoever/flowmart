@@ -13,6 +13,40 @@ import static org.junit.jupiter.api.Assertions.*;
 /** 校验真实 XML 和动态参数绑定，不替代 MySQL 集成测试。 */
 class ProductBrandMapperSqlTest {
     @Test
+    void deleteSql_usesActualMapperParameterNames() throws Exception {
+        var config = configuration();
+        var method = ProductBrandMapper.class.getMethod("logicDeleteById", Long.class, Integer.class, Long.class);
+        Object params = new org.apache.ibatis.reflection.ParamNameResolver(config, method)
+                .getNamedParams(new Object[]{1L, 7, 42L});
+        var statement = config.getMappedStatement(ProductBrandMapper.class.getName() + ".logicDeleteById");
+        var bound = statement.getBoundSql(params);
+        var jdbc = org.mockito.Mockito.mock(java.sql.PreparedStatement.class);
+        new org.apache.ibatis.scripting.defaults.DefaultParameterHandler(statement, params, bound).setParameters(jdbc);
+        org.mockito.Mockito.verify(jdbc).setLong(1, 42L);
+        org.mockito.Mockito.verify(jdbc).setLong(2, 1L);
+        org.mockito.Mockito.verify(jdbc).setInt(3, 7);
+        assertTrue(bound.getSql().contains("deleted = id"));
+        assertTrue(bound.getSql().contains("version = version + 1"));
+    }
+
+    @Test
+    void brandLocksAndBindingFilter_arePresentInRealXml() throws Exception {
+        var config = configuration();
+        String prefix = ProductBrandMapper.class.getName() + ".";
+        var batch = config.getMappedStatement(prefix + "selectByIdsForUpdate")
+                .getBoundSql(Map.of("ids", java.util.List.of(2L, 3L)));
+        assertTrue(batch.getSql().contains("ORDER BY id ASC"));
+        assertTrue(batch.getSql().contains("FOR UPDATE"));
+        assertTrue(batch.getSql().contains("deleted = 0"));
+        assertEquals(2, batch.getParameterMappings().size());
+        var single = config.getMappedStatement(prefix + "selectByIdForUpdate").getBoundSql(Map.of("id", 2L));
+        assertTrue(single.getSql().contains("FOR UPDATE"));
+        var bindings = config.getMappedStatement(prefix + "existCategoryBindings")
+                .getBoundSql(Map.of("brandId", 2L));
+        assertTrue(bindings.getSql().contains("deleted = 0"));
+    }
+
+    @Test
     void bindingSql_mapsEntityFieldsAndUpdatesVersion() throws Exception {
         Configuration configuration = configuration();
         var binding = new com.flowmart.product.entity.ProductCategoryBrand();
@@ -29,7 +63,7 @@ class ProductBrandMapperSqlTest {
         var statement = configuration.getMappedStatement(ProductBrandMapper.class.getName() + ".batchInsert");
         BoundSql insert = statement.getBoundSql(params);
         assertTrue(insert.getSql().contains("version"));
-        assertEquals(10, insert.getParameterMappings().size());
+        assertEquals(9, insert.getParameterMappings().size());
         // 真正读取 foreach 实体属性并绑定 JDBC 参数，防止属性或集合名称拼错。
         new org.apache.ibatis.scripting.defaults.DefaultParameterHandler(statement, params, insert)
                 .setParameters(org.mockito.Mockito.mock(java.sql.PreparedStatement.class));

@@ -105,6 +105,18 @@
         </foreach>
     </select>
 
+    <!-- 与删除接口共享品牌行锁，等待结束后读取最新品牌状态。 -->
+    <select id="selectByIdsForUpdate" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/>
+        FROM product_brand
+        WHERE deleted = 0 AND id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        ORDER BY id ASC
+        FOR UPDATE
+    </select>
+
     <!-- ========== 查询类目当前绑定的品牌列表 ========== -->
     <select id="selectBrandsByCategoryId" resultType="com.flowmart.product.vo.CategoryBrandVO">
         SELECT
@@ -145,7 +157,7 @@
     <update id="logicDeleteById">
         UPDATE product_brand
         SET deleted = id,
-            updated_by = #{operatorId},
+            updated_by = #{updatedBy},
             updated_at = NOW(3),
             version = version + 1
         WHERE id = #{id}

@@ -47,7 +47,7 @@ class CategoryBrandServiceImplTest {
     @Test
     void duplicateIds_areDeduplicatedAndAuditFieldsAreFilled() {
         leaf();
-        when(brands.selectByIdsAndDeleted(List.of(2L, 3L), 0L))
+        when(brands.selectByIdsForUpdate(List.of(2L, 3L)))
                 .thenReturn(List.of(brand(2, 1), brand(3, 1)));
         when(brands.batchInsert(anyList())).thenAnswer(call -> {
             List<ProductCategoryBrand> rows = call.getArgument(0);
@@ -66,12 +66,12 @@ class CategoryBrandServiceImplTest {
             return rows.size();
         });
 
-        service.replaceCategoryBrands(1L, request(List.of(2L, 2L, 3L)));
+        service.replaceCategoryBrands(1L, request(List.of(3L, 2L, 2L)));
 
         var order = inOrder(categories, brands);
         order.verify(categories).selectByIdForUpdate(1L);
         order.verify(categories).isLeafCategory(1L);
-        order.verify(brands).selectByIdsAndDeleted(List.of(2L, 3L), 0L);
+        order.verify(brands).selectByIdsForUpdate(List.of(2L, 3L));
         order.verify(brands).logicDeleteByCategoryId(1L, 0L);
         order.verify(brands).batchInsert(anyList());
     }
@@ -113,7 +113,7 @@ class CategoryBrandServiceImplTest {
     @Test
     void missingBrand_doesNotDeleteOldBindings() {
         leaf();
-        when(brands.selectByIdsAndDeleted(List.of(2L, 3L), 0L)).thenReturn(List.of(brand(2, 1)));
+        when(brands.selectByIdsForUpdate(List.of(2L, 3L))).thenReturn(List.of(brand(2, 1)));
         var error = assertThrows(BizException.class,
                 () -> service.replaceCategoryBrands(1L, request(List.of(2L, 3L))));
         assertEquals(ProductErrorCode.BRAND_NOT_FOUND.getCode(), error.getCode());
@@ -125,7 +125,7 @@ class CategoryBrandServiceImplTest {
     @Test
     void disabledBrand_doesNotDeleteOldBindings() {
         leaf();
-        when(brands.selectByIdsAndDeleted(List.of(2L), 0L)).thenReturn(List.of(brand(2, 0)));
+        when(brands.selectByIdsForUpdate(List.of(2L))).thenReturn(List.of(brand(2, 0)));
         var error = assertThrows(BizException.class,
                 () -> service.replaceCategoryBrands(1L, request(List.of(2L))));
         assertEquals(ProductErrorCode.BRAND_DISABLED.getCode(), error.getCode());
@@ -135,7 +135,7 @@ class CategoryBrandServiceImplTest {
     @Test
     void insertCountMismatch_throwsToTransactionBoundary() {
         leaf();
-        when(brands.selectByIdsAndDeleted(List.of(2L), 0L)).thenReturn(List.of(brand(2, 1)));
+        when(brands.selectByIdsForUpdate(List.of(2L))).thenReturn(List.of(brand(2, 1)));
         var error = assertThrows(BizException.class,
                 () -> service.replaceCategoryBrands(1L, request(List.of(2L))));
         assertEquals(ProductErrorCode.CATEGORY_BRAND_REPLACE_FAILED.getCode(), error.getCode());
@@ -145,7 +145,7 @@ class CategoryBrandServiceImplTest {
     @Test
     void insertException_isNotSwallowed() {
         leaf();
-        when(brands.selectByIdsAndDeleted(List.of(2L), 0L)).thenReturn(List.of(brand(2, 1)));
+        when(brands.selectByIdsForUpdate(List.of(2L))).thenReturn(List.of(brand(2, 1)));
         var failure = new DataAccessResourceFailureException("模拟插入失败");
         when(brands.batchInsert(anyList())).thenThrow(failure);
         assertSame(failure, assertThrows(DataAccessResourceFailureException.class,
@@ -156,7 +156,7 @@ class CategoryBrandServiceImplTest {
     void largeRequest_validatesAllBatchesBeforeWriting() {
         leaf();
         List<Long> ids = LongStream.rangeClosed(1, 501).boxed().toList();
-        when(brands.selectByIdsAndDeleted(anyList(), eq(0L))).thenAnswer(call -> {
+        when(brands.selectByIdsForUpdate(anyList())).thenAnswer(call -> {
             List<Long> batch = call.getArgument(0);
             assertTrue(batch.size() <= 500);
             return batch.stream().map(id -> brand(id, 1)).toList();
@@ -168,8 +168,8 @@ class CategoryBrandServiceImplTest {
         });
         service.replaceCategoryBrands(1L, request(ids));
         var order = inOrder(brands);
-        order.verify(brands).selectByIdsAndDeleted(ids.subList(0, 500), 0L);
-        order.verify(brands).selectByIdsAndDeleted(List.of(501L), 0L);
+        order.verify(brands).selectByIdsForUpdate(ids.subList(0, 500));
+        order.verify(brands).selectByIdsForUpdate(List.of(501L));
         order.verify(brands).logicDeleteByCategoryId(1L, 0L);
         order.verify(brands).batchInsert(argThat(rows -> rows.size() == 500));
         order.verify(brands).batchInsert(argThat(rows -> rows.size() == 1));

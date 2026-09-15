@@ -11,6 +11,9 @@ import java.util.List;
 
 public interface ProductBrandMapper extends BaseMapper<ProductBrand> {
 
+    /** 绑定前锁定未删除品牌，需在事务内调用并将 IDs 升序分批传入。 */
+    List<ProductBrand> selectByIdsForUpdate(@Param("ids") List<Long> ids);
+
     /** 检查其他未删除品牌是否占用该名称，供修改品牌使用。 */
     boolean existsByNameExcludingId(@Param("name") String name,
                                   @Param("excludeId") Long excludeId);
