@@ -152,4 +152,22 @@
         </foreach>
         AND deleted = 0
     </update>
+
+    <!-- ============================================================ -->
+    <!-- ========== 查询类目并加行锁（SELECT ... FOR UPDATE） ========== -->
+    <select id="selectByIdForUpdate" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/>
+        FROM product_category
+        WHERE id = #{id}
+        AND deleted = 0
+        FOR UPDATE
+    </select>
+
+    <!-- ========== 判断类目是否是叶子类目 ========== -->
+    <select id="isLeafCategory" resultType="boolean">
+        SELECT COUNT(*) = 0
+        FROM product_category
+        WHERE parent_id = #{categoryId}
+          AND deleted = 0
+    </select>
 </mapper>

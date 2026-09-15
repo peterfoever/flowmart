@@ -53,6 +53,20 @@ public enum ProductErrorCode implements ErrorCode {
      * 移动类目失败
      */
     CATEGORY_MOVE_FAILED(20023, "移动类目失败，请稍后重试"),
+
+    /**
+     * 品牌服务错误码
+     */
+    BRAND_NOT_FOUND(20030,"品牌不存在"),
+    BRAND_NAME_DUPLICATE(20031,"品牌名称已存在"),
+    BRAND_DISABLED(20032,"品牌已禁用"),
+    BRAND_BOUND_BY_CATEGORY(20033,"品牌已被类目绑定"),
+    CATEGORY_NOT_LEAF(20034,"只能给叶子类目绑定品牌"),
+    CATEGORY_BRAND_REPLACE_FAILED(20035,"类目品牌绑定替换失败"),
+    BRAND_CREATE_FAILED(20036,"品牌创建失败，请稍后重试"),
+    BRAND_UPDATE_FAILED(20037,"品牌修改失败，请稍后重试"),
+    BRAND_STATUS_CHANGE_FAILED(20038,"品牌状态更新失败，请稍后重试"),
+    BRAND_DELETE_FAILED(20039,"品牌删除失败，请稍后重试"),
     ;
 
     private final int code;
