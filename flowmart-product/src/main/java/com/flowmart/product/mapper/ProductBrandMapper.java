@@ -76,4 +76,29 @@ public interface ProductBrandMapper extends BaseMapper<ProductBrand> {
      */
     List<CategoryBrandVO> selectBrandsByCategoryId(@Param("categoryId") Long categoryId);
 
+    /**
+     * 查询品牌并加行锁
+     * @param id
+     * @return
+     */
+    ProductBrand selectByIdForUpdate(@Param("id") Long id);
+
+    /**
+     * 统计品牌是否被类目绑定
+     *
+     * @param brandId 品牌 ID
+     * @return 绑定数量
+     */
+    boolean existCategoryBindings(@Param("brandId") Long brandId);
+
+    /**
+     * 删除品牌时显式设置删除标记
+     * @param id
+     * @param version
+     * @param updatedBy
+     * @return
+     */
+    int logicDeleteById(@Param("id") Long id,
+                        @Param("version") Integer version,
+                        @Param("updatedBy") Long updatedBy);
 }

@@ -18,4 +18,6 @@ public interface BrandService {
     void updateBrandStatus(Long id, UpdateBrandStatusDTO request);
 
     PageResult<BrandVO> pageBrands(BrandQueryDTO query);
+
+    void deleteBrand(Long id);
 }

@@ -38,11 +38,12 @@ public class BrandController {
         return R.ok();
     }
 
-    //
-//    @DeleteMapping("/brands/{id}")
-//    public R<Void> deleteBrand(@PathVariable @Min(1) Long id) {
-//
-//    }
+
+    @DeleteMapping("/brands/{id}")
+    public R<Void> deleteBrand(@PathVariable @Min(1) Long id) {
+        brandService.deleteBrand(id);
+        return R.ok();
+    }
 
     @GetMapping("/brands")
     public R<PageResult<BrandVO>> listBrands(@Valid BrandQueryDTO query) {

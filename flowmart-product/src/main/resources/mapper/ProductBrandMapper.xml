@@ -121,4 +121,35 @@
           AND b.deleted = 0
         ORDER BY b.sort_no ASC, b.id ASC
     </select>
+    
+<!--    查询品牌并加行锁-->
+    <select id="selectByIdForUpdate" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumns"/>
+        FROM product_brand
+        WHERE id = #{id}
+        AND deleted = 0
+        FOR UPDATE
+    </select>
+
+<!--    品牌是否被类目绑定-->
+    <select id="existCategoryBindings" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM product_category_brand
+            WHERE brand_id = #{brandId}
+              AND deleted = 0
+        );
+    </select>
+
+<!--逻辑删除品牌-->
+    <update id="logicDeleteById">
+        UPDATE product_brand
+        SET deleted = id,
+            updated_by = #{operatorId},
+            updated_at = NOW(3),
+            version = version + 1
+        WHERE id = #{id}
+          AND deleted = 0
+          AND version = #{version};
+    </update>
 </mapper>

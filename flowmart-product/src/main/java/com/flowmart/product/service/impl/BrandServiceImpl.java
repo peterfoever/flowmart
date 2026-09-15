@@ -9,9 +9,11 @@ import com.flowmart.product.dto.CreateBrandDTO;
 import com.flowmart.product.dto.UpdateBrandDTO;
 import com.flowmart.product.dto.UpdateBrandStatusDTO;
 import com.flowmart.product.entity.ProductBrand;
+
 import com.flowmart.product.enums.BrandStatus;
 import com.flowmart.product.enums.ProductErrorCode;
 import com.flowmart.product.mapper.ProductBrandMapper;
+
 import com.flowmart.product.service.BrandService;
 import com.flowmart.product.vo.BrandVO;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,7 @@ import java.util.List;
 public class BrandServiceImpl implements BrandService {
     @Autowired
     private ProductBrandMapper mapper;
+
 
     @Autowired
     private BrandConverter converter;
@@ -115,12 +118,12 @@ public class BrandServiceImpl implements BrandService {
         if (productBrand == null || productBrand.getDeleted() != 0) {
             throw new BizException(ProductErrorCode.BRAND_NOT_FOUND);
         }
-        if(BrandStatus.ENABLED.matches(request.getStatus())
+        if (BrandStatus.ENABLED.matches(request.getStatus())
                 && BrandStatus.ENABLED.matches(productBrand.getStatus())) {
             log.info("品牌状态未变化，跳过更新: id={}, status={}", id, request.getStatus());
             return;
         }
-        if(BrandStatus.DISABLED.matches(request.getStatus())
+        if (BrandStatus.DISABLED.matches(request.getStatus())
                 && BrandStatus.DISABLED.matches(productBrand.getStatus())) {
             log.info("品牌状态未变化，跳过更新: id={}, status={}", id, request.getStatus());
             return;
@@ -131,13 +134,13 @@ public class BrandServiceImpl implements BrandService {
             throw new BizException(ProductErrorCode.BRAND_STATUS_CHANGE_FAILED);
         }
         log.info("更新品牌状态成功: id={}, newStatus={}",
-                id,request.getStatus());
+                id, request.getStatus());
     }
 
     @Override
     public PageResult<BrandVO> pageBrands(BrandQueryDTO query) {
         log.debug("分页查询品牌：name={},initial={},status={},page={},size={}",
-                query.getName(), query.getInitial(), query.getStatus(),query.getPage(), query.getSize());
+                query.getName(), query.getInitial(), query.getStatus(), query.getPage(), query.getSize());
 
         // ========== Step 1: 统计总数 ==========
         long count = mapper.countByQuery(query);
@@ -166,4 +169,23 @@ public class BrandServiceImpl implements BrandService {
         return new PageResult<>(query.getPage(), query.getSize(), count, records);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteBrand(Long id) {
+        log.info("删除品牌请求: id={}", id);
+        ProductBrand productBrand = mapper.selectByIdForUpdate(id);
+        if (productBrand == null || productBrand.getDeleted() != 0) {
+            throw new BizException(ProductErrorCode.BRAND_NOT_FOUND);
+        }
+        if (mapper.existCategoryBindings(id)) {
+            throw new BizException(ProductErrorCode.BRAND_BOUND_BY_CATEGORY);
+        }
+        int delete = mapper.logicDeleteById(id, productBrand.getVersion(), SYSTEM_OPERATOR_ID);
+        if (delete != 1) {
+            throw new BizException(ProductErrorCode.BRAND_DELETE_FAILED);
+        }
+        log.info("删除品牌成功: id={}, name={}, version={}",
+                id, productBrand.getName(), productBrand.getVersion());
+
+    }
 }
