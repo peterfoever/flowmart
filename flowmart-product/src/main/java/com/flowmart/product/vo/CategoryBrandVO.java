@@ -2,13 +2,15 @@ package com.flowmart.product.vo;
 
 import lombok.Data;
 
-import java.util.List;
+
 
 @Data
 public class CategoryBrandVO {
-    private List<Long> ids;
+    private Long id;
     private String name;
     private String logoUrl;
     private String initial;
     private Integer sortNo;
+    private Integer status;
+
 }
