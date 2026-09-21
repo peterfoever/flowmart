@@ -121,4 +121,8 @@ public interface ProductCategoryMapper extends BaseMapper<ProductCategory> {
      * @return
      */
     boolean isLeafCategory(@Param("categoryId") Long categoryId);
+
+    // 检查类目与品牌是否存在有效绑定
+    boolean existsByCategoryIdAndBrandId(@Param("categoryId") Long categoryId,
+                                         @Param("brandId") Long brandId);
 }
