@@ -1,0 +1,36 @@
+package com.flowmart.product.dto;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+import lombok.Data;
+
+import java.util.List;
+
+@Data
+public class CreateSpuDTO {
+    @NotBlank(message = "商品名称不能为空")
+    @Size(max = 128, message = "商品名称不能超过128个字符")
+    private String name;
+
+    @NotNull(message = "类目ID不能为空")
+    @Min(value = 1, message = "类目ID必须为正数")
+    private Long categoryId;
+
+    /** 品牌ID，允许为 null（无品牌） */
+    @Min(value = 1, message = "品牌ID必须为正数")
+    private Long brandId;
+
+    @NotBlank(message = "主图不能为空")
+    @Size(max = 512, message = "主图URL不能超过512个字符")
+    private String mainImgUrl;
+
+    /** 轮播图，可为 null（等同 []） */
+    @Size(max = 7, message = "轮播图最多7张")
+    private List<@NotBlank @Size(max = 512) String> carouselImages;
+
+    /** 规格列表，可为 null（等同 []） */
+    private List<@Valid SpecDTO> specs;
+
+    @Size(max = 5000,message = "商品详情最多为5000字符")
+    private String description;
+}
