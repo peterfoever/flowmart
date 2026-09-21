@@ -25,7 +25,7 @@ public class UpdateSpuDTO {
 
     @NotBlank(message = "主图不能为空")
     @Size(max = 512, message = "主图URL不能超过512个字符")
-    private String mainImgUrl;
+    private String mainImageUrl;
 
     /** 轮播图，必须传 空数组表示清空*/
     @NotNull(message = "轮播图不能为空")
@@ -33,7 +33,9 @@ public class UpdateSpuDTO {
     private List<@NotBlank @Size(max = 512) String> carouselImages;
 
     /** 规格列表，可为 null（等同 []） */
-    private List<@Valid SpecDTO> specs;
+    @NotNull
+    @Size(max=3)
+    private List<@NotNull @Valid SpecDTO> specs;
 
     @Size(max = 5000,message = "商品详情最多为5000字符")
     private String description;

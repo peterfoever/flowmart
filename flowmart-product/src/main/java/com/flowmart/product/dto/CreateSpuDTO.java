@@ -22,14 +22,17 @@ public class CreateSpuDTO {
 
     @NotBlank(message = "主图不能为空")
     @Size(max = 512, message = "主图URL不能超过512个字符")
-    private String mainImgUrl;
+    private String mainImageUrl;
 
     /** 轮播图，可为 null（等同 []） */
+    @NotNull(message = "轮播图列表不能为null，无轮播图请传空数组")
     @Size(max = 7, message = "轮播图最多7张")
     private List<@NotBlank @Size(max = 512) String> carouselImages;
 
     /** 规格列表，可为 null（等同 []） */
-    private List<@Valid SpecDTO> specs;
+    @NotNull(message = "规格列表不能为null，无规格请传空数组")
+    @Size(max=3)
+    private List<@NotNull @Valid SpecDTO> specs;
 
     @Size(max = 5000,message = "商品详情最多为5000字符")
     private String description;

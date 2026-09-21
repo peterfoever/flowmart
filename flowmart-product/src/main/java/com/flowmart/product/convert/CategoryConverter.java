@@ -22,7 +22,7 @@ public interface CategoryConverter {
 
     /** 将新增请求转换为待持久化实体；后端负责生成 ID 与计算层级。 */
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "level", ignore = true)
+    @Mapping(target = "spuCode", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
