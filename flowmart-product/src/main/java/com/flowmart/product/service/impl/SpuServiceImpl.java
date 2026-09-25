@@ -5,6 +5,7 @@ import com.flowmart.common.exception.BizException;
 import com.flowmart.product.convert.SpuConverter;
 import com.flowmart.product.dto.CreateSpuDTO;
 import com.flowmart.product.dto.SpecDTO;
+import com.flowmart.product.dto.UpdateSpuDTO;
 import com.flowmart.product.entity.ProductBrand;
 import com.flowmart.product.entity.ProductCategory;
 import com.flowmart.product.entity.ProductSpu;
@@ -35,7 +36,7 @@ public class SpuServiceImpl implements SpuService {
     private final ProductBrandMapper brandMapper;
     private final SpuCodeGenerator codeGenerator;
 
-    private static final int STATUS_DRAFT = 0;
+
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -77,7 +78,7 @@ public class SpuServiceImpl implements SpuService {
 
         // 设置后端字段并插入
         entity.setSpuCode(codeGenerator.next());
-        entity.setStatus(STATUS_DRAFT);
+        entity.setStatus(SpuStatus.DRAFT.hashCode());
         int insert = spuMapper.insert(entity);
         if (insert != 1) {
             throw new BizException(ProductErrorCode.SPU_CREATE_FAILED
@@ -102,21 +103,86 @@ public class SpuServiceImpl implements SpuService {
             }
         }
         ProductCategory productCategory = categoryMapper.selectById(spuDetailVO.getCategoryId());
-        if(productCategory == null) {
-            throw new BizException(ProductErrorCode.CATEGORY_NOT_FOUND);
+        if (productCategory == null) {
+            log.warn("SPU关联类目缺失: spuId={}, categoryId={}",
+                    productSpu.getId(), productSpu.getCategoryId());
+        } else {
+            spuDetailVO.setCategoryName(productCategory.getName());
         }
-        spuDetailVO.setCategoryName(productCategory.getName());
         spuDetailVO.setStatusText(SpuStatus.getDescByCode(spuDetailVO.getStatus()));
-        if (productSpu.getCarouselImages() == null) {
-            productSpu.setCarouselImages(Collections.emptyList());
+        if (spuDetailVO.getCarouselImages() == null) {
+            spuDetailVO.setCarouselImages(Collections.emptyList());
         }
-        if (productSpu.getSpecs() == null) {
-            productSpu.setSpecs(Collections.emptyList());
+        if (spuDetailVO.getSpecs() == null) {
+            spuDetailVO.setSpecs(Collections.emptyList());
         }
 
         log.debug("查询SPU详情成功: id={}, spuCode={}, status={}",
                 id, productSpu.getSpuCode(), productSpu.getStatus());
         return spuDetailVO;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateDraft(Long id, UpdateSpuDTO request) {
+        log.info("修改SPU草稿请求: id={}, version={}, brandId={}",
+                id, request.getVersion(), request.getBrandId());
+        ProductSpu spu = spuMapper.selectById(id);
+        if (spu == null || spu.getDeleted() != 0L) {
+            throw new BizException(ProductErrorCode.SPU_NOT_FOUND);
+        }
+        if (!SpuStatus.DRAFT.matches(spu.getStatus())) {
+            throw new BizException(ProductErrorCode.SPU_NOT_DRAFT);
+        }
+        if (spu.getVersion() != request.getVersion()) {
+            throw new BizException(ProductErrorCode.SPU_VERSION_CONFLICT);
+        }
+
+        // 查看归属变化
+        boolean categoryChanged = !Objects.equals(spu.getCategoryId(), request.getCategoryId());
+        boolean brandChanged = !Objects.equals(spu.getBrandId(), request.getBrandId());
+        if (categoryChanged) {
+            log.debug("归属变化: categoryChanged={}", categoryChanged);
+            ProductCategory productCategory = categoryMapper.selectByIdForUpdate(request.getCategoryId());
+            if (productCategory == null) {
+                throw new BizException(ProductErrorCode.CATEGORY_NOT_FOUND);
+            }
+            if (!CategoryStatus.ENABLED.matches(productCategory.getStatus())) {
+                throw new BizException(ProductErrorCode.CATEGORY_DISABLED);
+            }
+            if (!categoryMapper.isLeafCategory(request.getCategoryId())) {
+                throw new BizException(ProductErrorCode.CATEGORY_NOT_LEAF);
+            }
+
+        } else if (brandChanged) {
+            log.debug("归属变化: brandChanged={}", brandChanged);
+            ProductBrand brand = brandMapper.selectByIdForUpdate(request.getBrandId());
+            if (brand == null) {
+                throw new BizException(ProductErrorCode.BRAND_NOT_FOUND);
+            }
+            if (!BrandStatus.ENABLED.matches(brand.getStatus())) {
+                throw new BizException(ProductErrorCode.BRAND_DISABLED);
+            }
+            if (!categoryMapper.existsByCategoryIdAndBrandId(request.getCategoryId(), request.getBrandId())) {
+                throw new BizException(ProductErrorCode.CATEGORY_BRAND_NOT_BOUND);
+            }
+        } else {
+            log.debug("归属未变化，跳过类目/品牌校验");
+
+        }
+        // ========== Step : 规范化图片、规格 ==========
+        converter.updateEntity(request,spu);
+        normalizeAndValidateImages(spu);
+        normalizeAndValidateSpecs(spu);
+        // 执行更新
+        int rows = spuMapper.updateDraftById(id, spu.getVersion(), spu.getName(), spu.getCategoryId(), spu.getBrandId(), spu.getMainImageUrl()
+                , spu.getCarouselImages(), spu.getSpecs(), spu.getDescription(), 0L);
+        if (rows != 1) {
+            // 影响 0 行：版本冲突、状态被改、已被删除
+            log.warn("更新SPU草稿失败: id={}, 请求version={}, 数据库version={}, 数据库status={}",
+                    id, request.getVersion(), spu.getVersion(), spu.getStatus());
+            throw new BizException(ProductErrorCode.SPU_UPDATE_FAILED);
+        }
     }
 
     // 校验轮播图

@@ -2,6 +2,7 @@ package com.flowmart.product.controller;
 
 import com.flowmart.common.result.R;
 import com.flowmart.product.dto.CreateSpuDTO;
+import com.flowmart.product.dto.UpdateSpuDTO;
 import com.flowmart.product.service.SpuService;
 import com.flowmart.product.vo.SpuDetailVO;
 import jakarta.validation.Valid;
@@ -30,5 +31,11 @@ public class SpuController {
     @GetMapping("/spus/{id}")
     public R<SpuDetailVO> getSpuDetail(@PathVariable @NotNull @Min(1) Long id) {
         return R.ok(spuService.getDetailById(id));
+    }
+
+    @PutMapping("/spus/{id}/draft")
+    public R<Void> updateDraft(@PathVariable @NotNull @Min(1) Long id, @Valid @RequestBody UpdateSpuDTO request) {
+        spuService.updateDraft(id, request);
+        return R.ok();
     }
 }

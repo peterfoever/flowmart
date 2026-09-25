@@ -4,4 +4,25 @@
 <mapper namespace="com.flowmart.product.mapper.ProductSpuMapper">
     <!-- BaseMapper 使用 ProductSpu 的 autoResultMap 和字段级 JacksonTypeHandler。
          不再维护未被查询引用的重复 ResultMap，避免引用已删除的 Handler。 -->
+
+    <!-- ========== 更新 SPU 草稿（带乐观锁） ========== -->
+    <update id="updateDraftById">
+        UPDATE product_spu
+        SET name = #{name},
+        category_id = #{categoryId},
+        brand_id = #{brandId,jdbcType=BIGINT},
+        main_image_url = #{mainImageUrl},
+        carousel_images = #{carouselImages,
+            typeHandler=com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler},
+        spec_json = #{specs,
+            typeHandler=com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler},
+        description = #{description,jdbcType=LONGVARCHAR},
+        updated_by = #{updatedBy},
+        updated_at = NOW(3),
+        version = version + 1
+        WHERE id = #{id}
+        AND deleted = 0
+        AND status = 0
+        AND version = #{version}
+    </update>
 </mapper>
