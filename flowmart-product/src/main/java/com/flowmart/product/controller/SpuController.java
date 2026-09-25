@@ -3,15 +3,15 @@ package com.flowmart.product.controller;
 import com.flowmart.common.result.R;
 import com.flowmart.product.dto.CreateSpuDTO;
 import com.flowmart.product.service.SpuService;
+import com.flowmart.product.vo.SpuDetailVO;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @Validated
@@ -25,5 +25,10 @@ public class SpuController {
     @PostMapping("/spus/draft")
     public R<Long> createDraft(@Valid @RequestBody CreateSpuDTO createSpuDTO) {
         return R.ok(spuService.createDraft(createSpuDTO));
+    }
+
+    @GetMapping("/spus/{id}")
+    public R<SpuDetailVO> getSpuDetail(@PathVariable @NotNull @Min(1) Long id) {
+        return R.ok(spuService.getDetailById(id));
     }
 }

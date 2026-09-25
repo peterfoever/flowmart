@@ -5,6 +5,7 @@ import com.flowmart.product.dto.UpdateCategoryDTO;
 import com.flowmart.product.dto.UpdateSpuDTO;
 import com.flowmart.product.entity.ProductCategory;
 import com.flowmart.product.entity.ProductSpu;
+import com.flowmart.product.vo.SpuDetailVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -37,4 +38,10 @@ public interface SpuConverter {
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "version", ignore = true)
     void updateEntity(UpdateSpuDTO dto, @MappingTarget ProductSpu entity);
+
+    /** 实体转换为详情响应；额外展示字段由 Service 查询后补充。 */
+    @Mapping(target = "statusText", ignore = true)
+    @Mapping(target = "categoryName", ignore = true)
+    @Mapping(target = "brandName", ignore = true)
+    SpuDetailVO toDetailVO(ProductSpu entity);
 }
