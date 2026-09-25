@@ -23,10 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -60,7 +57,7 @@ public class SpuServiceImpl implements SpuService {
         if (!CategoryStatus.ENABLED.matches(productCategory.getStatus())) {
             throw new BizException(ProductErrorCode.CATEGORY_DISABLED);
         }
-        if(!categoryMapper.isLeafCategory(entity.getCategoryId())) {
+        if (!categoryMapper.isLeafCategory(entity.getCategoryId())) {
             throw new BizException(ProductErrorCode.CATEGORY_NOT_LEAF);
         }
 
@@ -84,9 +81,9 @@ public class SpuServiceImpl implements SpuService {
         int insert = spuMapper.insert(entity);
         if (insert != 1) {
             throw new BizException(ProductErrorCode.SPU_CREATE_FAILED
-            ,"插入spu失败，期望影响1行，实际影响" + insert + "行");
+                    , "插入spu失败，期望影响1行，实际影响" + insert + "行");
         }
-        log.info("创建spu成功，id={},spuCode={},categoryId={}",entity.getId(),entity.getSpuCode(),entity.getCategoryId());
+        log.info("创建spu成功，id={},spuCode={},categoryId={}", entity.getId(), entity.getSpuCode(), entity.getCategoryId());
         return entity.getId();
     }
 
@@ -98,14 +95,25 @@ public class SpuServiceImpl implements SpuService {
             throw new BizException(ProductErrorCode.SPU_NOT_FOUND);
         }
         SpuDetailVO spuDetailVO = converter.toDetailVO(productSpu);
-        if(productSpu.getBrandId() != null) {
+        if (productSpu.getBrandId() != null) {
             ProductBrand brand = brandMapper.selectById(productSpu.getBrandId());
-            if (brand != null && brand.getDeleted() != 0L) {
+            if (brand != null && brand.getDeleted() == 0L) {
                 spuDetailVO.setBrandName(brand.getName());
             }
         }
-        spuDetailVO.setCategoryName(categoryMapper.selectById(productSpu.getCategoryId()).getName());
+        ProductCategory productCategory = categoryMapper.selectById(spuDetailVO.getCategoryId());
+        if(productCategory == null) {
+            throw new BizException(ProductErrorCode.CATEGORY_NOT_FOUND);
+        }
+        spuDetailVO.setCategoryName(productCategory.getName());
         spuDetailVO.setStatusText(SpuStatus.getDescByCode(spuDetailVO.getStatus()));
+        if (productSpu.getCarouselImages() == null) {
+            productSpu.setCarouselImages(Collections.emptyList());
+        }
+        if (productSpu.getSpecs() == null) {
+            productSpu.setSpecs(Collections.emptyList());
+        }
+
         log.debug("查询SPU详情成功: id={}, spuCode={}, status={}",
                 id, productSpu.getSpuCode(), productSpu.getStatus());
         return spuDetailVO;
