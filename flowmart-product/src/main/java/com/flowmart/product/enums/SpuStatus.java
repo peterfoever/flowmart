@@ -1,8 +1,11 @@
 package com.flowmart.product.enums;
 
+import lombok.Getter;
+
 import java.util.Arrays;
 import java.util.Objects;
 
+@Getter
 public enum SpuStatus {
     DRAFT(0, "草稿"),
     ON_SHELF(1, "上架"),
@@ -66,4 +69,5 @@ public enum SpuStatus {
         SpuStatus status = fromCode(code);
         return status == null ? null : status.desc;
     }
+
 }

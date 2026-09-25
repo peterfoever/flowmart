@@ -78,7 +78,7 @@ public class SpuServiceImpl implements SpuService {
 
         // 设置后端字段并插入
         entity.setSpuCode(codeGenerator.next());
-        entity.setStatus(SpuStatus.DRAFT.hashCode());
+        entity.setStatus(SpuStatus.DRAFT.getCode());
         int insert = spuMapper.insert(entity);
         if (insert != 1) {
             throw new BizException(ProductErrorCode.SPU_CREATE_FAILED
@@ -134,15 +134,22 @@ public class SpuServiceImpl implements SpuService {
         if (!SpuStatus.DRAFT.matches(spu.getStatus())) {
             throw new BizException(ProductErrorCode.SPU_NOT_DRAFT);
         }
-        if (spu.getVersion() != request.getVersion()) {
+        if (!Objects.equals(spu.getVersion(), request.getVersion())) {
             throw new BizException(ProductErrorCode.SPU_VERSION_CONFLICT);
         }
 
         // 查看归属变化
         boolean categoryChanged = !Objects.equals(spu.getCategoryId(), request.getCategoryId());
         boolean brandChanged = !Objects.equals(spu.getBrandId(), request.getBrandId());
-        if (categoryChanged) {
-            log.debug("归属变化: categoryChanged={}", categoryChanged);
+        // 先完成纯内存校验，再申请关联行锁；转换器保留编码、状态和审计字段。
+        converter.updateEntity(request, spu);
+        spu.setName(StrUtil.trim(spu.getName()));
+        spu.setMainImageUrl(StrUtil.trim(spu.getMainImageUrl()));
+        normalizeAndValidateImages(spu);
+        normalizeAndValidateSpecs(spu);
+
+        if (categoryChanged || brandChanged) {
+            log.debug("归属变化: categoryChanged={}, brandChanged={}", categoryChanged, brandChanged);
             ProductCategory productCategory = categoryMapper.selectByIdForUpdate(request.getCategoryId());
             if (productCategory == null) {
                 throw new BizException(ProductErrorCode.CATEGORY_NOT_FOUND);
@@ -154,35 +161,37 @@ public class SpuServiceImpl implements SpuService {
                 throw new BizException(ProductErrorCode.CATEGORY_NOT_LEAF);
             }
 
-        } else if (brandChanged) {
-            log.debug("归属变化: brandChanged={}", brandChanged);
-            ProductBrand brand = brandMapper.selectByIdForUpdate(request.getBrandId());
-            if (brand == null) {
-                throw new BizException(ProductErrorCode.BRAND_NOT_FOUND);
-            }
-            if (!BrandStatus.ENABLED.matches(brand.getStatus())) {
-                throw new BizException(ProductErrorCode.BRAND_DISABLED);
-            }
-            if (!categoryMapper.existsByCategoryIdAndBrandId(request.getCategoryId(), request.getBrandId())) {
-                throw new BizException(ProductErrorCode.CATEGORY_BRAND_NOT_BOUND);
+            // null 表示主动清除品牌，无需查询品牌；保持类目 -> 品牌的锁顺序。
+            if (request.getBrandId() != null) {
+                ProductBrand brand = brandMapper.selectByIdForUpdate(request.getBrandId());
+                if (brand == null) {
+                    throw new BizException(ProductErrorCode.BRAND_NOT_FOUND);
+                }
+                if (!BrandStatus.ENABLED.matches(brand.getStatus())) {
+                    throw new BizException(ProductErrorCode.BRAND_DISABLED);
+                }
+                if (!categoryMapper.existsByCategoryIdAndBrandId(request.getCategoryId(), request.getBrandId())) {
+                    throw new BizException(ProductErrorCode.CATEGORY_BRAND_NOT_BOUND);
+                }
             }
         } else {
             log.debug("归属未变化，跳过类目/品牌校验");
 
         }
-        // ========== Step : 规范化图片、规格 ==========
-        converter.updateEntity(request,spu);
-        normalizeAndValidateImages(spu);
-        normalizeAndValidateSpecs(spu);
         // 执行更新
-        int rows = spuMapper.updateDraftById(id, spu.getVersion(), spu.getName(), spu.getCategoryId(), spu.getBrandId(), spu.getMainImageUrl()
+        int rows = spuMapper.updateDraftById(id, request.getVersion(), spu.getName(), spu.getCategoryId(), spu.getBrandId(), spu.getMainImageUrl()
                 , spu.getCarouselImages(), spu.getSpecs(), spu.getDescription(), 0L);
         if (rows != 1) {
             // 影响 0 行：版本冲突、状态被改、已被删除
-            log.warn("更新SPU草稿失败: id={}, 请求version={}, 数据库version={}, 数据库status={}",
+            log.warn("更新SPU草稿失败: id={}, 请求version={}, 查询时version={}, 查询时status={}",
                     id, request.getVersion(), spu.getVersion(), spu.getStatus());
+            if (rows == 0) {
+                throw new BizException(ProductErrorCode.SPU_VERSION_CONFLICT, "商品已发生变化，请刷新后重试");
+            }
             throw new BizException(ProductErrorCode.SPU_UPDATE_FAILED);
         }
+        log.info("修改SPU草稿完成: id={}, 原version={}, categoryId={}, brandId={}",
+                id, request.getVersion(), spu.getCategoryId(), spu.getBrandId());
     }
 
     // 校验轮播图
