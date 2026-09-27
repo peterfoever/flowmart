@@ -14,6 +14,7 @@ import com.flowmart.product.enums.BrandStatus;
 import com.flowmart.product.enums.ProductErrorCode;
 import com.flowmart.product.mapper.ProductBrandMapper;
 
+import com.flowmart.product.mapper.ProductSpuMapper;
 import com.flowmart.product.service.BrandService;
 import com.flowmart.product.vo.BrandVO;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,8 @@ public class BrandServiceImpl implements BrandService {
     @Autowired
     private ProductBrandMapper mapper;
 
+    @Autowired
+    private ProductSpuMapper spuMapper;
 
     @Autowired
     private BrandConverter converter;
@@ -176,6 +179,10 @@ public class BrandServiceImpl implements BrandService {
         ProductBrand productBrand = mapper.selectByIdForUpdate(id);
         if (productBrand == null || productBrand.getDeleted() != 0) {
             throw new BizException(ProductErrorCode.BRAND_NOT_FOUND);
+        }
+        // 检查商品引用，有则拒绝
+        if (spuMapper.existsByBrandId(id)) {
+            throw new BizException(ProductErrorCode.BRAND_IN_USE_BY_SPU);
         }
         if (mapper.existCategoryBindings(id)) {
             throw new BizException(ProductErrorCode.BRAND_BOUND_BY_CATEGORY);
