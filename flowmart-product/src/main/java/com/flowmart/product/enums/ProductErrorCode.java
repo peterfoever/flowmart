@@ -5,7 +5,9 @@ import lombok.Getter;
 
 @Getter
 public enum ProductErrorCode implements ErrorCode {
-    // 商品类目错误 (20001-29999)
+    /**
+     *     商品类目错误 (20001-29999)
+     */
 
     CATEGORY_PARENT_NOT_FOUND(20001, "父类目不存在"),
     CATEGORY_PARENT_DISABLED(20002, "父类目已禁用，无法创建子类目"),
@@ -20,38 +22,12 @@ public enum ProductErrorCode implements ErrorCode {
     PRODUCT_NOT_FOUND(20100, "商品不存在"),
     PRODUCT_OFF_SHELF(20101, "商品已下架"),
     PRODUCT_STOCK_INSUFFICIENT(20102, "商品库存不足"),
-    /**
-     * 删除类目失败
-     */
     CATEGORY_DELETE_FAILED(20011, "删除类目失败，请稍后重试"),
-
-    /**
-     * 子类目上提失败
-     */
     CATEGORY_REPARENT_FAILED(20012, "子类目上提失败，请稍后重试"),
-
-    /**
-     * 层级调整失败
-     */
     CATEGORY_LEVEL_DECREASE_FAILED(20013, "层级调整失败，请稍后重试"),
-    /**
-     * 不能移动到自己
-     */
     CATEGORY_MOVE_TO_SELF(20020, "不能将类目移动到自己"),
-
-    /**
-     * 父类目未变化（无需移动）
-     */
     CATEGORY_PARENT_UNCHANGED(20021, "类目已在目标父类目下，无需移动"),
-
-    /**
-     * 不能移动到自己的后代节点
-     */
     CATEGORY_MOVE_TO_DESCENDANT(20022, "不能将类目移动到包括自己的子类目下"),
-
-    /**
-     * 移动类目失败
-     */
     CATEGORY_MOVE_FAILED(20023, "移动类目失败，请稍后重试"),
 
     /**
@@ -67,7 +43,26 @@ public enum ProductErrorCode implements ErrorCode {
     BRAND_UPDATE_FAILED(20037,"品牌修改失败，请稍后重试"),
     BRAND_STATUS_CHANGE_FAILED(20038,"品牌状态更新失败，请稍后重试"),
     BRAND_DELETE_FAILED(20039,"品牌删除失败，请稍后重试"),
+
+    /**
+     * spu商品错误码
+     */
+    SPU_NOT_FOUND(20041,"SPU 不存在"),
+    SPU_CREATE_FAILED(20042,"SPU 创建失败"),
+    SPU_UPDATE_FAILED(20043,"SPU 更新失败"),
+    SPU_NOT_DRAFT(20044,"SPU 非草稿状态"),
+    SPU_VERSION_CONFLICT(20045,"SPU 版本冲突"),
+    CATEGORY_DISABLED(20046,"类目已禁用"),
+    CATEGORY_BRAND_NOT_BOUND(20047,"品牌未绑定到该类目"),
+    CATEGORY_IN_USE_BY_SPU(20048,"类目被商品引用，无法删除"),
+    BRAND_IN_USE_BY_SPU(20049,"品牌被商品引用，无法删除"),
+    CATEGORY_BRAND_IN_USE_BY_SPU(20050,"类目-品牌绑定被商品引用，无法解绑"),
+    IMAGE_DUPLICATE(20051,"轮播图存在重复 URL"),
+    MAIN_IMAGE_IN_CAROUSEL(20052,"主图不能同时出现在轮播图中"),
+    SPEC_NAME_DUPLICATE(20053,"规格名重复"),
+    SPEC_VALUE_DUPLICATE(20054,"同一规格内规格值重复"),
     ;
+
 
     private final int code;
     private final String message;

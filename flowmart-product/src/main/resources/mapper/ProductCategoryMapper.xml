@@ -170,4 +170,13 @@
         WHERE parent_id = #{categoryId}
           AND deleted = 0
     </select>
+
+    <!-- ========== 检查类目-品牌绑定是否存在 ========== -->
+    <select id="existsByCategoryIdAndBrandId" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM product_category_brand
+        WHERE category_id = #{categoryId}
+          AND brand_id = #{brandId}
+          AND deleted = 0
+    </select>
 </mapper>

@@ -164,4 +164,12 @@
           AND deleted = 0
           AND version = #{version};
     </update>
+
+    <select id="selectBoundBrandIdsByCategoryId" resultType="java.lang.Long">
+        SELECT brand_id
+        FROM product_category_brand
+        WHERE category_id = #{categoryId}
+          AND deleted = 0
+        ORDER BY brand_id
+    </select>
 </mapper>
