@@ -24,6 +24,7 @@ import static org.mockito.Mockito.*;
 class CategoryBrandServiceImplTest {
     @Mock ProductBrandMapper brands;
     @Mock ProductCategoryMapper categories;
+    @Mock ProductSpuMapper spus;
     @InjectMocks CategoryBrandServiceImpl service;
 
     private ReplaceCategoryBrandsDTO request(List<Long> ids) {
@@ -72,6 +73,7 @@ class CategoryBrandServiceImplTest {
         order.verify(categories).selectByIdForUpdate(1L);
         order.verify(categories).isLeafCategory(1L);
         order.verify(brands).selectByIdsForUpdate(List.of(2L, 3L));
+        order.verify(brands).selectBoundBrandIdsByCategoryId(1L);
         order.verify(brands).logicDeleteByCategoryId(1L, 0L);
         order.verify(brands).batchInsert(anyList());
     }
@@ -80,8 +82,10 @@ class CategoryBrandServiceImplTest {
     void emptyList_onlyClearsBindings() {
         leaf();
         service.replaceCategoryBrands(1L, request(List.of()));
+        verify(brands).selectBoundBrandIdsByCategoryId(1L);
         verify(brands).logicDeleteByCategoryId(1L, 0L);
         verifyNoMoreInteractions(brands);
+        verifyNoInteractions(spus);
     }
 
     @Test
@@ -92,7 +96,7 @@ class CategoryBrandServiceImplTest {
         }
         assertThrows(BizException.class, () -> service.replaceCategoryBrands(1L, null));
         assertThrows(BizException.class, () -> service.replaceCategoryBrands(0L, request(List.of())));
-        verifyNoInteractions(categories, brands);
+        verifyNoInteractions(categories, brands, spus);
     }
 
     @Test
