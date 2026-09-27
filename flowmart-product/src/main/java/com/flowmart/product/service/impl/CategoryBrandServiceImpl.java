@@ -12,6 +12,7 @@ import com.flowmart.product.enums.BrandStatus;
 import com.flowmart.product.enums.ProductErrorCode;
 import com.flowmart.product.mapper.ProductBrandMapper;
 import com.flowmart.product.mapper.ProductCategoryMapper;
+import com.flowmart.product.mapper.ProductSpuMapper;
 import com.flowmart.product.service.CategoryBrandService;
 import com.flowmart.product.vo.CategoryBrandVO;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
+
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,6 +34,7 @@ import java.util.stream.Collectors;
 public class CategoryBrandServiceImpl implements CategoryBrandService {
     private final ProductBrandMapper brandMapper;
     private final ProductCategoryMapper categoryMapper;
+    private final ProductSpuMapper spuMapper;
     private static final Long SYSTEM_OPERATOR_ID = 0L;
     private static final int BATCH_SIZE = 500;
 
@@ -69,7 +72,16 @@ public class CategoryBrandServiceImpl implements CategoryBrandService {
                 }
             }
         }
-
+        // 计算品牌差集 查看spu绑定情况
+        List<Long> oldBrandIds = brandMapper.selectBoundBrandIdsByCategoryId(categoryId);
+        Set<Long> requestedBrandIds = new HashSet<>(distinctIds);
+        List<Long> removedBrandIds = oldBrandIds.stream().filter(id -> !requestedBrandIds.contains(id)).distinct().sorted().toList();
+        for (int start = 0; start < removedBrandIds.size(); start+=BATCH_SIZE) {
+            List<Long> batch = removedBrandIds.subList(start, Math.min(start + BATCH_SIZE, removedBrandIds.size()));
+            if (spuMapper.existsByCategoryIdAndBrandIds(categoryId, batch)) {
+                throw new BizException(ProductErrorCode.CATEGORY_BRAND_IN_USE_BY_SPU);
+            }
+        }
         int deletedCount = brandMapper.logicDeleteByCategoryId(categoryId, SYSTEM_OPERATOR_ID);
         LocalDateTime now = LocalDateTime.now();
         for (int start = 0; start < distinctIds.size(); start += BATCH_SIZE) {
