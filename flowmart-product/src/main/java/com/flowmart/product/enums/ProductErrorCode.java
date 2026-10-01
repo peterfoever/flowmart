@@ -61,6 +61,12 @@ public enum ProductErrorCode implements ErrorCode {
     MAIN_IMAGE_IN_CAROUSEL(20052,"主图不能同时出现在轮播图中"),
     SPEC_NAME_DUPLICATE(20053,"规格名重复"),
     SPEC_VALUE_DUPLICATE(20054,"同一规格内规格值重复"),
+
+    /**
+     * sku商品错误码
+     */
+    SPEC_VALUES_EMPTY(20061,"规格列表不能为空"),
+    TOO_MANY_COMBINATIONS(20062,"规格组合总数超过上限"),
     ;
 
 
