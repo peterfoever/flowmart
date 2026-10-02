@@ -25,7 +25,8 @@ class SpuDetailServiceTest {
     private final ProductCategoryMapper categories = mock(ProductCategoryMapper.class);
     private final ProductBrandMapper brands = mock(ProductBrandMapper.class);
     private final SpuServiceImpl service = new SpuServiceImpl(
-            Mappers.getMapper(SpuConverter.class), spus, categories, brands, mock(SpuCodeGenerator.class));
+            Mappers.getMapper(SpuConverter.class), spus, categories, brands, mock(SpuCodeGenerator.class),
+            mock(com.flowmart.product.mapper.ProductSkuMapper.class));
 
     private ProductSpu product() {
         ProductSpu spu = new ProductSpu();

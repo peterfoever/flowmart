@@ -17,7 +17,7 @@ import static org.mockito.Mockito.*;
 /** 解析真实 XML 并绑定 JDBC 参数；不连接 MySQL，不替代真实数据及事务验证。 */
 class CategoryBrandUnbindSqlTest {
     private Configuration configuration(String resource) throws Exception {
-        var config = new Configuration();
+        var config = new com.baomidou.mybatisplus.core.MybatisConfiguration();
         try (var input = getClass().getClassLoader().getResourceAsStream(resource)) {
             assertNotNull(input);
             new XMLMapperBuilder(input, config, resource, config.getSqlFragments()).parse();

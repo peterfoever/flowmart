@@ -12,7 +12,10 @@ public interface SkuConverter {
     /** 将新增请求转换为待持久化实体；后端负责生成 ID 与编码。 */
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "skuCode", ignore = true)
-    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "spuId", ignore = true)
+    @Mapping(target = "specValues", ignore = true)
+    @Mapping(target = "specHash", ignore = true)
+    @Mapping(target = "isDefault", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)

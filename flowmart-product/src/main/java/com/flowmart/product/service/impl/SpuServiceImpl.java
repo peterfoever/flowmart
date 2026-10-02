@@ -4,7 +4,6 @@ import cn.hutool.core.util.StrUtil;
 import com.flowmart.common.exception.BizException;
 import com.flowmart.product.convert.SpuConverter;
 import com.flowmart.product.dto.CreateSpuDTO;
-import com.flowmart.product.dto.SkuSpecValueDTO;
 import com.flowmart.product.dto.SpecDTO;
 import com.flowmart.product.dto.UpdateSpuDTO;
 import com.flowmart.product.entity.ProductBrand;
@@ -14,11 +13,11 @@ import com.flowmart.product.enums.BrandStatus;
 import com.flowmart.product.enums.CategoryStatus;
 import com.flowmart.product.enums.ProductErrorCode;
 import com.flowmart.product.enums.SpuStatus;
-import com.flowmart.product.generator.SpecCombinationGenerator;
 import com.flowmart.product.generator.SpuCodeGenerator;
 import com.flowmart.product.mapper.ProductBrandMapper;
 import com.flowmart.product.mapper.ProductCategoryMapper;
 import com.flowmart.product.mapper.ProductSpuMapper;
+import com.flowmart.product.mapper.ProductSkuMapper;
 import com.flowmart.product.service.SpuService;
 import com.flowmart.product.vo.SpuDetailVO;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +36,7 @@ public class SpuServiceImpl implements SpuService {
     private final ProductCategoryMapper categoryMapper;
     private final ProductBrandMapper brandMapper;
     private final SpuCodeGenerator codeGenerator;
+    private final ProductSkuMapper skuMapper;
 
 
 
@@ -140,6 +140,10 @@ public class SpuServiceImpl implements SpuService {
             throw new BizException(ProductErrorCode.SPU_VERSION_CONFLICT);
         }
 
+        // 先深拷贝并规范化旧规格，避免转换器覆盖后失去比较依据。
+        List<SpecDTO> oldSpecs = normalizedSpecs(spu.getSpecs());
+        // MapStruct 更新集合会 clear/addAll；使用独立可变工作列表，不能清空快照或原列表。
+        spu.setSpecs(new ArrayList<>(oldSpecs));
         // 查看归属变化
         boolean categoryChanged = !Objects.equals(spu.getCategoryId(), request.getCategoryId());
         boolean brandChanged = !Objects.equals(spu.getBrandId(), request.getBrandId());
@@ -149,6 +153,11 @@ public class SpuServiceImpl implements SpuService {
         spu.setMainImageUrl(StrUtil.trim(spu.getMainImageUrl()));
         normalizeAndValidateImages(spu);
         normalizeAndValidateSpecs(spu);
+
+        // 顺序也是规格定义的一部分，不能用会排序的组合哈希比较。
+        if (!oldSpecs.equals(spu.getSpecs()) && skuMapper.countActiveBySpuId(id) > 0) {
+            throw new BizException(ProductErrorCode.SPU_SPECS_FROZEN);
+        }
 
         if (categoryChanged || brandChanged) {
             log.debug("归属变化: categoryChanged={}, brandChanged={}", categoryChanged, brandChanged);
@@ -214,9 +223,13 @@ public class SpuServiceImpl implements SpuService {
 
     // 校验规格
     private void normalizeAndValidateSpecs(ProductSpu entity) {
+        entity.setSpecs(normalizedSpecs(entity.getSpecs()));
+    }
+
+    private List<SpecDTO> normalizedSpecs(List<SpecDTO> sources) {
         Set<String> seenSpecNames = new HashSet<>();
         List<SpecDTO> normalized = new ArrayList<>();
-        for (SpecDTO source : entity.getSpecs()) {
+        for (SpecDTO source : sources) {
             // 单独创建规格对象，避免修改 MapStruct 浅拷贝所共享的请求对象。
             SpecDTO spec = new SpecDTO();
             spec.setName(StrUtil.trim(source.getName()));
@@ -233,6 +246,6 @@ public class SpuServiceImpl implements SpuService {
             spec.setValues(values);
             normalized.add(spec);
         }
-        entity.setSpecs(normalized);
+        return normalized;
     }
 }

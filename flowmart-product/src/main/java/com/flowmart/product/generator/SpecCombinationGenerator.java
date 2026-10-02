@@ -6,16 +6,12 @@ import com.flowmart.common.exception.CommonErrorCode;
 import com.flowmart.product.dto.SpecDTO;
 import com.flowmart.product.dto.SkuSpecValueDTO;
 import com.flowmart.product.enums.ProductErrorCode;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Component
-@Slf4j
 public final class SpecCombinationGenerator {
     /** 本期业务上限：单个 SPU 最多 1,000 个 SKU。 */
     public static final int MAX_COMBINATIONS = 1000;

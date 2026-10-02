@@ -14,7 +14,6 @@
         price,
         image_url,
         is_default,
-        status,
         deleted,
         version,
         created_by,
@@ -27,16 +26,13 @@
             #{it.spuId},
             #{it.skuCode},
 
-            <!-- 关键：spec_values 是 jsonb，显式指定 JSON TypeHandler 并 CAST -->
-            CAST(#{it.specValues,
-                   typeHandler=com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler}
-            AS jsonb),
+            <!-- MySQL JSON 列直接接收 TypeHandler 序列化后的 JSON 文本。 -->
+            #{it.specValues,typeHandler=com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler},
 
             #{it.specHash},
             #{it.price},
             #{it.imageUrl},
             #{it.isDefault},
-            #{it.status},
 
             <!-- 审计字段、deleted、version 全部由 Service 填好，这里不省略 -->
             #{it.deleted},

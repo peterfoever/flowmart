@@ -68,6 +68,9 @@ public enum ProductErrorCode implements ErrorCode {
     SPEC_VALUES_EMPTY(20061,"规格值列表不能为空"),
     TOO_MANY_COMBINATIONS(20062,"单个SPU最多生成1000个SKU"),
     SKU_ALREADY_GENERATED(20063,"SKU已经生成过了"),
+    SKU_GENERATE_FAILED(20064,"SKU生成失败"),
+    SKU_DATA_CONFLICT(20065,"SKU编码或规格组合冲突，请检查后重试"),
+    SPU_SPECS_FROZEN(20066,"已生成SKU，不允许修改商品规格"),
     ;
 
 
