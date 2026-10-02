@@ -1,130 +1,208 @@
 package com.flowmart.product.generator;
 
+import com.flowmart.common.exception.BizException;
+import com.flowmart.common.exception.CommonErrorCode;
+import com.flowmart.common.exception.ErrorCode;
+import com.flowmart.product.dto.SpecDTO;
+import com.flowmart.product.dto.SkuSpecValueDTO;
+import com.flowmart.product.enums.ProductErrorCode;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
-public class SpecCombinationGeneratorTest {
-    // ── 规则 1：无规格 → 一个空组合 ─────────────────────────────────
+
+class SpecCombinationGeneratorTest {
+    private static SpecDTO spec(String name, List<String> values) {
+        var dto = new SpecDTO();
+        dto.setName(name);
+        dto.setValues(values);
+        return dto;
+    }
+
+    private static SkuSpecValueDTO selected(String name, String value) {
+        var dto = new SkuSpecValueDTO();
+        dto.setName(name);
+        dto.setValue(value);
+        return dto;
+    }
+
+    private static List<String> values(int n) {
+        return IntStream.range(0, n).mapToObj(i -> "V" + i).toList();
+    }
+
+    private static void assertError(ErrorCode expected, List<SpecDTO> input) {
+        var error = assertThrows(BizException.class, () -> SpecCombinationGenerator.generate(input));
+        assertEquals(expected.getCode(), error.getCode());
+    }
+
     @Test
+    @DisplayName("无规格返回一个默认空组合，而非零个组合")
     void noSpec_returnsSingleEmptyCombination() {
-        List<Map<String, String>> result = SpecCombinationGenerator.generate(null);
-        assertEquals(1, result.size());
-        assertTrue(result.get(0).isEmpty());
-
-        result = SpecCombinationGenerator.generate(Map.of());
-        assertEquals(1, result.size());
-        assertTrue(result.get(0).isEmpty());
+        assertEquals(List.of(List.of()), SpecCombinationGenerator.generate(List.of()));
     }
 
-    // ── 规则 2：2×3 → 六个不同组合 ─────────────────────────────────
     @Test
-    void twoByThree_returnsSixCombinations() {
-        Map<String, List<String>> spec = new LinkedHashMap<>();
-        spec.put("颜色", List.of("红", "蓝"));
-        spec.put("尺寸", List.of("S", "M", "L"));
-
-        List<Map<String, String>> result = SpecCombinationGenerator.generate(spec);
-
-        assertEquals(6, result.size());
-        // 验证每一种组合都不同
-        assertEquals(6, result.stream().map(Map::toString).distinct().count());
-        // 验证笛卡尔积内容
-        assertTrue(result.contains(Map.of("颜色", "红", "尺寸", "S")));
-        assertTrue(result.contains(Map.of("颜色", "红", "尺寸", "M")));
-        assertTrue(result.contains(Map.of("颜色", "红", "尺寸", "L")));
-        assertTrue(result.contains(Map.of("颜色", "蓝", "尺寸", "S")));
-        assertTrue(result.contains(Map.of("颜色", "蓝", "尺寸", "M")));
-        assertTrue(result.contains(Map.of("颜色", "蓝", "尺寸", "L")));
+    @DisplayName("null列表或null规格项拒绝，不静默生成默认SKU")
+    void nullDefinitionOrDimension_rejected() {
+        assertError(CommonErrorCode.PARAM_INVALID, null);
+        assertError(CommonErrorCode.PARAM_INVALID, Arrays.asList((SpecDTO) null));
     }
 
-    // ── 规则 3：恰好 1,000 个允许 ──────────────────────────────────
     @Test
+    @DisplayName("2乘3得到六个完整组合且最后一个维度变化最快")
+    void twoByThree_returnsSixOrderedCombinations() {
+        var result = SpecCombinationGenerator.generate(List.of(
+                spec("颜色", List.of("红", "蓝")), spec("尺寸", List.of("S", "M", "L"))));
+        var expected = new ArrayList<List<SkuSpecValueDTO>>();
+        for (String color : List.of("红", "蓝")) {
+            for (String size : List.of("S", "M", "L")) {
+                expected.add(List.of(selected("颜色", color), selected("尺寸", size)));
+            }
+        }
+        assertEquals(expected, result);
+        assertEquals(6, result.stream().distinct().count());
+    }
+
+    @Test
+    @DisplayName("单维度规范化后保持值顺序")
+    void singleDimension_preservesOrderAfterTrimming() {
+        assertEquals(List.of(List.of(selected("颜色", "红")), List.of(selected("颜色", "蓝"))),
+                SpecCombinationGenerator.generate(List.of(spec(" 颜色 ", List.of(" 红 ", "蓝")))));
+    }
+
+    @Test
+    @DisplayName("恰好1000个组合全部生成且无重复")
     void exactly1000_allowed() {
-        // 10 × 10 × 10 = 1000
-        Map<String, List<String>> spec = new LinkedHashMap<>();
-        spec.put("A", buildValues(10));
-        spec.put("B", buildValues(10));
-        spec.put("C", buildValues(10));
-
-        List<Map<String, String>> result = SpecCombinationGenerator.generate(spec);
+        var result = SpecCombinationGenerator.generate(List.of(
+                spec("A", values(10)), spec("B", values(10)), spec("C", values(10))));
         assertEquals(1000, result.size());
+        assertEquals(1000, result.stream().distinct().count());
+        assertTrue(result.stream().allMatch(c -> c.size() == 3));
+        assertEquals(List.of(selected("A", "V9"), selected("B", "V9"), selected("C", "V9")), result.getLast());
     }
 
     @Test
-    void over1000_rejected() {
-        // 10 × 10 × 11 = 1100 > 1000
-        Map<String, List<String>> spec = new LinkedHashMap<>();
-        spec.put("A", buildValues(10));
-        spec.put("B", buildValues(10));
-        spec.put("C", buildValues(11));
-
-
-    }
-
-    // ── 规则 4：任一规格值列表为空则拒绝 ────────────────────────────
-    @Test
-    void emptyValueList_rejected() {
-        Map<String, List<String>> spec = new LinkedHashMap<>();
-        spec.put("颜色", List.of("红", "蓝"));
-        spec.put("尺寸", List.of());
-
-
+    @DisplayName("7乘11乘13恰好1001，超过上限1个也拒绝")
+    void exactly1001_rejected() {
+        assertError(ProductErrorCode.TOO_MANY_COMBINATIONS,
+                List.of(spec("A", values(7)), spec("B", values(11)), spec("C", values(13))));
     }
 
     @Test
-    void blankValue_rejected() {
-        Map<String, List<String>> spec = new LinkedHashMap<>();
-        spec.put("颜色", List.of("红", "  "));
-
-
-    }
-
-    // ── 规则 5：不修改输入，各组合之间不共享可变 Map ─────────────────
-    @Test
-    void doesNotModifyInput() {
-        Map<String, List<String>> spec = new LinkedHashMap<>();
-        List<String> colors = new java.util.ArrayList<>(List.of("红", "蓝"));
-        spec.put("颜色", colors);
-
-        SpecCombinationGenerator.generate(spec);
-
-        // 原输入仍为两色，没有被清空或追加
-        assertEquals(List.of("红", "蓝"), spec.get("颜色"));
+    @DisplayName("20乘20乘20超过组合数量限制")
+    void maximumSpuDefinition_rejected() {
+        assertError(ProductErrorCode.TOO_MANY_COMBINATIONS,
+                List.of(spec("A", values(20)), spec("B", values(20)), spec("C", values(20))));
     }
 
     @Test
+    @DisplayName("空或null候选值列表使用明确业务错误码")
+    void emptyOrNullValues_rejected() {
+        assertError(ProductErrorCode.SPEC_VALUES_EMPTY, List.of(spec("颜色", List.of())));
+        assertError(ProductErrorCode.SPEC_VALUES_EMPTY, List.of(spec("颜色", null)));
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {"  ", "\t\n"})
+    @DisplayName("null或空白规格名被拒绝")
+    void blankName_rejected(String name) {
+        assertError(CommonErrorCode.PARAM_INVALID, List.of(spec(name, List.of("红"))));
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {"  ", "\t\n"})
+    @DisplayName("null或空白规格值返回业务异常而非空指针")
+    void blankValue_rejected(String value) {
+        assertError(CommonErrorCode.PARAM_INVALID, List.of(spec("颜色", Arrays.asList("红", value))));
+    }
+
+    @Test
+    @DisplayName("trim后规格名重复必须拒绝，不能被Map覆盖")
+    void duplicateNames_rejected() {
+        assertError(ProductErrorCode.SPEC_NAME_DUPLICATE,
+                List.of(spec("颜色", List.of("红")), spec(" 颜色 ", List.of("蓝"))));
+    }
+
+    @Test
+    @DisplayName("同维度trim后重复值必须拒绝而非生成重复SKU")
+    void duplicateValues_rejected() {
+        assertError(ProductErrorCode.SPEC_VALUE_DUPLICATE, List.of(spec("颜色", List.of("红", " 红 "))));
+    }
+
+    @Test
+    @DisplayName("不同维度允许相同规格值，特殊符号不被拆分")
+    void sameValueAcrossDimensions_allowed() {
+        String value = "黑色/:\"特别款";
+        assertEquals(List.of(List.of(selected("外层", value), selected("内层", value))),
+                SpecCombinationGenerator.generate(List.of(spec("外层", List.of(value)), spec("内层", List.of(value)))));
+    }
+
+    @Test
+    @DisplayName("超过SPU的3维度或每维20值约束时拒绝")
+    void tooManyDimensionsOrValues_rejected() {
+        assertError(CommonErrorCode.PARAM_INVALID, List.of(spec("A", values(1)), spec("B", values(1)),
+                spec("C", values(1)), spec("D", values(1))));
+        assertError(CommonErrorCode.PARAM_INVALID, List.of(spec("A", values(21))));
+        assertEquals(20, SpecCombinationGenerator.generate(List.of(spec("A", values(20)))).size());
+    }
+
+    @Test
+    @DisplayName("规格名32字符、规格值64字符边界与模型一致")
+    void textLengthBoundaries() {
+        assertEquals(1, SpecCombinationGenerator.generate(List.of(spec("名".repeat(32), List.of("值".repeat(64))))).size());
+        assertError(CommonErrorCode.PARAM_INVALID, List.of(spec("名".repeat(33), List.of("值"))));
+        assertError(CommonErrorCode.PARAM_INVALID, List.of(spec("名", List.of("值".repeat(65)))));
+    }
+
+    @Test
+    @DisplayName("规范化不修改输入，输入后来修改也不影响已有输出")
+    void inputAndOutputAreIndependent() {
+        var colors = new ArrayList<>(List.of(" 红 ", "蓝"));
+        var color = spec(" 颜色 ", colors);
+        var input = new ArrayList<>(List.of(color));
+        var result = SpecCombinationGenerator.generate(input);
+        assertEquals(" 颜色 ", color.getName());
+        assertEquals(List.of(" 红 ", "蓝"), colors);
+        color.setName("新名称");
+        colors.set(0, "绿");
+        input.clear();
+        assertEquals(List.of(selected("颜色", "红")), result.getFirst());
+    }
+
+    @Test
+    @DisplayName("每个组合和DTO独立，修改一个输出项不污染其他组合或输入")
     void combinationsAreIndependent() {
-        Map<String, List<String>> spec = new LinkedHashMap<>();
-        spec.put("颜色", List.of("红", "蓝"));
-        spec.put("尺寸", List.of("S", "M"));
-
-        List<Map<String, String>> result = SpecCombinationGenerator.generate(spec);
-
-        // 每个组合都是独立对象，修改其中一个不影响其他
-        Map<String, String> first = new LinkedHashMap<>(result.get(0));
-        first.put("颜色", "绿");
-        assertEquals("红", result.get(0).get("颜色"));
+        var input = List.of(spec("颜色", List.of("红", "蓝")), spec("尺寸", List.of("S", "M")));
+        var result = SpecCombinationGenerator.generate(input);
+        var first = result.get(0);
+        var second = result.get(1);
+        assertNotSame(first, second);
+        assertNotSame(first.get(0), second.get(0));
+        first.get(0).setValue("绿");
+        first.get(0).setName("修改过的名称");
+        assertEquals(selected("颜色", "红"), second.get(0));
+        assertEquals("颜色", input.get(0).getName());
+        assertEquals(List.of("红", "蓝"), input.get(0).getValues());
+        assertEquals(selected("颜色", "红"), SpecCombinationGenerator.generate(input).get(0).get(0));
     }
 
     @Test
-    void returnedCollectionsAreImmutable() {
-        Map<String, List<String>> spec = new LinkedHashMap<>();
-        spec.put("颜色", List.of("红", "蓝"));
-
-        List<Map<String, String>> result = SpecCombinationGenerator.generate(spec);
-
-        assertThrows(UnsupportedOperationException.class, () -> result.add(Map.of()));
-        assertThrows(UnsupportedOperationException.class, () -> result.get(0).put("x", "y"));
-    }
-
-    // ── 辅助 ───────────────────────────────────────────────────────
-    private static List<String> buildValues(int n) {
-        return java.util.stream.IntStream.range(0, n)
-                .mapToObj(i -> "V" + i)
-                .toList();
+    @DisplayName("默认和非默认组合的两层列表均不可增删")
+    void returnedListsAreUnmodifiable() {
+        for (var result : List.of(SpecCombinationGenerator.generate(List.of()),
+                SpecCombinationGenerator.generate(List.of(spec("颜色", List.of("红")))))) {
+            assertThrows(UnsupportedOperationException.class, () -> result.add(List.of()));
+            assertThrows(UnsupportedOperationException.class, () -> result.get(0).add(selected("x", "y")));
+        }
     }
 }

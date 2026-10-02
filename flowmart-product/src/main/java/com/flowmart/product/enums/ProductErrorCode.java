@@ -65,8 +65,8 @@ public enum ProductErrorCode implements ErrorCode {
     /**
      * sku商品错误码
      */
-    SPEC_VALUES_EMPTY(20061,"规格列表不能为空"),
-    TOO_MANY_COMBINATIONS(20062,"规格组合总数超过上限"),
+    SPEC_VALUES_EMPTY(20061,"规格值列表不能为空"),
+    TOO_MANY_COMBINATIONS(20062,"单个SPU最多生成1000个SKU"),
     ;
 
 
