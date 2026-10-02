@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.flowmart.product.mapper.ProductSkuMapper">
+
+    <!--ProductSkuMapper：一次插入一批 SKU-->
+    <insert id="batchInsert">
+        INSERT INTO product_sku
+        (id,
+        spu_id,
+        sku_code,
+        spec_values,
+        spec_hash,
+        price,
+        image_url,
+        is_default,
+        status,
+        deleted,
+        version,
+        created_by,
+        created_at,
+        updated_by,
+        updated_at)
+        VALUES
+        <foreach collection="items" item="it" separator=",">
+            (#{it.id},
+            #{it.spuId},
+            #{it.skuCode},
+
+            <!-- 关键：spec_values 是 jsonb，显式指定 JSON TypeHandler 并 CAST -->
+            CAST(#{it.specValues,
+                   typeHandler=com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler}
+            AS jsonb),
+
+            #{it.specHash},
+            #{it.price},
+            #{it.imageUrl},
+            #{it.isDefault},
+            #{it.status},
+
+            <!-- 审计字段、deleted、version 全部由 Service 填好，这里不省略 -->
+            #{it.deleted},
+            #{it.version},
+            #{it.createdBy},
+            #{it.createdAt},
+            #{it.updatedBy},
+            #{it.updatedAt})
+        </foreach>
+    </insert>
+
+
+</mapper>

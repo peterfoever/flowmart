@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.flowmart.common.exception.BizException;
 import com.flowmart.product.convert.SpuConverter;
 import com.flowmart.product.dto.CreateSpuDTO;
+import com.flowmart.product.dto.SkuSpecValueDTO;
 import com.flowmart.product.dto.SpecDTO;
 import com.flowmart.product.dto.UpdateSpuDTO;
 import com.flowmart.product.entity.ProductBrand;
@@ -13,6 +14,7 @@ import com.flowmart.product.enums.BrandStatus;
 import com.flowmart.product.enums.CategoryStatus;
 import com.flowmart.product.enums.ProductErrorCode;
 import com.flowmart.product.enums.SpuStatus;
+import com.flowmart.product.generator.SpecCombinationGenerator;
 import com.flowmart.product.generator.SpuCodeGenerator;
 import com.flowmart.product.mapper.ProductBrandMapper;
 import com.flowmart.product.mapper.ProductCategoryMapper;
@@ -127,7 +129,7 @@ public class SpuServiceImpl implements SpuService {
     public void updateDraft(Long id, UpdateSpuDTO request) {
         log.info("修改SPU草稿请求: id={}, version={}, brandId={}",
                 id, request.getVersion(), request.getBrandId());
-        ProductSpu spu = spuMapper.selectById(id);
+        ProductSpu spu = spuMapper.selectByIdForUpdate(id);
         if (spu == null || spu.getDeleted() != 0L) {
             throw new BizException(ProductErrorCode.SPU_NOT_FOUND);
         }
@@ -178,6 +180,7 @@ public class SpuServiceImpl implements SpuService {
             log.debug("归属未变化，跳过类目/品牌校验");
 
         }
+
         // 执行更新
         int rows = spuMapper.updateDraftById(id, request.getVersion(), spu.getName(), spu.getCategoryId(), spu.getBrandId(), spu.getMainImageUrl()
                 , spu.getCarouselImages(), spu.getSpecs(), spu.getDescription(), 0L);

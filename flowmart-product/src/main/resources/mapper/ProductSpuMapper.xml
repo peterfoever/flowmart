@@ -62,4 +62,22 @@
         </foreach>
         )
     </select>
+
+    <select id="selectByIdForUpdate" resultMap="BaseResultMap">
+        SELECT
+        id,
+        name,
+        status,
+        spec_json,
+        version,
+        deleted,
+        created_by,
+        created_at,
+        updated_by,
+        updated_at
+        FROM product_spu
+        WHERE id = #{id}
+        AND deleted = 0
+        FOR UPDATE
+    </select>
 </mapper>
