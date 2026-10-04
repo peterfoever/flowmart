@@ -32,15 +32,16 @@ public class SkuServiceImpl implements SkuService {
         if (spu == null || spu.getDeleted() != 0L) {
             throw new BizException(ProductErrorCode.SPU_NOT_FOUND);
         }
-        if( productSkuMapper.countActiveBySpuId(spuId) <= 0) {
-            return List.of();
-        }
+
         List<ProductSku> skus = productSkuMapper.selectList(Wrappers.<ProductSku>lambdaQuery().eq(ProductSku::getSpuId, spuId)
                 .orderByAsc(ProductSku::getId));
 
+        if(skus.isEmpty()) {
+            return List.of();
+        }
         //  Entity → VO
         return skus.stream()
-                .map(this::toListVO)
+                .map(skuConverter::toListVO)
                 .collect(Collectors.toList());
     }
 }

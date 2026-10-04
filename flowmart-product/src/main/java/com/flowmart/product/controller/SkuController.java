@@ -35,8 +35,9 @@ public class SkuController {
         return R.ok(skuGenerateService.generate(spuId, dto, 0L));
     }
 
-    @GetMapping("/spus/{spuId}/sku")
+    @GetMapping("/spus/{spuId}/skus")
     public R<List<SkuListVO>> listSku(@Parameter(description = "SPU ID") @Min(1) @PathVariable("spuId") Long spuId) {
         return R.ok(skuService.listSku(spuId));
     }
 }
+
