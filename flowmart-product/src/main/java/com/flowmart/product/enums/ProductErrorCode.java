@@ -61,6 +61,20 @@ public enum ProductErrorCode implements ErrorCode {
     MAIN_IMAGE_IN_CAROUSEL(20052,"主图不能同时出现在轮播图中"),
     SPEC_NAME_DUPLICATE(20053,"规格名重复"),
     SPEC_VALUE_DUPLICATE(20054,"同一规格内规格值重复"),
+
+    /**
+     * sku商品错误码
+     */
+    SPEC_VALUES_EMPTY(20061,"规格值列表不能为空"),
+    TOO_MANY_COMBINATIONS(20062,"单个SPU最多生成1000个SKU"),
+    SKU_ALREADY_GENERATED(20063,"SKU已经生成过了"),
+    SKU_GENERATE_FAILED(20064,"SKU生成失败"),
+    SKU_DATA_CONFLICT(20065,"SKU编码或规格组合冲突，请检查后重试"),
+    SPU_SPECS_FROZEN(20066,"已生成SKU，不允许修改商品规格"),
+    SKU_NOT_FOUND(20067,"SKU不存在"),
+    SKU_VERSION_CONFLICT(20068,"SKU 已被其他人修改，请刷新后重试"),
+    SKU_UPDATE_FAILED(20069,"SKU 更新失败"),
+
     ;
 
 

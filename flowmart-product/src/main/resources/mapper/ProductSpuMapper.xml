@@ -62,4 +62,29 @@
         </foreach>
         )
     </select>
+
+    <!-- 复用 MP 根据实体字段生成的映射，保留 JSON 泛型 TypeHandler。 -->
+    <select id="selectByIdForUpdate" resultMap="mybatis-plus_ProductSpu">
+        SELECT
+        id,
+        spu_code,
+        name,
+        category_id,
+        brand_id,
+        main_image_url,
+        carousel_images,
+        description,
+        status,
+        spec_json,
+        version,
+        deleted,
+        created_by,
+        created_at,
+        updated_by,
+        updated_at
+        FROM product_spu
+        WHERE id = #{id}
+        AND deleted = 0
+        FOR UPDATE
+    </select>
 </mapper>

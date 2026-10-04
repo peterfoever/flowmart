@@ -27,7 +27,8 @@ class SpuUpdateServiceTest {
     private final ProductCategoryMapper categories = mock(ProductCategoryMapper.class);
     private final ProductBrandMapper brands = mock(ProductBrandMapper.class);
     private final SpuCodeGenerator generator = mock(SpuCodeGenerator.class);
-    private final SpuServiceImpl service = new SpuServiceImpl(Mappers.getMapper(SpuConverter.class), mapper, categories, brands, generator);
+    private final ProductSkuMapper skus = mock(ProductSkuMapper.class);
+    private final SpuServiceImpl service = new SpuServiceImpl(Mappers.getMapper(SpuConverter.class), mapper, categories, brands, generator, skus);
     private ProductSpu existing;
     private UpdateSpuDTO request;
 
@@ -40,6 +41,7 @@ class SpuUpdateServiceTest {
         existing.setBrandId(3L);
         existing.setDeleted(0L);
         existing.setStatus(0);
+        existing.setSpecs(List.of());
         existing.setVersion(Integer.valueOf("128"));
         existing.setCreatedBy(42L);
         existing.setCreatedAt(LocalDateTime.of(2026, 9, 1, 10, 0));
@@ -51,7 +53,7 @@ class SpuUpdateServiceTest {
         request.setMainImageUrl(" main.png ");
         request.setCarouselImages(List.of());
         request.setSpecs(List.of());
-        when(mapper.selectById(1L)).thenReturn(existing);
+        when(mapper.selectByIdForUpdate(1L)).thenReturn(existing);
         when(mapper.updateDraftById(anyLong(), anyInt(), anyString(), anyLong(), nullable(Long.class),
                 anyString(), anyList(), anyList(), nullable(String.class), anyLong())).thenReturn(1);
     }
@@ -96,7 +98,7 @@ class SpuUpdateServiceTest {
         when(categories.existsByCategoryIdAndBrandId(4L, 5L)).thenReturn(true);
         service.updateDraft(1L, request);
         var order = inOrder(categories, brands, mapper);
-        order.verify(mapper).selectById(1L);
+        order.verify(mapper).selectByIdForUpdate(1L);
         order.verify(categories).selectByIdForUpdate(4L);
         order.verify(categories).isLeafCategory(4L);
         order.verify(brands).selectByIdForUpdate(5L);
@@ -129,7 +131,7 @@ class SpuUpdateServiceTest {
     void invalidSpu_failsBeforeReferences(String scenario) {
         ProductErrorCode expected;
         switch (scenario) {
-            case "missing" -> { when(mapper.selectById(1L)).thenReturn(null); expected = ProductErrorCode.SPU_NOT_FOUND; }
+            case "missing" -> { when(mapper.selectByIdForUpdate(1L)).thenReturn(null); expected = ProductErrorCode.SPU_NOT_FOUND; }
             case "deleted" -> { existing.setDeleted(1L); expected = ProductErrorCode.SPU_NOT_FOUND; }
             case "notDraft" -> { existing.setStatus(1); expected = ProductErrorCode.SPU_NOT_DRAFT; }
             default -> { request.setVersion(127); expected = ProductErrorCode.SPU_VERSION_CONFLICT; }
@@ -189,5 +191,71 @@ class SpuUpdateServiceTest {
         when(mapper.updateDraftById(anyLong(), anyInt(), anyString(), anyLong(), nullable(Long.class),
                 anyString(), anyList(), anyList(), nullable(String.class), anyLong())).thenThrow(failure);
         assertSame(failure, assertThrows(DataAccessResourceFailureException.class, () -> service.updateDraft(1L, request)));
+    }
+
+    private SpecDTO spec(String name, String... values) {
+        var spec = new SpecDTO();
+        spec.setName(name);
+        spec.setValues(List.of(values));
+        return spec;
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"add", "remove", "rename", "value", "dimensionOrder", "valueOrder"})
+    @org.junit.jupiter.api.DisplayName("已有SKU时禁止增删改规格以及维度和值重排")
+    void generatedSkus_freezeSpecs(String change) {
+        existing.setSpecs(List.of(spec("颜色", "红", "蓝"), spec("尺寸", "S", "M")));
+        request.setSpecs(switch (change) {
+            case "add" -> List.of(spec("颜色", "红", "蓝"), spec("尺寸", "S", "M"), spec("材质", "棉"));
+            case "remove" -> List.of(spec("颜色", "红", "蓝"));
+            case "rename" -> List.of(spec("色彩", "红", "蓝"), spec("尺寸", "S", "M"));
+            case "value" -> List.of(spec("颜色", "黑", "蓝"), spec("尺寸", "S", "M"));
+            case "dimensionOrder" -> List.of(spec("尺寸", "S", "M"), spec("颜色", "红", "蓝"));
+            default -> List.of(spec("颜色", "蓝", "红"), spec("尺寸", "S", "M"));
+        });
+        when(skus.countActiveBySpuId(1L)).thenReturn(6);
+        assertEquals(ProductErrorCode.SPU_SPECS_FROZEN.getCode(),
+                assertThrows(BizException.class, () -> service.updateDraft(1L, request)).getCode());
+        var order = inOrder(mapper, skus);
+        order.verify(mapper).selectByIdForUpdate(1L);
+        order.verify(skus).countActiveBySpuId(1L);
+        assertNoUpdate();
+        verifyNoInteractions(categories, brands);
+    }
+
+    @Test
+    @org.junit.jupiter.api.DisplayName("规范化后规格不变时可修改名称，不查询SKU且不修改原规格对象")
+    void unchangedNormalizedSpecs_allowNonSpecEdit() {
+        var old = spec("颜色", "红", "蓝");
+        existing.setSpecs(List.of(old));
+        var submitted = spec(" 颜色 ", " 红 ", "蓝");
+        request.setSpecs(List.of(submitted));
+        service.updateDraft(1L, request);
+        assertEquals(List.of(spec("颜色", "红", "蓝")), existing.getSpecs());
+        assertNotSame(old, existing.getSpecs().getFirst());
+        assertNotSame(submitted, existing.getSpecs().getFirst());
+        assertEquals(" 颜色 ", submitted.getName());
+        verifyNoInteractions(skus);
+        verify(mapper).updateDraftById(1L, 128, "新名称", 2L, 3L, "main.png", List.of(),
+                List.of(spec("颜色", "红", "蓝")), null, 0L);
+    }
+
+    @Test
+    @org.junit.jupiter.api.DisplayName("尚未生成SKU时允许修改规格")
+    void noSkus_allowSpecEdit() {
+        request.setSpecs(List.of(spec("颜色", "红")));
+        service.updateDraft(1L, request);
+        verify(skus).countActiveBySpuId(1L);
+        verify(mapper).updateDraftById(1L, 128, "新名称", 2L, 3L, "main.png", List.of(), request.getSpecs(), null, 0L);
+    }
+
+    @Test
+    @org.junit.jupiter.api.DisplayName("默认SKU同样冻结无规格定义")
+    void defaultSku_blocksAddingSpec() {
+        request.setSpecs(List.of(spec("颜色", "红")));
+        when(skus.countActiveBySpuId(1L)).thenReturn(1);
+        assertEquals(ProductErrorCode.SPU_SPECS_FROZEN.getCode(),
+                assertThrows(BizException.class, () -> service.updateDraft(1L, request)).getCode());
+        assertNoUpdate();
     }
 }

@@ -47,4 +47,7 @@ public interface ProductSpuMapper extends BaseMapper<ProductSpu> {
      */
     boolean existsByCategoryIdAndBrandIds(@Param("categoryId") Long categoryId,
                                           @Param("brandIds") List<Long> brandIds);
+
+    // ProductSpuMapper：锁定并读取有效 SPU
+    ProductSpu selectByIdForUpdate(@Param("id") Long id);
 }

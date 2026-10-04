@@ -31,7 +31,8 @@ class SpuServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new SpuServiceImpl(Mappers.getMapper(SpuConverter.class), spus, categories, brands, codes);
+        service = new SpuServiceImpl(Mappers.getMapper(SpuConverter.class), spus, categories, brands, codes,
+                mock(com.flowmart.product.mapper.ProductSkuMapper.class));
         request = new CreateSpuDTO();
         request.setName(" 手机 ");
         request.setCategoryId(1L);

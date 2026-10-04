@@ -134,4 +134,30 @@ class ProductSpuMappingTest {
         when(rs.getString("spec_json")).thenReturn("{broken");
         assertThrows(Exception.class, () -> mapping("specs").getTypeHandler().getResult(rs, "spec_json"));
     }
+
+    @Test
+    @org.junit.jupiter.api.DisplayName("锁定查询使用完整实体映射，保留规格和轮播图的泛型处理器")
+    void lockedQuery_returnsCompleteEntityWithTypedJson() throws Exception {
+        var statement = configuration.getMappedStatement(PREFIX + "selectByIdForUpdate");
+        var resultMap = statement.getResultMaps().getFirst();
+        assertSame(configuration.getMappedStatement(PREFIX + "selectById").getResultMaps().getFirst(), resultMap);
+        var method = ProductSpuMapper.class.getMethod("selectByIdForUpdate", Long.class);
+        Object params = new org.apache.ibatis.reflection.ParamNameResolver(configuration, method)
+                .getNamedParams(new Object[]{123L});
+        var bound = statement.getBoundSql(params);
+        String sql = bound.getSql().replaceAll("\\s+", " ").trim();
+        assertTrue(sql.endsWith("WHERE id = ? AND deleted = 0 FOR UPDATE"));
+        var columns = java.util.Arrays.stream(sql.substring("SELECT ".length(), sql.indexOf(" FROM ")).split(","))
+                .map(String::trim).collect(java.util.stream.Collectors.toSet());
+        var table = TableInfoHelper.getTableInfo(ProductSpu.class);
+        var expectedColumns = new java.util.HashSet<>(table.getFieldList().stream().map(f -> f.getColumn()).toList());
+        expectedColumns.add("id");
+        assertEquals(expectedColumns, columns);
+        var jdbc = mock(PreparedStatement.class);
+        new org.apache.ibatis.scripting.defaults.DefaultParameterHandler(statement, params, bound).setParameters(jdbc);
+        verify(jdbc).setLong(1, 123L);
+        // resultMap 与 selectById 同一个对象，现有 roundTrip 测试同时覆盖该锁定查询的泛型映射。
+        specs_roundTripRetainsGenericElementType();
+        carouselImages_roundTripPreservesOrderAndChinese();
+    }
 }
