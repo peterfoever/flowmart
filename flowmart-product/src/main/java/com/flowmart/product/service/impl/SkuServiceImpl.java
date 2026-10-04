@@ -52,6 +52,10 @@ public class SkuServiceImpl implements SkuService {
         if(productSku == null) {
             throw new BizException(ProductErrorCode.SKU_NOT_FOUND);
         }
+        ProductSpu spu = productSpuMapper.selectById(productSku.getSpuId());
+        if(spu == null || spu.getDeleted() != 0L) {
+            throw new BizException(ProductErrorCode.SPU_NOT_FOUND);
+        }
         return skuConverter.toDetailVO(productSku);
     }
 }
