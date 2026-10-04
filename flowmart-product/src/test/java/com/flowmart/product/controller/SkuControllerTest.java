@@ -3,16 +3,19 @@ package com.flowmart.product.controller;
 import com.flowmart.common.exception.BizException;
 import com.flowmart.common.web.GlobalExceptionHandler;
 import com.flowmart.product.dto.SkuGenerateDTO;
+import com.flowmart.product.dto.SkuSpecValueDTO;
 import com.flowmart.product.enums.ProductErrorCode;
 import com.flowmart.product.service.SkuService;
 import com.flowmart.product.service.impl.SkuGenerateService;
 import com.flowmart.product.vo.SkuListVO;
+import com.flowmart.product.vo.SkuDetailVO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.http.MediaType;
@@ -22,6 +25,7 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.validation.beanvalidation.MethodValidationInterceptor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,6 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class SkuControllerTest {
     private static final String LIST = "/api/product/admin/spus/{spuId}/skus";
     private static final String GENERATE = LIST + "/generate";
+    private static final String DETAIL = "/api/product/admin/skus/{id}";
     private SkuGenerateService generateService;
     private SkuService skuService;
     private LocalValidatorFactoryBean validator;
@@ -172,5 +177,86 @@ class SkuControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(ProductErrorCode.SKU_ALREADY_GENERATED.getCode()))
                 .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    @DisplayName("详情路由绑定SKU ID，返回完整对象、规格及审计字段，不泄露内部字段")
+    void detail_bindsSkuIdAndSerializesVo() throws Exception {
+        var vo = new SkuDetailVO();
+        var color = new SkuSpecValueDTO();
+        color.setName("颜色"); color.setValue("黑色");
+        vo.setId(100L); vo.setSpuId(42L); vo.setSkuCode("SKU100");
+        vo.setSpecValues(List.of(color)); vo.setSpecText("颜色=黑色");
+        vo.setPrice(new BigDecimal("99.90")); vo.setImageUrl("https://example.test/sku.png");
+        vo.setIsDefault(false); vo.setVersion(3);
+        vo.setCreatedBy(7L); vo.setUpdatedBy(8L);
+        vo.setCreatedAt(LocalDateTime.of(2026, 10, 4, 10, 0));
+        vo.setUpdatedAt(vo.getCreatedAt().plusHours(1));
+        when(skuService.detailSku(100L)).thenReturn(vo);
+
+        mvc.perform(get(DETAIL, 100))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data").isMap())
+                .andExpect(jsonPath("$.data.id").value(100))
+                .andExpect(jsonPath("$.data.spuId").value(42))
+                .andExpect(jsonPath("$.data.skuCode").value("SKU100"))
+                .andExpect(jsonPath("$.data.specValues[0].name").value("颜色"))
+                .andExpect(jsonPath("$.data.specValues[0].value").value("黑色"))
+                .andExpect(jsonPath("$.data.specText").value("颜色=黑色"))
+                .andExpect(jsonPath("$.data.price").value(99.90))
+                .andExpect(jsonPath("$.data.imageUrl").value(vo.getImageUrl()))
+                .andExpect(jsonPath("$.data.isDefault").value(false))
+                .andExpect(jsonPath("$.data.version").value(3))
+                .andExpect(jsonPath("$.data.createdBy").value(7))
+                .andExpect(jsonPath("$.data.updatedBy").value(8))
+                .andExpect(jsonPath("$.data.createdAt").exists())
+                .andExpect(jsonPath("$.data.updatedAt").exists())
+                .andExpect(jsonPath("$.data.specHash").doesNotExist())
+                .andExpect(jsonPath("$.data.deleted").doesNotExist());
+        verify(skuService).detailSku(100L);
+        verifyNoMoreInteractions(skuService);
+        verifyNoInteractions(generateService);
+    }
+
+    @Test
+    @DisplayName("默认SKU详情通过HTTP返回空规格数组而不是null")
+    void detail_defaultSkuSerializesEmptyArray() throws Exception {
+        var vo = new SkuDetailVO();
+        vo.setId(100L); vo.setSpecValues(List.of());
+        vo.setIsDefault(true); vo.setSpecText("默认规格");
+        when(skuService.detailSku(100L)).thenReturn(vo);
+        mvc.perform(get(DETAIL, 100)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.data.specValues").isArray())
+                .andExpect(jsonPath("$.data.specValues").isEmpty())
+                .andExpect(jsonPath("$.data.isDefault").value(true))
+                .andExpect(jsonPath("$.data.specText").value("默认规格"));
+        verify(skuService).detailSku(100L);
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = {0, -1})
+    @DisplayName("详情接口拒绝非正数SKU ID，不调用Service")
+    void detail_rejectsNonPositiveSkuId(long id) throws Exception {
+        mvc.perform(get(DETAIL, id)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(10001))
+                .andExpect(jsonPath("$.success").value(false));
+        verifyNoInteractions(skuService, generateService);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = ProductErrorCode.class, names = {"SKU_NOT_FOUND", "SPU_NOT_FOUND"})
+    @DisplayName("详情接口通过统一异常处理保留SKU和所属SPU不存在的业务码")
+    void detail_returnsBusinessErrors(ProductErrorCode errorCode) throws Exception {
+        when(skuService.detailSku(100L)).thenThrow(new BizException(errorCode));
+        mvc.perform(get(DETAIL, 100)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(errorCode.getCode()))
+                .andExpect(jsonPath("$.message").value(errorCode.getMessage()))
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.data").doesNotExist());
+        verify(skuService).detailSku(100L);
+        verifyNoInteractions(generateService);
     }
 }
