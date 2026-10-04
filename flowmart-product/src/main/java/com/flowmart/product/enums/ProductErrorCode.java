@@ -71,7 +71,10 @@ public enum ProductErrorCode implements ErrorCode {
     SKU_GENERATE_FAILED(20064,"SKU生成失败"),
     SKU_DATA_CONFLICT(20065,"SKU编码或规格组合冲突，请检查后重试"),
     SPU_SPECS_FROZEN(20066,"已生成SKU，不允许修改商品规格"),
-    SKU_NOT_FOUND(20067,"SKU不存在")
+    SKU_NOT_FOUND(20067,"SKU不存在"),
+    SKU_VERSION_CONFLICT(20068,"SKU 已被其他人修改，请刷新后重试"),
+    SKU_UPDATE_FAILED(20069,"SKU 更新失败"),
+
     ;
 
 

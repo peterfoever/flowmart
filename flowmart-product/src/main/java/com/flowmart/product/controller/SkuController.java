@@ -2,6 +2,7 @@ package com.flowmart.product.controller;
 
 import com.flowmart.common.result.R;
 import com.flowmart.product.dto.SkuGenerateDTO;
+import com.flowmart.product.dto.SkuUpdateDTO;
 import com.flowmart.product.service.SkuService;
 import com.flowmart.product.service.impl.SkuGenerateService;
 import com.flowmart.product.vo.SkuDetailVO;
@@ -31,7 +32,7 @@ public class SkuController {
 
     @PostMapping("/spus/{spuId}/skus/generate")
     public R<List<Long>> generate(@Parameter(description = "SPU ID") @Min(1) @PathVariable("spuId") Long spuId,
-                                 @Valid @RequestBody SkuGenerateDTO dto) {
+                                  @Valid @RequestBody SkuGenerateDTO dto) {
 
         return R.ok(skuGenerateService.generate(spuId, dto, 0L));
     }
@@ -44,6 +45,12 @@ public class SkuController {
     @GetMapping("/skus/{id}")
     public R<SkuDetailVO> detailSku(@Parameter(description = "SKU ID") @Min(1) @PathVariable("id") Long skuId) {
         return R.ok(skuService.detailSku(skuId));
+    }
+
+    @PutMapping("/skus/{id}")
+    public R<Void> updateSku(@Parameter(description = "SKU ID") @Min(1) @PathVariable("id") Long skuId, @Valid @RequestBody SkuUpdateDTO request) {
+        skuService.updateSku(skuId, request);
+        return R.ok();
     }
 }
 

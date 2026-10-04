@@ -44,5 +44,17 @@
         </foreach>
     </insert>
 
+    <update id="updatePriceAndImage">
+        UPDATE product_sku
+        SET price       = #{price},
+        image_url   = #{imageUrl},
+        updated_by  = #{actor},
+        updated_at  = #{now},
+        version     = version + 1
+        WHERE id        = #{id}
+        AND spu_id    = #{spuId}
+        AND deleted   = 0
+        AND version   = #{version}
+    </update>
 
 </mapper>
