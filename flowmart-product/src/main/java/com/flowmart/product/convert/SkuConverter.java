@@ -4,6 +4,7 @@ package com.flowmart.product.convert;
 import com.flowmart.product.dto.SkuGenerateDTO;
 import com.flowmart.product.entity.ProductSku;
 
+import com.flowmart.product.vo.SkuListVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -23,4 +24,7 @@ public interface SkuConverter {
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "version", ignore = true)
     ProductSku toEntity(SkuGenerateDTO dto);
+
+
+    SkuListVO toListVO(ProductSku entity);
 }
