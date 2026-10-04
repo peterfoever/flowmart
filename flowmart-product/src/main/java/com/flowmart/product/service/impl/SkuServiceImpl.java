@@ -78,6 +78,18 @@ public class SkuServiceImpl implements SkuService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateSku(Long skuId, SkuUpdateDTO request) {
+        // Service 也可能被非 HTTP 入口调用，不能只依赖 Controller 的 @Valid。
+        if (skuId == null || skuId <= 0 || request == null
+                || request.getVersion() == null || request.getVersion() < 0) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID);
+        }
+        BigDecimal price = request.getPrice();
+        String imageUrl = StrUtil.trim(request.getImageUrl());
+        if (price == null || price.signum() < 0 || price.compareTo(MAX_PRICE) > 0 || price.scale() > 2
+                || StrUtil.isBlank(imageUrl) || request.getImageUrl().length() > 512) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID);
+        }
+
         ProductSku sku = productSkuMapper.selectById(skuId);
         if (sku == null) {
             throw new BizException(ProductErrorCode.SKU_NOT_FOUND);
@@ -91,20 +103,9 @@ public class SkuServiceImpl implements SkuService {
             throw new BizException(ProductErrorCode.SPU_NOT_DRAFT);
         }
 
-        // 执行校验
-        String imageUrl = StrUtil.trim(request.getImageUrl());
-        if (StrUtil.isBlank(imageUrl)) {
-            imageUrl = spu.getMainImageUrl();
-        }
-        BigDecimal price = request.getPrice();
-        if (price == null || price.signum() < 0 || price.compareTo(MAX_PRICE) > 0 || price.scale() > 2
-                || (request.getImageUrl() != null && request.getImageUrl().length() > 512)) {
-            throw new BizException(CommonErrorCode.PARAM_INVALID);
-        }
-
         // 执行更新操作
         int affected = productSkuMapper.updatePriceAndImage(skuId, spu.getId(),
-                request.getVersion(), request.getPrice(), request.getImageUrl(),
+                request.getVersion(), price, imageUrl,
                 SYSTEM_ACTOR, LocalDateTime.now());
 
         if (affected == 0) {
@@ -120,5 +121,7 @@ public class SkuServiceImpl implements SkuService {
             // 理论上不会发生：主键更新影响行数应为 1
             throw new BizException(ProductErrorCode.SKU_UPDATE_FAILED);
         }
+        log.info("SKU价格图片更新执行完成: skuId={}, spuId={}, 请求version={}, actor={}",
+                skuId, spu.getId(), request.getVersion(), SYSTEM_ACTOR);
     }
 }

@@ -3,6 +3,7 @@ package com.flowmart.product.controller;
 import com.flowmart.common.exception.BizException;
 import com.flowmart.common.web.GlobalExceptionHandler;
 import com.flowmart.product.dto.SkuGenerateDTO;
+import com.flowmart.product.dto.SkuUpdateDTO;
 import com.flowmart.product.dto.SkuSpecValueDTO;
 import com.flowmart.product.enums.ProductErrorCode;
 import com.flowmart.product.service.SkuService;
@@ -39,6 +40,7 @@ class SkuControllerTest {
     private static final String LIST = "/api/product/admin/spus/{spuId}/skus";
     private static final String GENERATE = LIST + "/generate";
     private static final String DETAIL = "/api/product/admin/skus/{id}";
+    private static final String UPDATE_BODY = "{\"price\":129.90,\"imageUrl\":\"sku.png\",\"version\":3}";
     private SkuGenerateService generateService;
     private SkuService skuService;
     private LocalValidatorFactoryBean validator;
@@ -63,6 +65,95 @@ class SkuControllerTest {
     @AfterEach
     void tearDown() {
         validator.close();
+    }
+
+    @Test
+    @DisplayName("PUT修改路由绑定SKU ID和三个编辑字段，返回成功而非详情对象")
+    void update_bindsPathAndBody() throws Exception {
+        mvc.perform(put(DETAIL, 100).contentType(MediaType.APPLICATION_JSON).content(UPDATE_BODY))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data").doesNotExist());
+        var dto = ArgumentCaptor.forClass(SkuUpdateDTO.class);
+        verify(skuService).updateSku(eq(100L), dto.capture());
+        assertEquals(new BigDecimal("129.90"), dto.getValue().getPrice());
+        assertEquals("sku.png", dto.getValue().getImageUrl());
+        assertEquals(3, dto.getValue().getVersion());
+        verifyNoMoreInteractions(skuService);
+        verifyNoInteractions(generateService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"0.00", "99999999.99"})
+    @DisplayName("修改接口接受价格上下界、版本0和512字符图片")
+    void update_acceptsBoundaries(String price) throws Exception {
+        String image = "a".repeat(512);
+        String body = "{\"price\":" + price + ",\"imageUrl\":\"" + image + "\",\"version\":0}";
+        mvc.perform(put(DETAIL, 100).contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.code").value(0));
+        var dto = ArgumentCaptor.forClass(SkuUpdateDTO.class);
+        verify(skuService).updateSku(eq(100L), dto.capture());
+        assertEquals(new BigDecimal(price), dto.getValue().getPrice());
+        assertEquals(image, dto.getValue().getImageUrl());
+        assertEquals(0, dto.getValue().getVersion());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "{}",
+            "{\"imageUrl\":\"a.png\",\"version\":3}",
+            "{\"price\":null,\"imageUrl\":\"a.png\",\"version\":3}",
+            "{\"price\":-0.01,\"imageUrl\":\"a.png\",\"version\":3}",
+            "{\"price\":100000000.00,\"imageUrl\":\"a.png\",\"version\":3}",
+            "{\"price\":1.001,\"imageUrl\":\"a.png\",\"version\":3}",
+            "{\"price\":1.00,\"version\":3}",
+            "{\"price\":1.00,\"imageUrl\":null,\"version\":3}",
+            "{\"price\":1.00,\"imageUrl\":\"\",\"version\":3}",
+            "{\"price\":1.00,\"imageUrl\":\"   \",\"version\":3}",
+            "{\"price\":1.00,\"imageUrl\":\"a.png\"}",
+            "{\"price\":1.00,\"imageUrl\":\"a.png\",\"version\":null}",
+            "{\"price\":1.00,\"imageUrl\":\"a.png\",\"version\":-1}",
+            "{broken", "null", ""})
+    @DisplayName("修改请求拒绝非法价格、图片、版本和JSON，校验失败不进入Service")
+    void update_rejectsInvalidBody(String body) throws Exception {
+        mvc.perform(put(DETAIL, 100).contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(10001))
+                .andExpect(jsonPath("$.success").value(false));
+        verifyNoInteractions(skuService, generateService);
+    }
+
+    @Test
+    @DisplayName("修改接口拒绝513字符图片")
+    void update_rejectsOversizedImage() throws Exception {
+        String body = "{\"price\":1.00,\"imageUrl\":\"" + "a".repeat(513) + "\",\"version\":3}";
+        mvc.perform(put(DETAIL, 100).contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.code").value(10001));
+        verifyNoInteractions(skuService, generateService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = {0, -1})
+    @DisplayName("修改接口拒绝非正数SKU ID")
+    void update_rejectsInvalidId(long id) throws Exception {
+        mvc.perform(put(DETAIL, id).contentType(MediaType.APPLICATION_JSON).content(UPDATE_BODY))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.code").value(10001));
+        verifyNoInteractions(skuService, generateService);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = ProductErrorCode.class, names = {"SKU_NOT_FOUND", "SPU_NOT_FOUND", "SPU_NOT_DRAFT",
+            "SKU_VERSION_CONFLICT", "SKU_UPDATE_FAILED"})
+    @DisplayName("修改接口保留存在性、状态、版本冲突和更新失败的业务码")
+    void update_returnsBusinessErrors(ProductErrorCode error) throws Exception {
+        doThrow(new BizException(error)).when(skuService).updateSku(eq(100L), any(SkuUpdateDTO.class));
+        mvc.perform(put(DETAIL, 100).contentType(MediaType.APPLICATION_JSON).content(UPDATE_BODY))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(error.getCode()))
+                .andExpect(jsonPath("$.message").value(error.getMessage()))
+                .andExpect(jsonPath("$.success").value(false));
+        verify(skuService).updateSku(eq(100L), any(SkuUpdateDTO.class));
     }
 
     @Test
