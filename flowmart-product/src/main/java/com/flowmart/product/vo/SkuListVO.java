@@ -13,7 +13,7 @@ public class SkuListVO {
     private Long spuId;
     private String skuCode;
     private List<SkuSpecValueDTO> specValues;
-    private String specText;          // 前端展示，例如 "红色 / XL"
+    private String specText;          // 前端展示，例如 "颜色=红色 / 尺码=XL"；无规格为 "默认规格"
     private BigDecimal price;
     private String imageUrl;
     private Boolean isDefault;

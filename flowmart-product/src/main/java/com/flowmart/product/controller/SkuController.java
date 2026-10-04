@@ -4,6 +4,7 @@ import com.flowmart.common.result.R;
 import com.flowmart.product.dto.SkuGenerateDTO;
 import com.flowmart.product.service.SkuService;
 import com.flowmart.product.service.impl.SkuGenerateService;
+import com.flowmart.product.vo.SkuDetailVO;
 import com.flowmart.product.vo.SkuListVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -38,6 +39,11 @@ public class SkuController {
     @GetMapping("/spus/{spuId}/skus")
     public R<List<SkuListVO>> listSku(@Parameter(description = "SPU ID") @Min(1) @PathVariable("spuId") Long spuId) {
         return R.ok(skuService.listSku(spuId));
+    }
+
+    @GetMapping("/skus/{id}")
+    public R<SkuDetailVO> detailSku(@Parameter(description = "SKU ID") @Min(1) @PathVariable("id") Long skuId) {
+        return R.ok(skuService.detailSku(skuId));
     }
 }
 

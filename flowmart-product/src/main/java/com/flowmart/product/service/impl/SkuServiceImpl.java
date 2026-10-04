@@ -9,6 +9,7 @@ import com.flowmart.product.enums.ProductErrorCode;
 import com.flowmart.product.mapper.ProductSkuMapper;
 import com.flowmart.product.mapper.ProductSpuMapper;
 import com.flowmart.product.service.SkuService;
+import com.flowmart.product.vo.SkuDetailVO;
 import com.flowmart.product.vo.SkuListVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,5 +44,14 @@ public class SkuServiceImpl implements SkuService {
         return skus.stream()
                 .map(skuConverter::toListVO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public SkuDetailVO detailSku(Long id) {
+        ProductSku productSku = productSkuMapper.selectById(id);
+        if(productSku == null) {
+            throw new BizException(ProductErrorCode.SKU_NOT_FOUND);
+        }
+        return skuConverter.toDetailVO(productSku);
     }
 }

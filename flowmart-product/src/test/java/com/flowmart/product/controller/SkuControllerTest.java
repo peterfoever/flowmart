@@ -1,0 +1,176 @@
+package com.flowmart.product.controller;
+
+import com.flowmart.common.exception.BizException;
+import com.flowmart.common.web.GlobalExceptionHandler;
+import com.flowmart.product.dto.SkuGenerateDTO;
+import com.flowmart.product.enums.ProductErrorCode;
+import com.flowmart.product.service.SkuService;
+import com.flowmart.product.service.impl.SkuGenerateService;
+import com.flowmart.product.vo.SkuListVO;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
+import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import org.springframework.validation.beanvalidation.MethodValidationInterceptor;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+/** 经 DispatcherServlet 验证真实路由、JSON、校验与异常处理；不启动数据库。 */
+class SkuControllerTest {
+    private static final String LIST = "/api/product/admin/spus/{spuId}/skus";
+    private static final String GENERATE = LIST + "/generate";
+    private SkuGenerateService generateService;
+    private SkuService skuService;
+    private LocalValidatorFactoryBean validator;
+    private MockMvc mvc;
+
+    @BeforeEach
+    void setUp() {
+        generateService = mock(SkuGenerateService.class);
+        skuService = mock(SkuService.class);
+        validator = new LocalValidatorFactoryBean();
+        validator.afterPropertiesSet();
+        // standaloneSetup 不自动注册 @Validated 的 AOP，显式装配以真实验证路径参数。
+        var proxy = new ProxyFactory(new SkuController(generateService, skuService));
+        proxy.setProxyTargetClass(true);
+        proxy.addAdvice(new MethodValidationInterceptor(validator.getValidator()));
+        mvc = MockMvcBuilders.standaloneSetup(proxy.getProxy())
+                .setValidator(validator)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
+    }
+
+    @AfterEach
+    void tearDown() {
+        validator.close();
+    }
+
+    @Test
+    @DisplayName("生成路由绑定路径SPU ID和JSON价格图片，返回生成的ID列表")
+    void generate_bindsPathAndBody() throws Exception {
+        when(generateService.generate(eq(42L), any(SkuGenerateDTO.class), eq(0L))).thenReturn(List.of(100L, 101L));
+        mvc.perform(post(GENERATE, 42).contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"price":99.90,"imageUrl":"https://example.test/sku.png"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data[0]").value(100))
+                .andExpect(jsonPath("$.data[1]").value(101));
+        var dto = ArgumentCaptor.forClass(SkuGenerateDTO.class);
+        verify(generateService).generate(eq(42L), dto.capture(), eq(0L));
+        assertEquals(new BigDecimal("99.90"), dto.getValue().getPrice());
+        assertEquals("https://example.test/sku.png", dto.getValue().getImageUrl());
+        verifyNoInteractions(skuService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"0.00", "99999999.99"})
+    @DisplayName("生成接口接受零元和最大合法价格，图片可不传")
+    void generate_acceptsPriceBoundaries(String price) throws Exception {
+        when(generateService.generate(eq(42L), any(), eq(0L))).thenReturn(List.of(100L));
+        mvc.perform(post(GENERATE, 42).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"price\":" + price + "}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.code").value(0));
+        var dto = ArgumentCaptor.forClass(SkuGenerateDTO.class);
+        verify(generateService).generate(eq(42L), dto.capture(), eq(0L));
+        assertEquals(new BigDecimal(price), dto.getValue().getPrice());
+        assertNull(dto.getValue().getImageUrl());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"{}", "{\"price\":null}", "{\"price\":-0.01}",
+            "{\"price\":1.001}", "{\"price\":100000000.00}", "{broken"})
+    @DisplayName("非法价格和损坏JSON返回参数错误，不调用生成Service")
+    void generate_rejectsInvalidBody(String body) throws Exception {
+        mvc.perform(post(GENERATE, 42).contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(10001))
+                .andExpect(jsonPath("$.success").value(false));
+        verifyNoInteractions(generateService, skuService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = {0, -1})
+    @DisplayName("生成与列表接口拒绝非正数路径ID，不进入Service")
+    void routes_rejectNonPositiveSpuId(long id) throws Exception {
+        mvc.perform(get(LIST, id)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(10001));
+        mvc.perform(post(GENERATE, id).contentType(MediaType.APPLICATION_JSON).content("{\"price\":1.00}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.code").value(10001));
+        verifyNoInteractions(generateService, skuService);
+    }
+
+    @Test
+    @DisplayName("复数skus列表路由正确绑定SPU ID并序列化VO，而非空对象")
+    void list_serializesVo() throws Exception {
+        var vo = new SkuListVO();
+        vo.setId(100L); vo.setSpuId(42L); vo.setSkuCode("SKU100");
+        vo.setSpecValues(List.of()); vo.setSpecText("默认规格");
+        vo.setPrice(new BigDecimal("99.90")); vo.setImageUrl("https://example.test/sku.png");
+        vo.setIsDefault(true); vo.setVersion(3);
+        when(skuService.listSku(42L)).thenReturn(List.of(vo));
+        mvc.perform(get(LIST, 42))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.data[0].id").value(100))
+                .andExpect(jsonPath("$.data[0].spuId").value(42))
+                .andExpect(jsonPath("$.data[0].skuCode").value("SKU100"))
+                .andExpect(jsonPath("$.data[0].specValues").isEmpty())
+                .andExpect(jsonPath("$.data[0].specText").value("默认规格"))
+                .andExpect(jsonPath("$.data[0].price").value(99.90))
+                .andExpect(jsonPath("$.data[0].imageUrl").value(vo.getImageUrl()))
+                .andExpect(jsonPath("$.data[0].isDefault").value(true))
+                .andExpect(jsonPath("$.data[0].version").value(3))
+                .andExpect(jsonPath("$.data[0].specHash").doesNotExist())
+                .andExpect(jsonPath("$.data[0].deleted").doesNotExist());
+        verify(skuService).listSku(42L);
+        verifyNoInteractions(generateService);
+    }
+
+    @Test
+    @DisplayName("未生成SKU时HTTP返回成功和空数组")
+    void list_returnsEmptyArray() throws Exception {
+        when(skuService.listSku(42L)).thenReturn(List.of());
+        mvc.perform(get(LIST, 42)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data").isEmpty());
+        verify(skuService).listSku(42L);
+    }
+
+    @Test
+    @DisplayName("SPU不存在时经统一异常处理返回业务码，区别于空列表")
+    void list_returnsBusinessError() throws Exception {
+        when(skuService.listSku(42L)).thenThrow(new BizException(ProductErrorCode.SPU_NOT_FOUND));
+        mvc.perform(get(LIST, 42)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(ProductErrorCode.SPU_NOT_FOUND.getCode()))
+                .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    @DisplayName("重复生成时经统一异常处理保留业务错误码")
+    void generate_returnsBusinessError() throws Exception {
+        when(generateService.generate(eq(42L), any(), eq(0L)))
+                .thenThrow(new BizException(ProductErrorCode.SKU_ALREADY_GENERATED));
+        mvc.perform(post(GENERATE, 42).contentType(MediaType.APPLICATION_JSON).content("{\"price\":1.00}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(ProductErrorCode.SKU_ALREADY_GENERATED.getCode()))
+                .andExpect(jsonPath("$.success").value(false));
+    }
+}
