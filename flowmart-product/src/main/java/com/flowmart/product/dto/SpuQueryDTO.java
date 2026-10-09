@@ -33,7 +33,7 @@ public class SpuQueryDTO extends PageQuery {
     @Max(2)
     private Integer status;
 
-    @Schema(description = "是否筛选无品牌商品；与 brandId 同时传时非法", example = "false")
+    @Schema(description = "true 仅筛选无品牌商品，且不能与 brandId 同传；false 或不传不限制", example = "false")
     private Boolean noBrand;
 
     @Schema(description = "创建时间起，格式 yyyy-MM-dd HH:mm:ss，左闭", example = "2026-10-07 00:00:00")
