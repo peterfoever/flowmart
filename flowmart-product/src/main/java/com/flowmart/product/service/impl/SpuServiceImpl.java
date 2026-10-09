@@ -1,10 +1,14 @@
 package com.flowmart.product.service.impl;
 
 import cn.hutool.core.util.StrUtil;
+
 import com.flowmart.common.exception.BizException;
+import com.flowmart.common.exception.CommonErrorCode;
+import com.flowmart.common.result.PageResult;
 import com.flowmart.product.convert.SpuConverter;
 import com.flowmart.product.dto.CreateSpuDTO;
 import com.flowmart.product.dto.SpecDTO;
+import com.flowmart.product.dto.SpuQueryDTO;
 import com.flowmart.product.dto.UpdateSpuDTO;
 import com.flowmart.product.entity.ProductBrand;
 import com.flowmart.product.entity.ProductCategory;
@@ -20,12 +24,19 @@ import com.flowmart.product.mapper.ProductSpuMapper;
 import com.flowmart.product.mapper.ProductSkuMapper;
 import com.flowmart.product.service.SpuService;
 import com.flowmart.product.vo.SpuDetailVO;
+import com.flowmart.product.vo.SpuListVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -38,7 +49,13 @@ public class SpuServiceImpl implements SpuService {
     private final SpuCodeGenerator codeGenerator;
     private final ProductSkuMapper skuMapper;
 
-
+    // spu分页查询
+    private static final DateTimeFormatter DATE_TIME_FMT =
+            DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss")
+                    .withResolverStyle(ResolverStyle.STRICT);
+    private static final int PAGE_NUM_MIN = 1;
+    private static final int PAGE_SIZE_MIN = 1;
+    private static final int PAGE_SIZE_MAX = 200;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -204,6 +221,137 @@ public class SpuServiceImpl implements SpuService {
         }
         log.info("修改SPU草稿完成: id={}, 原version={}, categoryId={}, brandId={}",
                 id, request.getVersion(), spu.getCategoryId(), spu.getBrandId());
+    }
+
+    @Override
+    public PageResult<SpuListVO> page(SpuQueryDTO request) {
+        SpuQueryDTO q = new SpuQueryDTO();
+        // 参数校验
+        Integer pageNum = request.getPageNum();
+        Integer pageSize = request.getPageSize();
+        if (pageNum < PAGE_NUM_MIN) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID, "pageNum 必须 >= 1");
+        }
+        if (pageSize < PAGE_SIZE_MIN || pageSize > PAGE_SIZE_MAX) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID,
+                    "pageSize 必须在 1~" + PAGE_SIZE_MAX + " 之间");
+        }
+        if (request.getStatus() != null) {
+            if (request.getStatus() != 0 && request.getStatus() != 1 && request.getStatus() != 2) {
+                throw new BizException(CommonErrorCode.PARAM_INVALID, "status 需为0/1/2");
+            }
+        }
+        long offset = ((long) pageNum - 1) * pageSize;
+
+        // 关键词转义
+        String keywordPattern = buildKeywordPattern(request.getKeyword());
+
+        // 品牌参数校验
+        if (request.getBrandId() != null && Boolean.TRUE.equals(request.getNoBrand())) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID,
+                    "brandId 与 noBrand 不能同时传");
+        }
+        if (request.getBrandId() != null) {
+            if (request.getBrandId() <= 0) {
+                throw new BizException(CommonErrorCode.PARAM_INVALID, "brandId 必须大于 0");
+            }
+            if (brandMapper.selectById(request.getBrandId()) == null) {
+                throw new BizException(ProductErrorCode.BRAND_NOT_FOUND);
+            }
+        }
+
+        // ── 4. 类目参数校验并展开后代 ──────────────────────────
+        List<Long> categoryIds = null;
+        if (request.getCategoryId() != null) {
+            if (request.getCategoryId() <= 0) {
+                throw new BizException(CommonErrorCode.PARAM_INVALID, "categoryId 必须大于 0");
+            }
+            categoryIds = categoryMapper.selectSubtree(request.getCategoryId())
+                    .stream()
+                    .map(ProductCategory::getId)
+                    .collect(Collectors.toList());
+
+            if (categoryIds.isEmpty()) {
+                throw new BizException(ProductErrorCode.CATEGORY_NOT_FOUND);
+            }
+        }
+
+        // 校验时间
+        LocalDateTime from = parseDateTime(request.getCreatedFrom(), "createdFrom");
+        LocalDateTime to = parseDateTime(request.getCreatedTo(), "createdTo");
+        if (from != null && to != null && !from.isBefore(to)) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID, "createdFrom 必须早于 createdTo");
+        }
+
+        // 设置进内部查询副本
+        q.setKeyword(keywordPattern);
+        q.setSpuCode(StrUtil.trim(request.getSpuCode()));
+        q.setCategoryId(request.getCategoryId());
+        q.setBrandId(request.getBrandId());
+        q.setStatus(request.getStatus());
+        q.setCreatedFrom(from.format(DATE_TIME_FMT));
+        q.setCreatedTo(to.format(DATE_TIME_FMT));
+
+        // ── 6. 两次查询：COUNT → 列表 ──────────────────────────
+        long total = spuMapper.countSpu(request, keywordPattern, categoryIds);
+        List<SpuListVO> records;
+        if (total == 0) {
+            records = List.of();
+        } else {
+            records = spuMapper.selectSpuPage(request, keywordPattern, categoryIds, offset);
+            records.forEach(this::fillDisplayText);
+        }
+        return new PageResult<>(pageNum, pageSize, total, records);
+    }
+
+    // ── 关键词转义：先 !，再 %、_，配合 ESCAPE '!' ───────────────
+    private String buildKeywordPattern(String keyword) {
+        if (!StringUtils.hasText(keyword)) {
+            return null;
+        }
+        String trimmed = StrUtil.trim(keyword);
+        String escaped = trimmed
+                .replace("!", "!!")
+                .replace("%", "!%")
+                .replace("_", "!_");
+        return "%" + escaped + "%";
+    }
+
+    // ── 时间解析：严格格式，失败抛 PARAM_INVALID ─────────────────
+    private LocalDateTime parseDateTime(String text, String field) {
+        if (!StringUtils.hasText(text)) {
+            return null;
+        }
+        try {
+            return LocalDateTime.parse(StrUtil.trim(text), DATE_TIME_FMT);
+        } catch (DateTimeParseException e) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID, field + " 格式必须为 yyyy-MM-dd HH:mm:ss");
+        }
+    }
+
+    // ── 展示文案：三种情况分开处理 ─────────────────────
+    private void fillDisplayText(SpuListVO vo) {
+        if (vo.getCategoryId() == null) {
+            vo.setCategoryText("无类目");
+        } else if (Objects.nonNull(vo.getCategoryName())) {
+            vo.setCategoryText(vo.getCategoryName() + " " + vo.getCategoryId());
+        } else {
+            vo.setCategoryText("类目已失效");
+        }
+
+        if (vo.getBrandId() == null) {
+            vo.setBrandText("无品牌");
+        } else if (Objects.nonNull(vo.getBrandName())) {
+            vo.setBrandText(vo.getBrandName() + " " + vo.getBrandId());
+        } else {
+            vo.setBrandText("品牌已失效");
+        }
+
+        if (vo.getStatus() == null) {
+            vo.setStatusText("无状态");
+        } else {
+            vo.setStatusText(SpuStatus.getDescByCode(vo.getStatus()));
+        }
     }
 
     // 校验轮播图

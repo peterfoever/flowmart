@@ -25,7 +25,7 @@
         AND status = 0
         AND version = #{version}
     </update>
-    
+
     <select id="existsByBrandId" resultType="boolean">
         SELECT EXISTS (
         SELECT 1
@@ -86,5 +86,67 @@
         WHERE id = #{id}
         AND deleted = 0
         FOR UPDATE
+    </select>
+
+    <sql id="spuFilter">
+        WHERE spu.deleted = 0
+        <if test="keywordPattern != null">
+            AND spu.name LIKE #{keywordPattern} ESCAPE '!'
+        </if>
+        <if test="q.spuCode != null and q.spuCode != ''">
+            AND spu.spu_code = #{q.spuCode}
+        </if>
+        <if test="categoryIds != null and categoryIds.size() > 0">
+            AND spu.category_id IN
+            <foreach collection="categoryIds" item="cid" open="(" separator="," close=")">#{cid}</foreach>
+        </if>
+        <if test="q.brandId != null">
+            AND spu.brand_id = #{q.brandId}
+        </if>
+        <if test="q.noBrand == true">
+            AND spu.brand_id IS NULL
+        </if>
+        <if test="q.status != null">
+            AND spu.status = #{q.status}
+        </if>
+        <if test="q.createdFrom != null and q.createdFrom != ''">
+            AND spu.created_at &gt;= #{q.createdFrom}
+        </if>
+        <if test="q.createdTo != null and q.createdTo != ''">
+            AND spu.created_at &lt; #{q.createdTo}
+        </if>
+    </sql>
+
+    <!-- 列表：JOIN 类目、品牌仅用于展示                            -->
+    <select id="selectSpuPage" resultType="com.flowmart.product.vo.SpuListVO">
+        SELECT
+        spu.id,
+        spu.name,
+        spu.spu_code       AS spuCode,
+        spu.category_id    AS categoryId,
+        spu.brand_id       AS brandId,
+        spu.main_image_url AS mainImageUrl,
+        spu.version
+        c.name             AS categoryName,
+        b.name             AS brandName,
+        spu.status,
+        spu.created_at     AS createdAt,
+        spu.updated_at     AS updatedAt
+        FROM product_spu spu
+        LEFT JOIN product_category c
+        ON c.id = spu.category_id AND c.deleted = 0
+        LEFT JOIN product_brand b
+        ON b.id = spu.brand_id AND b.deleted = 0
+        <include refid="spuFilter"/>
+        ORDER BY spu.created_at DESC, spu.id DESC
+        LIMIT #{q.pageSize} OFFSET #{offset}
+    </select>
+
+
+    <!-- COUNT：只查 SPU，不 JOIN                                   -->
+    <select id="countSpu" resultType="long">
+        SELECT COUNT(1)
+        FROM product_spu spu
+        <include refid="spuFilter"/>
     </select>
 </mapper>

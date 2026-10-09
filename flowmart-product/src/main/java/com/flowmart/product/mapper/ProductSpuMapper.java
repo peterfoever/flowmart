@@ -2,7 +2,9 @@ package com.flowmart.product.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.flowmart.product.dto.SpecDTO;
+import com.flowmart.product.dto.SpuQueryDTO;
 import com.flowmart.product.entity.ProductSpu;
+import com.flowmart.product.vo.SpuListVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -50,4 +52,15 @@ public interface ProductSpuMapper extends BaseMapper<ProductSpu> {
 
     // ProductSpuMapper：锁定并读取有效 SPU
     ProductSpu selectByIdForUpdate(@Param("id") Long id);
+
+    /** 分页查询 SPU 列表，JOIN 类目、品牌仅用于展示。 */
+    List<SpuListVO> selectSpuPage(@Param("q") SpuQueryDTO q,
+                                  @Param("keywordPattern") String keywordPattern,
+                                  @Param("categoryIds") List<Long> categoryIds,
+                                  @Param("offset") long offset);
+
+    /** 与列表共用 WHERE 条件的 COUNT，只查 SPU，不 JOIN。 */
+    long countSpu(@Param("q") SpuQueryDTO q,
+                  @Param("keywordPattern") String keywordPattern,
+                  @Param("categoryIds") List<Long> categoryIds);
 }

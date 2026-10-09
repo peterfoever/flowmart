@@ -62,6 +62,7 @@ public enum ProductErrorCode implements ErrorCode {
     SPEC_NAME_DUPLICATE(20053,"规格名重复"),
     SPEC_VALUE_DUPLICATE(20054,"同一规格内规格值重复"),
 
+
     /**
      * sku商品错误码
      */
