@@ -52,6 +52,11 @@ cd deploy/dev && docker compose down -v && docker compose up -d
 
 这是你每天下午要走的流程。**每次发布都必须填发布单**（`docs/ops/release/` 下按日期建文件）。
 
+发布前用 `docker ps` 核对端口。若默认3307/6380被其他项目占用，可在每次Compose命令前设置
+`TEST_MYSQL_PORT=3308 TEST_REDIS_PORT=6381 TEST_APP_PORT=8081`；先确认替代端口空闲。
+仅改变宿主机映射，容器内部仍使用mysql:3306、redis:6379；不得停掉其他项目抢端口。
+test端口默认绑定127.0.0.1，外部机器不能直接访问。仓库当前没有deploy/deploy.sh，使用下述Compose流程。
+
 ```bash
 # ---------- 发布前 ----------
 # 1. 确认要发的代码已合入 develop 且 CI 绿灯

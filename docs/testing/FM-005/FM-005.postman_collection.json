@@ -1,0 +1,1760 @@
+{
+  "info": {
+    "name": "FM-005 商品分页查询验收（32条专属夹具）",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "只读GET请求，共39个；预期值依据01-seed.sql夹具。baseUrl默认test环境8081，请核对应用实际数据源。先提交数据事务再运行。"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8081",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 默认分页（仅隔离测试数据）",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=31，本页=20条\", function () { pm.expect(body.data.total).to.eql(31); pm.expect(body.data.records).to.have.lengthOf(20); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 第1页，每页5条",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&pageNum=1&pageSize=5",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "pageNum",
+              "value": "1"
+            },
+            {
+              "key": "pageSize",
+              "value": "5"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=31，本页=5条\", function () { pm.expect(body.data.total).to.eql(31); pm.expect(body.data.records).to.have.lengthOf(5); });",
+              "pm.test(\"排序及编码\", function () { pm.expect(body.data.records.map(r => r.spuCode)).to.eql([\"FM005QA20261009-004\",\"FM005QA20261009-003\",\"FM005QA20261009-032\",\"FM005QA20261009-030\",\"FM005QA20261009-029\"]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 第2页，每页5条",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&pageNum=2&pageSize=5",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "pageNum",
+              "value": "2"
+            },
+            {
+              "key": "pageSize",
+              "value": "5"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=31，本页=5条\", function () { pm.expect(body.data.total).to.eql(31); pm.expect(body.data.records).to.have.lengthOf(5); });",
+              "pm.test(\"排序及编码\", function () { pm.expect(body.data.records.map(r => r.spuCode)).to.eql([\"FM005QA20261009-028\",\"FM005QA20261009-027\",\"FM005QA20261009-026\",\"FM005QA20261009-025\",\"FM005QA20261009-024\"]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 最后一页",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&pageNum=7&pageSize=5",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "pageNum",
+              "value": "7"
+            },
+            {
+              "key": "pageSize",
+              "value": "5"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=31，本页=1条\", function () { pm.expect(body.data.total).to.eql(31); pm.expect(body.data.records).to.have.lengthOf(1); });",
+              "pm.test(\"排序及编码\", function () { pm.expect(body.data.records.map(r => r.spuCode)).to.eql([\"FM005QA20261009-001\"]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 超页保留total",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&pageNum=8&pageSize=5",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "pageNum",
+              "value": "8"
+            },
+            {
+              "key": "pageSize",
+              "value": "5"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=31，本页=0条\", function () { pm.expect(body.data.total).to.eql(31); pm.expect(body.data.records).to.have.lengthOf(0); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 数码父类目包含后代",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&categoryId=9100051000",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "categoryId",
+              "value": "9100051000"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=23，本页=20条\", function () { pm.expect(body.data.total).to.eql(23); pm.expect(body.data.records).to.have.lengthOf(20); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 手机叶子类目",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&categoryId=9100051001",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "categoryId",
+              "value": "9100051001"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=13，本页=13条\", function () { pm.expect(body.data.total).to.eql(13); pm.expect(body.data.records).to.have.lengthOf(13); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 食品父类目排除已删除子类目",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&categoryId=9100051100",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "categoryId",
+              "value": "9100051100"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=6，本页=6条\", function () { pm.expect(body.data.total).to.eql(6); pm.expect(body.data.records).to.have.lengthOf(6); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 禁用类目仍可筛选",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&categoryId=9100051102",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "categoryId",
+              "value": "9100051102"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=2，本页=2条\", function () { pm.expect(body.data.total).to.eql(2); pm.expect(body.data.records).to.have.lengthOf(2); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 正常品牌",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&brandId=9100052001",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "brandId",
+              "value": "9100052001"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=21，本页=20条\", function () { pm.expect(body.data.total).to.eql(21); pm.expect(body.data.records).to.have.lengthOf(20); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 无品牌",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&noBrand=true",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "noBrand",
+              "value": "true"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=7，本页=7条\", function () { pm.expect(body.data.total).to.eql(7); pm.expect(body.data.records).to.have.lengthOf(7); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 noBrand=false不限制",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&noBrand=false",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "noBrand",
+              "value": "false"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=31，本页=20条\", function () { pm.expect(body.data.total).to.eql(31); pm.expect(body.data.records).to.have.lengthOf(20); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 禁用品牌仍可筛选",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&brandId=9100052002",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "brandId",
+              "value": "9100052002"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=1，本页=1条\", function () { pm.expect(body.data.total).to.eql(1); pm.expect(body.data.records).to.have.lengthOf(1); });",
+              "pm.test(\"排序及编码\", function () { pm.expect(body.data.records.map(r => r.spuCode)).to.eql([\"FM005QA20261009-004\"]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 草稿状态0",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&status=0",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "status",
+              "value": "0"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=10，本页=10条\", function () { pm.expect(body.data.total).to.eql(10); pm.expect(body.data.records).to.have.lengthOf(10); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 上架状态1",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&status=1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "status",
+              "value": "1"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=11，本页=11条\", function () { pm.expect(body.data.total).to.eql(11); pm.expect(body.data.records).to.have.lengthOf(11); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "16 下架状态2",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&status=2",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "status",
+              "value": "2"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=10，本页=10条\", function () { pm.expect(body.data.total).to.eql(10); pm.expect(body.data.records).to.have.lengthOf(10); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "17 多条件AND",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&categoryId=9100051000&brandId=9100052001&status=0",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "categoryId",
+              "value": "9100051000"
+            },
+            {
+              "key": "brandId",
+              "value": "9100052001"
+            },
+            {
+              "key": "status",
+              "value": "0"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=7，本页=7条\", function () { pm.expect(body.data.total).to.eql(7); pm.expect(body.data.records).to.have.lengthOf(7); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "18 编码trim精确查询",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&spuCode=%20%20FM005QA20261009-002%20%20",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "spuCode",
+              "value": "  FM005QA20261009-002  "
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=1，本页=1条\", function () { pm.expect(body.data.total).to.eql(1); pm.expect(body.data.records).to.have.lengthOf(1); });",
+              "pm.test(\"排序及编码\", function () { pm.expect(body.data.records.map(r => r.spuCode)).to.eql([\"FM005QA20261009-002\"]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "19 已删除商品不展示",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&spuCode=FM005QA20261009-031",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "spuCode",
+              "value": "FM005QA20261009-031"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=0，本页=0条\", function () { pm.expect(body.data.total).to.eql(0); pm.expect(body.data.records).to.have.lengthOf(0); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "20 百分号按字面量",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009%20%E6%8A%98%E6%89%A3100%25",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009 折扣100%"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=1，本页=1条\", function () { pm.expect(body.data.total).to.eql(1); pm.expect(body.data.records).to.have.lengthOf(1); });",
+              "pm.test(\"排序及编码\", function () { pm.expect(body.data.records.map(r => r.spuCode)).to.eql([\"FM005QA20261009-007\"]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "21 下划线按字面量",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009%20%E5%9E%8B%E5%8F%B7A_B",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009 型号A_B"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=1，本页=1条\", function () { pm.expect(body.data.total).to.eql(1); pm.expect(body.data.records).to.have.lengthOf(1); });",
+              "pm.test(\"排序及编码\", function () { pm.expect(body.data.records.map(r => r.spuCode)).to.eql([\"FM005QA20261009-009\"]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "22 感叹号按字面量",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009%20%E4%BF%83%E9%94%80!",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009 促销!"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=1，本页=1条\", function () { pm.expect(body.data.total).to.eql(1); pm.expect(body.data.records).to.have.lengthOf(1); });",
+              "pm.test(\"排序及编码\", function () { pm.expect(body.data.records.map(r => r.spuCode)).to.eql([\"FM005QA20261009-011\"]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "23 全天左闭右开",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&createdFrom=2026-10-07%2000%3A00%3A00&createdTo=2026-10-08%2000%3A00%3A00",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "createdFrom",
+              "value": "2026-10-07 00:00:00"
+            },
+            {
+              "key": "createdTo",
+              "value": "2026-10-08 00:00:00"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=29，本页=20条\", function () { pm.expect(body.data.total).to.eql(29); pm.expect(body.data.records).to.have.lengthOf(20); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "24 仅开始时间",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&createdFrom=2026-10-08%2000%3A00%3A00",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "createdFrom",
+              "value": "2026-10-08 00:00:00"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=1，本页=1条\", function () { pm.expect(body.data.total).to.eql(1); pm.expect(body.data.records).to.have.lengthOf(1); });",
+              "pm.test(\"排序及编码\", function () { pm.expect(body.data.records.map(r => r.spuCode)).to.eql([\"FM005QA20261009-004\"]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "25 仅结束时间",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&createdTo=2026-10-07%2000%3A00%3A00",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "createdTo",
+              "value": "2026-10-07 00:00:00"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=1，本页=1条\", function () { pm.expect(body.data.total).to.eql(1); pm.expect(body.data.records).to.have.lengthOf(1); });",
+              "pm.test(\"排序及编码\", function () { pm.expect(body.data.records.map(r => r.spuCode)).to.eql([\"FM005QA20261009-001\"]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "26 已删除品牌关联保留商品",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&spuCode=FM005QA20261009-005",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "spuCode",
+              "value": "FM005QA20261009-005"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=1，本页=1条\", function () { pm.expect(body.data.total).to.eql(1); pm.expect(body.data.records).to.have.lengthOf(1); });",
+              "pm.test(\"排序及编码\", function () { pm.expect(body.data.records.map(r => r.spuCode)).to.eql([\"FM005QA20261009-005\"]); });",
+              "pm.test(\"关联失效展示\", function () { pm.expect(body.data.records[0].brandText).to.eql(\"品牌已失效\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "27 不存在品牌关联保留商品",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&spuCode=FM005QA20261009-006",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "spuCode",
+              "value": "FM005QA20261009-006"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=1，本页=1条\", function () { pm.expect(body.data.total).to.eql(1); pm.expect(body.data.records).to.have.lengthOf(1); });",
+              "pm.test(\"排序及编码\", function () { pm.expect(body.data.records.map(r => r.spuCode)).to.eql([\"FM005QA20261009-006\"]); });",
+              "pm.test(\"关联失效展示\", function () { pm.expect(body.data.records[0].brandText).to.eql(\"品牌已失效\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "28 已删除类目关联保留商品",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&spuCode=FM005QA20261009-029",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "spuCode",
+              "value": "FM005QA20261009-029"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=1，本页=1条\", function () { pm.expect(body.data.total).to.eql(1); pm.expect(body.data.records).to.have.lengthOf(1); });",
+              "pm.test(\"排序及编码\", function () { pm.expect(body.data.records.map(r => r.spuCode)).to.eql([\"FM005QA20261009-029\"]); });",
+              "pm.test(\"关联失效展示\", function () { pm.expect(body.data.records[0].categoryText).to.eql(\"类目已失效\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "29 不存在类目关联保留商品",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&spuCode=FM005QA20261009-030",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "spuCode",
+              "value": "FM005QA20261009-030"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(0); pm.expect(body.success).to.eql(true); });",
+              "pm.test(\"总数=1，本页=1条\", function () { pm.expect(body.data.total).to.eql(1); pm.expect(body.data.records).to.have.lengthOf(1); });",
+              "pm.test(\"排序及编码\", function () { pm.expect(body.data.records.map(r => r.spuCode)).to.eql([\"FM005QA20261009-030\"]); });",
+              "pm.test(\"关联失效展示\", function () { pm.expect(body.data.records[0].categoryText).to.eql(\"类目已失效\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "30 不存在品牌",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&brandId=9100052099",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "brandId",
+              "value": "9100052099"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(10001); pm.expect(body.success).to.eql(false); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "31 已删除品牌",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&brandId=9100052003",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "brandId",
+              "value": "9100052003"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(10001); pm.expect(body.success).to.eql(false); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "32 不存在类目",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&categoryId=9100051199",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "categoryId",
+              "value": "9100051199"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(10001); pm.expect(body.success).to.eql(false); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "33 已删除类目",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&categoryId=9100051103",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "categoryId",
+              "value": "9100051103"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(10001); pm.expect(body.success).to.eql(false); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "34 品牌与无品牌互斥",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&brandId=9100052001&noBrand=true",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "brandId",
+              "value": "9100052001"
+            },
+            {
+              "key": "noBrand",
+              "value": "true"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(10001); pm.expect(body.success).to.eql(false); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "35 显式空页码",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&pageNum=",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "pageNum",
+              "value": ""
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(10001); pm.expect(body.success).to.eql(false); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "36 页码非数字",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&pageNum=abc",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "pageNum",
+              "value": "abc"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(10001); pm.expect(body.success).to.eql(false); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "37 页大小超限",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&pageSize=201",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "pageSize",
+              "value": "201"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(10001); pm.expect(body.success).to.eql(false); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "38 非法日期",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&createdFrom=2026-02-30%2000%3A00%3A00",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "createdFrom",
+              "value": "2026-02-30 00:00:00"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(10001); pm.expect(body.success).to.eql(false); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "39 相等时间边界",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/product/admin/spus?keyword=FM005QA20261009&createdFrom=2026-10-07%2000%3A00%3A00&createdTo=2026-10-07%2000%3A00%3A00",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "product",
+            "admin",
+            "spus"
+          ],
+          "query": [
+            {
+              "key": "keyword",
+              "value": "FM005QA20261009"
+            },
+            {
+              "key": "createdFrom",
+              "value": "2026-10-07 00:00:00"
+            },
+            {
+              "key": "createdTo",
+              "value": "2026-10-07 00:00:00"
+            }
+          ]
+        },
+        "description": "仅GET查询，无请求体。先在同一数据源提交01-seed.sql；默认keyword隔离本次夹具，不依赖旧商品数量。"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"业务码与成功标识\", function () { pm.expect(body.code).to.eql(10001); pm.expect(body.success).to.eql(false); });"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
