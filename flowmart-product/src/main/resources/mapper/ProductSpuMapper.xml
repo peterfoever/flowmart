@@ -25,7 +25,7 @@
         AND status = 0
         AND version = #{version}
     </update>
-    
+
     <select id="existsByBrandId" resultType="boolean">
         SELECT EXISTS (
         SELECT 1
@@ -93,24 +93,27 @@
         <if test="keywordPattern != null">
             AND spu.name LIKE #{keywordPattern} ESCAPE '!'
         </if>
-        <if test="request.spuCode != null and request.spuCode != ''">
-            AND spu.spu_code = #{request.spuCode}
+        <if test="q.spuCode != null and q.spuCode != ''">
+            AND spu.spu_code = #{q.spuCode}
         </if>
         <if test="categoryIds != null and categoryIds.size() > 0">
             AND spu.category_id IN
             <foreach collection="categoryIds" item="cid" open="(" separator="," close=")">#{cid}</foreach>
         </if>
-        <if test="request.brandId != null">
-            AND spu.brand_id = #{request.brandId}
+        <if test="q.brandId != null">
+            AND spu.brand_id = #{q.brandId}
         </if>
-        <if test="request.noBrand == true">
+        <if test="q.noBrand == true">
             AND spu.brand_id IS NULL
         </if>
-        <if test="request.createdFrom != null and request.createdFrom != ''">
-            AND spu.created_at &gt;= #{request.createdFrom}
+        <if test="q.status != null">
+            AND spu.status = #{q.status}
         </if>
-        <if test="request.createdTo != null and request.createdTo != ''">
-            AND spu.created_at &lt; #{request.createdTo}
+        <if test="q.createdFrom != null and q.createdFrom != ''">
+            AND spu.created_at &gt;= #{q.createdFrom}
+        </if>
+        <if test="q.createdTo != null and q.createdTo != ''">
+            AND spu.created_at &lt; #{q.createdTo}
         </if>
     </sql>
 
@@ -119,14 +122,16 @@
         SELECT
         spu.id,
         spu.name,
-        spu.spu_code     AS spuCode,
-        spu.category_id  AS categoryId,
-        spu.brand_id     AS brandId,
-        c.name           AS categoryName,
-        b.name           AS brandName,
+        spu.spu_code       AS spuCode,
+        spu.category_id    AS categoryId,
+        spu.brand_id       AS brandId,
+        spu.main_image_url AS mainImageUrl,
+        spu.version
+        c.name             AS categoryName,
+        b.name             AS brandName,
         spu.status,
-        spu.created_at   AS createdAt,
-        spu.updated_at   AS updatedAt
+        spu.created_at     AS createdAt,
+        spu.updated_at     AS updatedAt
         FROM product_spu spu
         LEFT JOIN product_category c
         ON c.id = spu.category_id AND c.deleted = 0

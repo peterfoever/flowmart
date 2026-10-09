@@ -34,6 +34,7 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -48,8 +49,10 @@ public class SpuServiceImpl implements SpuService {
     private final SpuCodeGenerator codeGenerator;
     private final ProductSkuMapper skuMapper;
 
+    // spu分页查询
     private static final DateTimeFormatter DATE_TIME_FMT =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss")
+                    .withResolverStyle(ResolverStyle.STRICT);
     private static final int PAGE_NUM_MIN = 1;
     private static final int PAGE_SIZE_MIN = 1;
     private static final int PAGE_SIZE_MAX = 200;
@@ -222,15 +225,21 @@ public class SpuServiceImpl implements SpuService {
 
     @Override
     public PageResult<SpuListVO> page(SpuQueryDTO request) {
+        SpuQueryDTO q = new SpuQueryDTO();
         // 参数校验
-        int pageNum = request.resolvePageNum();
-        int pageSize = request.resolvePageSize();
-        if (pageNum <= PAGE_NUM_MIN) {
+        Integer pageNum = request.getPageNum();
+        Integer pageSize = request.getPageSize();
+        if (pageNum < PAGE_NUM_MIN) {
             throw new BizException(CommonErrorCode.PARAM_INVALID, "pageNum 必须 >= 1");
         }
         if (pageSize < PAGE_SIZE_MIN || pageSize > PAGE_SIZE_MAX) {
             throw new BizException(CommonErrorCode.PARAM_INVALID,
                     "pageSize 必须在 1~" + PAGE_SIZE_MAX + " 之间");
+        }
+        if (request.getStatus() != null) {
+            if (request.getStatus() != 0 && request.getStatus() != 1 && request.getStatus() != 2) {
+                throw new BizException(CommonErrorCode.PARAM_INVALID, "status 需为0/1/2");
+            }
         }
         long offset = ((long) pageNum - 1) * pageSize;
 
@@ -246,7 +255,7 @@ public class SpuServiceImpl implements SpuService {
             if (request.getBrandId() <= 0) {
                 throw new BizException(CommonErrorCode.PARAM_INVALID, "brandId 必须大于 0");
             }
-            if (!brandMapper.existCategoryBindings(request.getBrandId())) {
+            if (brandMapper.selectById(request.getBrandId()) == null) {
                 throw new BizException(ProductErrorCode.BRAND_NOT_FOUND);
             }
         }
@@ -273,9 +282,15 @@ public class SpuServiceImpl implements SpuService {
         if (from != null && to != null && !from.isBefore(to)) {
             throw new BizException(CommonErrorCode.PARAM_INVALID, "createdFrom 必须早于 createdTo");
         }
-        // 回填供xml使用
-        request.setCreatedFrom(from == null ? null : from.format(DATE_TIME_FMT));
-        request.setCreatedTo(to == null ? null : to.format(DATE_TIME_FMT));
+
+        // 设置进内部查询副本
+        q.setKeyword(keywordPattern);
+        q.setSpuCode(StrUtil.trim(request.getSpuCode()));
+        q.setCategoryId(request.getCategoryId());
+        q.setBrandId(request.getBrandId());
+        q.setStatus(request.getStatus());
+        q.setCreatedFrom(from.format(DATE_TIME_FMT));
+        q.setCreatedTo(to.format(DATE_TIME_FMT));
 
         // ── 6. 两次查询：COUNT → 列表 ──────────────────────────
         long total = spuMapper.countSpu(request, keywordPattern, categoryIds);
@@ -286,7 +301,7 @@ public class SpuServiceImpl implements SpuService {
             records = spuMapper.selectSpuPage(request, keywordPattern, categoryIds, offset);
             records.forEach(this::fillDisplayText);
         }
-        return PageResult.of(records);
+        return new PageResult<>(pageNum, pageSize, total, records);
     }
 
     // ── 关键词转义：先 !，再 %、_，配合 ESCAPE '!' ───────────────
@@ -294,7 +309,7 @@ public class SpuServiceImpl implements SpuService {
         if (!StringUtils.hasText(keyword)) {
             return null;
         }
-        String trimmed = keyword.trim();
+        String trimmed = StrUtil.trim(keyword);
         String escaped = trimmed
                 .replace("!", "!!")
                 .replace("%", "!%")
@@ -308,7 +323,7 @@ public class SpuServiceImpl implements SpuService {
             return null;
         }
         try {
-            return LocalDateTime.parse(text.trim(), DATE_TIME_FMT);
+            return LocalDateTime.parse(StrUtil.trim(text), DATE_TIME_FMT);
         } catch (DateTimeParseException e) {
             throw new BizException(CommonErrorCode.PARAM_INVALID, field + " 格式必须为 yyyy-MM-dd HH:mm:ss");
         }
@@ -330,6 +345,12 @@ public class SpuServiceImpl implements SpuService {
             vo.setBrandText(vo.getBrandName() + " " + vo.getBrandId());
         } else {
             vo.setBrandText("品牌已失效");
+        }
+
+        if (vo.getStatus() == null) {
+            vo.setStatusText("无状态");
+        } else {
+            vo.setStatusText(SpuStatus.getDescByCode(vo.getStatus()));
         }
     }
 

@@ -43,7 +43,7 @@ public class SpuController {
     }
 
     @GetMapping("/spus")
-    public R<PageResult<SpuListVO>> page(SpuQueryDTO request) {
+    public R<PageResult<SpuListVO>> page(@Valid @ModelAttribute SpuQueryDTO request) {
         return R.ok(spuService.page(request));
     }
 }
