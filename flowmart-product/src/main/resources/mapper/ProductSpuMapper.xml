@@ -96,9 +96,14 @@
         <if test="q.spuCode != null and q.spuCode != ''">
             AND spu.spu_code = #{q.spuCode}
         </if>
-        <if test="categoryIds != null and categoryIds.size() > 0">
-            AND spu.category_id IN
-            <foreach collection="categoryIds" item="cid" open="(" separator="," close=")">#{cid}</foreach>
+        <if test="categoryIds != null">
+            <choose>
+                <when test="categoryIds.size() > 0">
+                    AND spu.category_id IN
+                    <foreach collection="categoryIds" item="cid" open="(" separator="," close=")">#{cid}</foreach>
+                </when>
+                <otherwise>AND 1 = 0</otherwise>
+            </choose>
         </if>
         <if test="q.brandId != null">
             AND spu.brand_id = #{q.brandId}
@@ -126,7 +131,7 @@
         spu.category_id    AS categoryId,
         spu.brand_id       AS brandId,
         spu.main_image_url AS mainImageUrl,
-        spu.version
+        spu.version,
         c.name             AS categoryName,
         b.name             AS brandName,
         spu.status,

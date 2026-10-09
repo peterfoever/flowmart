@@ -7,6 +7,7 @@ WORKDIR /build
 # 后续改业务代码时构建从几分钟降到几十秒。
 COPY pom.xml .
 COPY flowmart-common/pom.xml flowmart-common/
+COPY flowmart-product/pom.xml flowmart-product/
 COPY flowmart-bootstrap/pom.xml flowmart-bootstrap/
 RUN mvn -B -q dependency:go-offline -DskipTests || true
 

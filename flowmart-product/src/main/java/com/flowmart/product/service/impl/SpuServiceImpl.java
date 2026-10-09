@@ -223,25 +223,49 @@ public class SpuServiceImpl implements SpuService {
                 id, request.getVersion(), spu.getCategoryId(), spu.getBrandId());
     }
 
+    /**
+     * 按归一化后的条件分页查询商品摘要，不修改调用者的请求对象。
+     * COUNT 与列表复用筛选条件，但不承诺跨查询的快照一致性。
+     *
+     * @param request 分页、类目子树、品牌及左闭右开的创建时间范围
+     * @throws BizException 参数非法，或指定的类目/品牌不存在、已删除
+     */
     @Override
     public PageResult<SpuListVO> page(SpuQueryDTO request) {
+        if (request == null) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID, "查询参数不能为空");
+        }
         SpuQueryDTO q = new SpuQueryDTO();
         // 参数校验
         Integer pageNum = request.getPageNum();
         Integer pageSize = request.getPageSize();
-        if (pageNum < PAGE_NUM_MIN) {
+        if (pageNum == null || pageNum < PAGE_NUM_MIN) {
             throw new BizException(CommonErrorCode.PARAM_INVALID, "pageNum 必须 >= 1");
         }
-        if (pageSize < PAGE_SIZE_MIN || pageSize > PAGE_SIZE_MAX) {
+        if (pageSize == null || pageSize < PAGE_SIZE_MIN || pageSize > PAGE_SIZE_MAX) {
             throw new BizException(CommonErrorCode.PARAM_INVALID,
                     "pageSize 必须在 1~" + PAGE_SIZE_MAX + " 之间");
         }
-        if (request.getStatus() != null) {
-            if (request.getStatus() != 0 && request.getStatus() != 1 && request.getStatus() != 2) {
-                throw new BizException(CommonErrorCode.PARAM_INVALID, "status 需为0/1/2");
-            }
+        if (request.getStatus() != null && !SpuStatus.isValid(request.getStatus())) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID, "status 需为0/1/2");
         }
         long offset = ((long) pageNum - 1) * pageSize;
+
+        if ((request.getKeyword() != null && request.getKeyword().length() > 128)
+                || (request.getSpuCode() != null && request.getSpuCode().length() > 64)) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID, "keyword 最多128字符，spuCode 最多64字符");
+        }
+        if (request.getCategoryId() != null && request.getCategoryId() <= 0) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID, "categoryId 必须大于 0");
+        }
+        if (request.getBrandId() != null && request.getBrandId() <= 0) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID, "brandId 必须大于 0");
+        }
+        LocalDateTime from = parseDateTime(request.getCreatedFrom(), "createdFrom");
+        LocalDateTime to = parseDateTime(request.getCreatedTo(), "createdTo");
+        if (from != null && to != null && !from.isBefore(to)) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID, "createdFrom 必须早于 createdTo");
+        }
 
         // 关键词转义
         String keywordPattern = buildKeywordPattern(request.getKeyword());
@@ -249,22 +273,21 @@ public class SpuServiceImpl implements SpuService {
         // 品牌参数校验
         if (request.getBrandId() != null && Boolean.TRUE.equals(request.getNoBrand())) {
             throw new BizException(CommonErrorCode.PARAM_INVALID,
-                    "brandId 与 noBrand 不能同时传");
+                    "brandId 与 noBrand=true 不能同时传");
         }
         if (request.getBrandId() != null) {
-            if (request.getBrandId() <= 0) {
-                throw new BizException(CommonErrorCode.PARAM_INVALID, "brandId 必须大于 0");
-            }
-            if (brandMapper.selectById(request.getBrandId()) == null) {
-                throw new BizException(ProductErrorCode.BRAND_NOT_FOUND);
+            ProductBrand brand = brandMapper.selectById(request.getBrandId());
+            if (brand == null || !Long.valueOf(0L).equals(brand.getDeleted())) {
+                throw new BizException(CommonErrorCode.PARAM_INVALID, "品牌不存在或已删除");
             }
         }
 
         // ── 4. 类目参数校验并展开后代 ──────────────────────────
         List<Long> categoryIds = null;
         if (request.getCategoryId() != null) {
-            if (request.getCategoryId() <= 0) {
-                throw new BizException(CommonErrorCode.PARAM_INVALID, "categoryId 必须大于 0");
+            ProductCategory category = categoryMapper.selectById(request.getCategoryId());
+            if (category == null || !Long.valueOf(0L).equals(category.getDeleted())) {
+                throw new BizException(CommonErrorCode.PARAM_INVALID, "类目不存在或已删除");
             }
             categoryIds = categoryMapper.selectSubtree(request.getCategoryId())
                     .stream()
@@ -272,33 +295,30 @@ public class SpuServiceImpl implements SpuService {
                     .collect(Collectors.toList());
 
             if (categoryIds.isEmpty()) {
-                throw new BizException(ProductErrorCode.CATEGORY_NOT_FOUND);
+                // 根节点校验后可能并发删除；空范围不能退化成全量查询。
+                return new PageResult<>(pageNum, pageSize, 0L, List.of());
             }
         }
 
-        // 校验时间
-        LocalDateTime from = parseDateTime(request.getCreatedFrom(), "createdFrom");
-        LocalDateTime to = parseDateTime(request.getCreatedTo(), "createdTo");
-        if (from != null && to != null && !from.isBefore(to)) {
-            throw new BizException(CommonErrorCode.PARAM_INVALID, "createdFrom 必须早于 createdTo");
-        }
-
         // 设置进内部查询副本
-        q.setKeyword(keywordPattern);
-        q.setSpuCode(StrUtil.trim(request.getSpuCode()));
+        q.setPageNum(pageNum);
+        q.setPageSize(pageSize);
+        q.setNoBrand(request.getNoBrand());
+        q.setKeyword(trimToNull(request.getKeyword()));
+        q.setSpuCode(trimToNull(request.getSpuCode()));
         q.setCategoryId(request.getCategoryId());
         q.setBrandId(request.getBrandId());
         q.setStatus(request.getStatus());
-        q.setCreatedFrom(from.format(DATE_TIME_FMT));
-        q.setCreatedTo(to.format(DATE_TIME_FMT));
+        q.setCreatedFrom(from == null ? null : from.format(DATE_TIME_FMT));
+        q.setCreatedTo(to == null ? null : to.format(DATE_TIME_FMT));
 
         // ── 6. 两次查询：COUNT → 列表 ──────────────────────────
-        long total = spuMapper.countSpu(request, keywordPattern, categoryIds);
+        long total = spuMapper.countSpu(q, keywordPattern, categoryIds);
         List<SpuListVO> records;
-        if (total == 0) {
+        if (total == 0 || offset >= total) {
             records = List.of();
         } else {
-            records = spuMapper.selectSpuPage(request, keywordPattern, categoryIds, offset);
+            records = spuMapper.selectSpuPage(q, keywordPattern, categoryIds, offset);
             records.forEach(this::fillDisplayText);
         }
         return new PageResult<>(pageNum, pageSize, total, records);
@@ -306,15 +326,20 @@ public class SpuServiceImpl implements SpuService {
 
     // ── 关键词转义：先 !，再 %、_，配合 ESCAPE '!' ───────────────
     private String buildKeywordPattern(String keyword) {
-        if (!StringUtils.hasText(keyword)) {
+        String trimmed = trimToNull(keyword);
+        if (trimmed == null) {
             return null;
         }
-        String trimmed = StrUtil.trim(keyword);
         String escaped = trimmed
                 .replace("!", "!!")
                 .replace("%", "!%")
                 .replace("_", "!_");
         return "%" + escaped + "%";
+    }
+
+    private String trimToNull(String value) {
+        String trimmed = StrUtil.trim(value);
+        return StrUtil.isBlank(trimmed) ? null : trimmed;
     }
 
     // ── 时间解析：严格格式，失败抛 PARAM_INVALID ─────────────────
@@ -334,7 +359,7 @@ public class SpuServiceImpl implements SpuService {
         if (vo.getCategoryId() == null) {
             vo.setCategoryText("无类目");
         } else if (Objects.nonNull(vo.getCategoryName())) {
-            vo.setCategoryText(vo.getCategoryName() + " " + vo.getCategoryId());
+            vo.setCategoryText(vo.getCategoryName());
         } else {
             vo.setCategoryText("类目已失效");
         }
@@ -342,7 +367,7 @@ public class SpuServiceImpl implements SpuService {
         if (vo.getBrandId() == null) {
             vo.setBrandText("无品牌");
         } else if (Objects.nonNull(vo.getBrandName())) {
-            vo.setBrandText(vo.getBrandName() + " " + vo.getBrandId());
+            vo.setBrandText(vo.getBrandName());
         } else {
             vo.setBrandText("品牌已失效");
         }
