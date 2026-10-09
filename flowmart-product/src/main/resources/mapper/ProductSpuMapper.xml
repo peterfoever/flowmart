@@ -87,4 +87,61 @@
         AND deleted = 0
         FOR UPDATE
     </select>
+
+    <sql id="spuFilter">
+        WHERE spu.deleted = 0
+        <if test="keywordPattern != null">
+            AND spu.name LIKE #{keywordPattern} ESCAPE '!'
+        </if>
+        <if test="request.spuCode != null and request.spuCode != ''">
+            AND spu.spu_code = #{request.spuCode}
+        </if>
+        <if test="categoryIds != null and categoryIds.size() > 0">
+            AND spu.category_id IN
+            <foreach collection="categoryIds" item="cid" open="(" separator="," close=")">#{cid}</foreach>
+        </if>
+        <if test="request.brandId != null">
+            AND spu.brand_id = #{request.brandId}
+        </if>
+        <if test="request.noBrand == true">
+            AND spu.brand_id IS NULL
+        </if>
+        <if test="request.createdFrom != null and request.createdFrom != ''">
+            AND spu.created_at &gt;= #{request.createdFrom}
+        </if>
+        <if test="request.createdTo != null and request.createdTo != ''">
+            AND spu.created_at &lt; #{request.createdTo}
+        </if>
+    </sql>
+
+    <!-- 列表：JOIN 类目、品牌仅用于展示                            -->
+    <select id="selectSpuPage" resultType="com.flowmart.product.vo.SpuListVO">
+        SELECT
+        spu.id,
+        spu.name,
+        spu.spu_code     AS spuCode,
+        spu.category_id  AS categoryId,
+        spu.brand_id     AS brandId,
+        c.name           AS categoryName,
+        b.name           AS brandName,
+        spu.status,
+        spu.created_at   AS createdAt,
+        spu.updated_at   AS updatedAt
+        FROM product_spu spu
+        LEFT JOIN product_category c
+        ON c.id = spu.category_id AND c.deleted = 0
+        LEFT JOIN product_brand b
+        ON b.id = spu.brand_id AND b.deleted = 0
+        <include refid="spuFilter"/>
+        ORDER BY spu.created_at DESC, spu.id DESC
+        LIMIT #{q.pageSize} OFFSET #{offset}
+    </select>
+
+
+    <!-- COUNT：只查 SPU，不 JOIN                                   -->
+    <select id="countSpu" resultType="long">
+        SELECT COUNT(1)
+        FROM product_spu spu
+        <include refid="spuFilter"/>
+    </select>
 </mapper>
