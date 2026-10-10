@@ -84,8 +84,10 @@ IDEA Database 中选择正确数据源，打开 Query Console（查询控制台�
 - pageNum显式空字符串、abc；pageSize=201。
 - createdFrom=2026-02-30 00:00:00；开始时间等于结束时间。
 
-手工录入时在Params的value里填写原始文字和百分号，不要自己写SQL的转义字符!，
-也不要重复URL编码。集合已经提供对应值。无匹配时data.records应为[]，不是null。
+URL传输中的字面量百分号必须编码成%25，不要自己写SQL的转义字符!。
+本集合的百分号用例已将query.value中的百分号保存为%25，以兼容Newman6.2.1；不要再次编码成%2525。
+手工使用Postman时检查实际发出的URL，curl可用--data-urlencode传原始值。
+无匹配时data.records应为[]，不是null。
 
 ## 4. EXPLAIN在哪里做、怎样做
 

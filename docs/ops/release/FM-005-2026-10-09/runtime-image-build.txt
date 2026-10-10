@@ -1,0 +1,48 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [stage-1 1/5] FROM docker.io/library/eclipse-temurin:21-jre-alpine@sha256:51ab5e3302e7141ce665ca3ea85e8b5cd648eafbc3c0c90dd79d6537684e4555
+#1 resolve docker.io/library/eclipse-temurin:21-jre-alpine@sha256:51ab5e3302e7141ce665ca3ea85e8b5cd648eafbc3c0c90dd79d6537684e4555 0.0s done
+#1 DONE 0.3s
+
+#2 [stage-1 2/5] WORKDIR /app
+#2 DONE 0.1s
+
+#3 [stage-1 3/5] RUN apk add --no-cache tzdata wget     && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime     && echo "Asia/Shanghai" > /etc/timezone     && addgroup -S app && adduser -S app -G app
+#3 10.05 (1/2) Installing pcre2 (10.49-r0)
+#3 11.14 (2/2) Installing wget (1.25.0-r3)
+#3 12.18 Executing busybox-1.37.0-r31.trigger
+#3 12.21 OK: 45.0 MiB in 75 packages
+#3 DONE 12.3s
+
+#4 [internal] load build definition from Dockerfile
+#4 transferring dockerfile: 1.00kB done
+#4 DONE 0.0s
+
+#5 [internal] load metadata for docker.io/library/eclipse-temurin:21-jre-alpine
+#5 DONE 0.1s
+
+#6 [internal] load .dockerignore
+#6 transferring context: 2B done
+#6 DONE 0.0s
+
+#7 [internal] load build context
+#7 transferring context: 55.50MB 0.7s done
+#7 DONE 0.7s
+
+#8 [4/5] COPY app.jar app.jar
+#8 DONE 0.2s
+
+#9 [5/5] RUN mkdir -p /app/logs && chown -R app:app /app
+#9 DONE 0.6s
+
+#10 exporting to image
+#10 exporting layers
+#10 exporting layers 1.4s done
+#10 exporting manifest sha256:62b079e602a286715dc4e03c69dfb81683413ba32b9e844d5dad15fd8f22919b done
+#10 exporting config sha256:513eec8a8dd2381795e105852a5eab22820184e64c5023b2a6105b1043f6c815 done
+#10 exporting attestation manifest sha256:98d731a9d8e82fbc27d1308b99954e93d7d3ec187a02391d64d62a525d30da4a done
+#10 exporting manifest list sha256:40bbf551eacadfe16b508e9040a721ac35a19962b8312713db861c19b948a280 done
+#10 naming to docker.io/library/flowmart:73be487-jar done
+#10 unpacking to docker.io/library/flowmart:73be487-jar
+#10 unpacking to docker.io/library/flowmart:73be487-jar 0.6s done
+#10 DONE 2.0s
