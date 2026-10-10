@@ -1,0 +1,104 @@
+DATABASE()	VERSION()	@@session.time_zone
+flowmart_test	8.0.46	+08:00
+Table	Non_unique	Key_name	Seq_in_index	Column_name	Collation	Cardinality	Sub_part	Packed	Null	Index_type	Comment	Index_comment	Visible	Expression
+product_spu	0	PRIMARY	1	id	A	32	NULL	NULL		BTREE			YES	NULL
+product_spu	0	uk_spu_code	1	spu_code	A	32	NULL	NULL		BTREE			YES	NULL
+product_spu	1	idx_category_deleted	1	category_id	A	6	NULL	NULL		BTREE			YES	NULL
+product_spu	1	idx_category_deleted	2	deleted	A	7	NULL	NULL		BTREE			YES	NULL
+product_spu	1	idx_brand_deleted	1	brand_id	A	5	NULL	NULL	YES	BTREE			YES	NULL
+product_spu	1	idx_brand_deleted	2	deleted	A	6	NULL	NULL		BTREE			YES	NULL
+product_spu	1	idx_deleted_status_created	1	deleted	A	2	NULL	NULL		BTREE			YES	NULL
+product_spu	1	idx_deleted_status_created	2	status	A	4	NULL	NULL		BTREE			YES	NULL
+product_spu	1	idx_deleted_status_created	3	created_at	A	8	NULL	NULL		BTREE			YES	NULL
+product_spu	1	idx_deleted_status_created	4	id	A	32	NULL	NULL		BTREE			YES	NULL
+EXPLAIN
+-> Aggregate: count(1)  (cost=6.48 rows=1) (actual time=0.018..0.0181 rows=1 loops=1)
+    -> Covering index lookup on spu using idx_deleted_status_created (deleted=0)  (cost=3.38 rows=31) (actual time=0.00625..0.011 rows=31 loops=1)
+
+EXPLAIN
+-> Limit: 20 row(s)  (cost=25.3 rows=20) (actual time=0.0799..0.102 rows=20 loops=1)
+    -> Nested loop left join  (cost=25.3 rows=32) (actual time=0.0792..0.101 rows=20 loops=1)
+        -> Nested loop left join  (cost=14.4 rows=32) (actual time=0.0606..0.074 rows=20 loops=1)
+            -> Sort: spu.created_at DESC, spu.id DESC  (cost=3.45 rows=32) (actual time=0.0553..0.057 rows=20 loops=1)
+                -> Filter: (spu.deleted = 0)  (cost=3.45 rows=32) (actual time=0.03..0.0424 rows=31 loops=1)
+                    -> Table scan on spu  (cost=3.45 rows=32) (actual time=0.0288..0.0387 rows=32 loops=1)
+            -> Filter: (c.deleted = 0)  (cost=0.253 rows=1) (actual time=656e-6..712e-6 rows=0.9 loops=20)
+                -> Single-row index lookup on c using PRIMARY (id=spu.category_id)  (cost=0.253 rows=1) (actual time=519e-6..540e-6 rows=0.95 loops=20)
+        -> Filter: (b.deleted = 0)  (cost=0.253 rows=1) (actual time=0.00116..0.0012 rows=0.65 loops=20)
+            -> Single-row index lookup on b using PRIMARY (id=spu.brand_id)  (cost=0.253 rows=1) (actual time=0.00106..0.00108 rows=0.65 loops=20)
+
+EXPLAIN
+-> Aggregate: count(1)  (cost=2.67 rows=1) (actual time=0.0215..0.0215 rows=1 loops=1)
+    -> Filter: ((spu.`status` = 0) and (spu.deleted = 0) and (spu.created_at >= TIMESTAMP'2026-10-07 00:00:00') and (spu.created_at < TIMESTAMP'2026-10-08 00:00:00'))  (cost=1.87 rows=8) (actual time=0.0166..0.0201 rows=8 loops=1)
+        -> Covering index range scan on spu using idx_deleted_status_created over (deleted = 0 AND status = 0 AND '2026-10-07 00:00:00.000' <= created_at < '2026-10-08 00:00:00.000')  (cost=1.87 rows=8) (actual time=0.0154..0.0179 rows=8 loops=1)
+
+EXPLAIN
+-> Limit: 20 row(s)  (cost=9.46 rows=8) (actual time=0.0393..0.0953 rows=8 loops=1)
+    -> Nested loop left join  (cost=9.46 rows=8) (actual time=0.0391..0.0947 rows=8 loops=1)
+        -> Nested loop left join  (cost=6.66 rows=8) (actual time=0.0379..0.0897 rows=8 loops=1)
+            -> Index range scan on spu using idx_deleted_status_created over (deleted = 0 AND status = 0 AND '2026-10-07 00:00:00.000' <= created_at < '2026-10-08 00:00:00.000') (reverse), with index condition: ((spu.`status` = 0) and (spu.deleted = 0) and (spu.created_at >= TIMESTAMP'2026-10-07 00:00:00') and (spu.created_at < TIMESTAMP'2026-10-08 00:00:00'))  (cost=3.86 rows=8) (actual time=0.0337..0.0792 rows=8 loops=1)
+            -> Filter: (c.deleted = 0)  (cost=0.263 rows=1) (actual time=0.00105..0.00113 rows=1 loops=8)
+                -> Single-row index lookup on c using PRIMARY (id=spu.category_id)  (cost=0.263 rows=1) (actual time=885e-6..901e-6 rows=1 loops=8)
+        -> Filter: (b.deleted = 0)  (cost=0.263 rows=1) (actual time=396e-6..432e-6 rows=0.75 loops=8)
+            -> Single-row index lookup on b using PRIMARY (id=spu.brand_id)  (cost=0.263 rows=1) (actual time=291e-6..323e-6 rows=0.75 loops=8)
+
+EXPLAIN
+-> Aggregate: count(1)  (cost=2.61 rows=1) (actual time=0.0632..0.0633 rows=1 loops=1)
+    -> Filter: (spu.category_id in (9100051000,9100051001,9100051002))  (cost=1.68 rows=9.3) (actual time=0.00854..0.0617 rows=23 loops=1)
+        -> Index lookup on spu using idx_deleted_status_created (deleted=0)  (cost=1.68 rows=31) (actual time=0.00812..0.0593 rows=31 loops=1)
+
+EXPLAIN
+-> Limit: 20 row(s)  (cost=21.9 rows=20) (actual time=0.0288..0.0474 rows=20 loops=1)
+    -> Nested loop left join  (cost=21.9 rows=32) (actual time=0.0286..0.0465 rows=20 loops=1)
+        -> Nested loop left join  (cost=12.7 rows=32) (actual time=0.0271..0.0363 rows=20 loops=1)
+            -> Sort: spu.created_at DESC, spu.id DESC  (cost=3.45 rows=32) (actual time=0.0246..0.0261 rows=20 loops=1)
+                -> Filter: ((spu.deleted = 0) and (spu.category_id in (9100051000,9100051001,9100051002)))  (cost=3.45 rows=32) (actual time=0.00587..0.0177 rows=23 loops=1)
+                    -> Table scan on spu  (cost=3.45 rows=32) (actual time=0.00521..0.0144 rows=32 loops=1)
+            -> Filter: (c.deleted = 0)  (cost=0.254 rows=1) (actual time=321e-6..386e-6 rows=1 loops=20)
+                -> Single-row index lookup on c using PRIMARY (id=spu.category_id)  (cost=0.254 rows=1) (actual time=233e-6..250e-6 rows=1 loops=20)
+        -> Filter: (b.deleted = 0)  (cost=0.254 rows=1) (actual time=331e-6..383e-6 rows=0.9 loops=20)
+            -> Single-row index lookup on b using PRIMARY (id=spu.brand_id)  (cost=0.254 rows=1) (actual time=225e-6..252e-6 rows=0.9 loops=20)
+
+EXPLAIN
+-> Aggregate: count(1)  (cost=3.79 rows=1) (actual time=0.44..0.44 rows=1 loops=1)
+    -> Filter: ((spu.deleted = 0) and (spu.`name` like '%FM005QA20261009 折扣100!%%' escape '!'))  (cost=3.45 rows=3.44) (actual time=0.427..0.439 rows=1 loops=1)
+        -> Table scan on spu  (cost=3.45 rows=32) (actual time=0.00425..0.0135 rows=32 loops=1)
+
+EXPLAIN
+-> Limit: 20 row(s)  (cost=11.6 rows=20) (actual time=0.0318..0.0322 rows=1 loops=1)
+    -> Nested loop left join  (cost=11.6 rows=32) (actual time=0.0316..0.0319 rows=1 loops=1)
+        -> Nested loop left join  (cost=7.51 rows=32) (actual time=0.03..0.0302 rows=1 loops=1)
+            -> Sort: spu.created_at DESC, spu.id DESC  (cost=3.45 rows=32) (actual time=0.0277..0.0278 rows=1 loops=1)
+                -> Filter: ((spu.deleted = 0) and (spu.`name` like '%FM005QA20261009 折扣100!%%' escape '!'))  (cost=3.45 rows=32) (actual time=0.0105..0.0248 rows=1 loops=1)
+                    -> Table scan on spu  (cost=3.45 rows=32) (actual time=0.00508..0.0147 rows=32 loops=1)
+            -> Filter: (c.deleted = 0)  (cost=0.279 rows=1) (actual time=0.00213..0.00221 rows=1 loops=1)
+                -> Single-row index lookup on c using PRIMARY (id=spu.category_id)  (cost=0.279 rows=1) (actual time=0.00192..0.00192 rows=1 loops=1)
+        -> Filter: (b.deleted = 0)  (cost=0.279 rows=1) (actual time=0.00129..0.00137 rows=1 loops=1)
+            -> Single-row index lookup on b using PRIMARY (id=spu.brand_id)  (cost=0.279 rows=1) (actual time=0.00117..0.00117 rows=1 loops=1)
+
+EXPLAIN
+-> Aggregate: count(1)  (cost=6.48 rows=1) (actual time=0.0155..0.0156 rows=1 loops=1)
+    -> Covering index lookup on spu using idx_deleted_status_created (deleted=0)  (cost=3.38 rows=31) (actual time=0.00633..0.0127 rows=31 loops=1)
+
+EXPLAIN
+-> Limit/Offset: 20/5000 row(s)  (cost=25.3 rows=0) (actual time=0.059..0.059 rows=0 loops=1)
+    -> Nested loop left join  (cost=25.3 rows=32) (actual time=0.0282..0.0578 rows=31 loops=1)
+        -> Nested loop left join  (cost=14.4 rows=32) (actual time=0.0266..0.0434 rows=31 loops=1)
+            -> Sort: spu.created_at DESC, spu.id DESC  (cost=3.45 rows=32) (actual time=0.0242..0.0267 rows=31 loops=1)
+                -> Filter: (spu.deleted = 0)  (cost=3.45 rows=32) (actual time=0.00513..0.0159 rows=31 loops=1)
+                    -> Table scan on spu  (cost=3.45 rows=32) (actual time=0.00467..0.0134 rows=32 loops=1)
+            -> Filter: (c.deleted = 0)  (cost=0.253 rows=1) (actual time=349e-6..408e-6 rows=0.935 loops=31)
+                -> Single-row index lookup on c using PRIMARY (id=spu.category_id)  (cost=0.253 rows=1) (actual time=267e-6..286e-6 rows=0.968 loops=31)
+        -> Filter: (b.deleted = 0)  (cost=0.253 rows=1) (actual time=312e-6..360e-6 rows=0.71 loops=31)
+            -> Single-row index lookup on b using PRIMARY (id=spu.brand_id)  (cost=0.253 rows=1) (actual time=203e-6..219e-6 rows=0.742 loops=31)
+
+EXPLAIN
+-> Table scan on category_tree  (cost=5.86..6.42 rows=1.29) (actual time=0.145..0.145 rows=3 loops=1)
+    -> Materialize recursive CTE category_tree  (cost=3.9..3.9 rows=1.29) (actual time=0.144..0.144 rows=3 loops=1)
+        -> Rows fetched before execution  (cost=0..0 rows=1) (actual time=0..41e-6 rows=1 loops=1)
+        -> Repeat until convergence
+            -> Inner hash join (c.parent_id = t.id)  (cost=3.78 rows=0.286) (actual time=0.0638..0.066 rows=1 loops=2)
+                -> Filter: (c.deleted = 0)  (cost=0.475 rows=1) (actual time=0.0571..0.0601 rows=6 loops=2)
+                    -> Table scan on c  (cost=0.475 rows=7) (actual time=0.0566..0.059 rows=7 loops=2)
+                -> Hash
+                    -> Scan new records on t  (cost=2.73 rows=2) (actual time=500e-6..583e-6 rows=1.5 loops=2)

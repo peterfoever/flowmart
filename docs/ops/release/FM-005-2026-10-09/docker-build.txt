@@ -1,0 +1,65 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.67kB 0.0s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/maven:3.9-eclipse-temurin-21
+#2 DONE 0.1s
+
+#3 [internal] load metadata for docker.io/library/eclipse-temurin:21-jre-alpine
+#3 DONE 0.1s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 178B done
+#4 DONE 0.0s
+
+#5 [stage-1 1/5] FROM docker.io/library/eclipse-temurin:21-jre-alpine@sha256:51ab5e3302e7141ce665ca3ea85e8b5cd648eafbc3c0c90dd79d6537684e4555
+#5 resolve docker.io/library/eclipse-temurin:21-jre-alpine@sha256:51ab5e3302e7141ce665ca3ea85e8b5cd648eafbc3c0c90dd79d6537684e4555 0.0s done
+#5 DONE 0.3s
+
+#6 [internal] load build context
+#6 transferring context: 537.30kB 0.1s done
+#6 DONE 0.1s
+
+#7 [builder 1/9] FROM docker.io/library/maven:3.9-eclipse-temurin-21@sha256:99e61abcff91a9b1333463bd8451fb18495d6eba9250ac66a338b518f8278320
+#7 resolve docker.io/library/maven:3.9-eclipse-temurin-21@sha256:99e61abcff91a9b1333463bd8451fb18495d6eba9250ac66a338b518f8278320 0.0s done
+#7 DONE 0.4s
+
+#8 [stage-1 2/5] WORKDIR /app
+#8 DONE 0.1s
+
+#9 [stage-1 3/5] RUN apk add --no-cache tzdata wget     && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime     && echo "Asia/Shanghai" > /etc/timezone     && addgroup -S app && adduser -S app -G app
+#9 ...
+
+#10 [builder 2/9] WORKDIR /build
+#10 DONE 0.0s
+
+#11 [builder 3/9] COPY pom.xml .
+#11 DONE 0.1s
+
+#12 [builder 4/9] COPY flowmart-common/pom.xml flowmart-common/
+#12 DONE 0.1s
+
+#13 [builder 5/9] COPY flowmart-product/pom.xml flowmart-product/
+#13 DONE 0.1s
+
+#9 [stage-1 3/5] RUN apk add --no-cache tzdata wget     && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime     && echo "Asia/Shanghai" > /etc/timezone     && addgroup -S app && adduser -S app -G app
+#9 ...
+
+#14 [builder 6/9] COPY flowmart-bootstrap/pom.xml flowmart-bootstrap/
+#14 DONE 0.0s
+
+#15 [builder 7/9] RUN mvn -B -q dependency:go-offline -DskipTests || true
+#15 ...
+
+#9 [stage-1 3/5] RUN apk add --no-cache tzdata wget     && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime     && echo "Asia/Shanghai" > /etc/timezone     && addgroup -S app && adduser -S app -G app
+#9 10.05 (1/2) Installing pcre2 (10.49-r0)
+#9 11.14 (2/2) Installing wget (1.25.0-r3)
+#9 12.18 Executing busybox-1.37.0-r31.trigger
+#9 12.21 OK: 45.0 MiB in 75 packages
+#9 DONE 12.3s
+
+#15 [builder 7/9] RUN mvn -B -q dependency:go-offline -DskipTests || true
+#15 CANCELED
+ERROR: failed to build: failed to solve: Canceled: context canceled

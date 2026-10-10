@@ -1,0 +1,842 @@
+17:00:37.908 [main] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.1.Final
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/a1/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.19/byte-buddy-agent-1.14.19.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+17:00:39.571 [main] ERROR com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler -- deserialize json: {broken to [collection type; class java.util.List, contains [simple type, class com.flowmart.product.dto.SpecDTO]] error
+com.fasterxml.jackson.databind.exc.MismatchedInputException: Cannot deserialize value of type `java.util.ArrayList<com.flowmart.product.dto.SpecDTO>` from Object value (token `JsonToken.START_OBJECT`)
+ at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); line: 1, column: 1]
+	at com.fasterxml.jackson.databind.exc.MismatchedInputException.from(MismatchedInputException.java:59)
+	at com.fasterxml.jackson.databind.DeserializationContext.reportInputMismatch(DeserializationContext.java:1767)
+	at com.fasterxml.jackson.databind.DeserializationContext.handleUnexpectedToken(DeserializationContext.java:1541)
+	at com.fasterxml.jackson.databind.DeserializationContext.handleUnexpectedToken(DeserializationContext.java:1488)
+	at com.fasterxml.jackson.databind.deser.std.CollectionDeserializer.handleNonArray(CollectionDeserializer.java:402)
+	at com.fasterxml.jackson.databind.deser.std.CollectionDeserializer.deserialize(CollectionDeserializer.java:254)
+	at com.fasterxml.jackson.databind.deser.std.CollectionDeserializer.deserialize(CollectionDeserializer.java:30)
+	at com.fasterxml.jackson.databind.deser.DefaultDeserializationContext.readRootValue(DefaultDeserializationContext.java:342)
+	at com.fasterxml.jackson.databind.ObjectMapper._readMapAndClose(ObjectMapper.java:4905)
+	at com.fasterxml.jackson.databind.ObjectMapper.readValue(ObjectMapper.java:3848)
+	at com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler.parse(JacksonTypeHandler.java:56)
+	at com.baomidou.mybatisplus.extension.handlers.AbstractJsonTypeHandler.getNullableResult(AbstractJsonTypeHandler.java:81)
+	at org.apache.ibatis.type.BaseTypeHandler.getResult(BaseTypeHandler.java:86)
+	at com.flowmart.product.mapper.ProductSpuMappingTest.lambda$malformedJson_isNotSilentlyConvertedToEmptyList$4(ProductSpuMappingTest.java:135)
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:53)
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:35)
+	at org.junit.jupiter.api.Assertions.assertThrows(Assertions.java:3115)
+	at com.flowmart.product.mapper.ProductSpuMappingTest.malformedJson_isNotSilentlyConvertedToEmptyList(ProductSpuMappingTest.java:135)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:728)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:156)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:147)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:103)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:93)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:92)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:86)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:218)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:214)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:139)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:156)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:198)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:169)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:93)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:141)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:57)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.apache.maven.surefire.junitplatform.LazyLauncher.execute(LazyLauncher.java:56)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:184)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:148)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:122)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+17:00:40.112 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.112 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.114 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+17:00:40.228 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.229 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.229 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.261 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.261 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.261 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.267 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [约束校验失败] uri=/api/product/admin/skus/0 detail=must be greater than or equal to 1
+17:00:40.278 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.278 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.278 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.281 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [约束校验失败] uri=/api/product/admin/skus/-1 detail=must be greater than or equal to 1
+17:00:40.291 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.291 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.291 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.295 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [业务异常] uri=/api/product/admin/skus/100 code=20041 msg=SPU 不存在
+17:00:40.304 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.304 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.304 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.307 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [业务异常] uri=/api/product/admin/skus/100 code=20067 msg=SKU不存在
+17:00:40.314 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.314 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.314 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.327 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.327 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.327 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.341 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.341 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.341 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.358 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus/42/skus/generate detail=price: 初始价格必填
+17:00:40.366 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.366 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.366 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.370 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus/42/skus/generate detail=price: 初始价格必填
+17:00:40.382 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.382 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.382 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.386 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus/42/skus/generate detail=price: 价格不能为负数
+17:00:40.393 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.393 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.393 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.396 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus/42/skus/generate detail=price: 价格最多8位整数、2位小数
+17:00:40.403 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.403 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.404 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.406 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus/42/skus/generate detail=price: 价格最多8位整数、2位小数
+17:00:40.413 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.413 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.413 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.415 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [请求体解析失败] uri=/api/product/admin/spus/42/skus/generate msg=JSON parse error: Unexpected character ('b' (code 98)): was expecting double-quote to start field name
+17:00:40.423 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.423 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.423 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.429 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [业务异常] uri=/api/product/admin/skus/100 code=20041 msg=SPU 不存在
+17:00:40.440 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.440 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.440 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.446 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [业务异常] uri=/api/product/admin/skus/100 code=20044 msg=SPU 非草稿状态
+17:00:40.453 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.453 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.454 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+17:00:40.459 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [业务异常] uri=/api/product/admin/skus/100 code=20067 msg=SKU不存在
+17:00:40.466 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.466 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.466 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.471 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [业务异常] uri=/api/product/admin/skus/100 code=20068 msg=SKU 已被其他人修改，请刷新后重试
+17:00:40.478 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.478 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.479 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+17:00:40.483 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [业务异常] uri=/api/product/admin/skus/100 code=20069 msg=SKU 更新失败
+17:00:40.496 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.496 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.496 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.507 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [业务异常] uri=/api/product/admin/spus/42/skus/generate code=20063 msg=SKU已经生成过了
+17:00:40.518 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.518 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.518 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.523 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [约束校验失败] uri=/api/product/admin/spus/0/skus detail=must be greater than or equal to 1
+17:00:40.534 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [约束校验失败] uri=/api/product/admin/spus/0/skus/generate detail=must be greater than or equal to 1
+17:00:40.548 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.548 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.548 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.552 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [约束校验失败] uri=/api/product/admin/spus/-1/skus detail=must be greater than or equal to 1
+17:00:40.556 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [约束校验失败] uri=/api/product/admin/spus/-1/skus/generate detail=must be greater than or equal to 1
+17:00:40.563 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.563 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.564 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.569 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [约束校验失败] uri=/api/product/admin/skus/0 detail=must be greater than or equal to 1
+17:00:40.576 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.576 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.577 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+17:00:40.581 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [约束校验失败] uri=/api/product/admin/skus/-1 detail=must be greater than or equal to 1
+17:00:40.591 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.591 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.591 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.602 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.602 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.602 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.615 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.615 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.615 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.630 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.631 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.631 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.634 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [业务异常] uri=/api/product/admin/spus/42/skus code=20041 msg=SPU 不存在
+17:00:40.642 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.642 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.642 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.645 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/skus/100 detail=price: 价格必填; version: 版本号必填; imageUrl: 图片不能为空
+17:00:40.652 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.653 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.653 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.655 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/skus/100 detail=price: 价格必填
+17:00:40.663 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.663 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.663 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.665 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/skus/100 detail=price: 价格必填
+17:00:40.676 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.676 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.676 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.679 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/skus/100 detail=price: 价格不能为负数
+17:00:40.688 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.688 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.688 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.691 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/skus/100 detail=price: 价格最多8位整数、2位小数
+17:00:40.698 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.698 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.698 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.701 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/skus/100 detail=price: 价格最多8位整数、2位小数
+17:00:40.708 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.708 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.708 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.711 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/skus/100 detail=imageUrl: 图片不能为空
+17:00:40.717 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.718 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.718 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.721 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/skus/100 detail=imageUrl: 图片不能为空
+17:00:40.728 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.728 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.728 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.730 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/skus/100 detail=imageUrl: 图片不能为空
+17:00:40.737 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.737 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.737 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.740 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/skus/100 detail=imageUrl: 图片不能为空
+17:00:40.747 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.747 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.747 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.752 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/skus/100 detail=version: 版本号必填
+17:00:40.764 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.764 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.764 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.770 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/skus/100 detail=version: 版本号必填
+17:00:40.793 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.793 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.793 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.798 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/skus/100 detail=version: 版本号不能为负数
+17:00:40.825 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.825 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.825 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.829 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [请求体解析失败] uri=/api/product/admin/skus/100 msg=JSON parse error: Unexpected character ('b' (code 98)): was expecting double-quote to start field name
+17:00:40.840 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.840 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.840 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.843 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [请求体解析失败] uri=/api/product/admin/skus/100 msg=Required request body is missing: public com.flowmart.common.result.R<java.lang.Void> com.flowmart.product.controller.SkuController.updateSku(java.lang.Long,com.flowmart.product.dto.SkuUpdateDTO)
+17:00:40.854 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.854 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.854 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.855 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [请求体解析失败] uri=/api/product/admin/skus/100 msg=Required request body is missing: public com.flowmart.common.result.R<java.lang.Void> com.flowmart.product.controller.SkuController.updateSku(java.lang.Long,com.flowmart.product.dto.SkuUpdateDTO)
+17:00:40.863 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.863 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.863 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.887 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.887 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.887 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.909 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.909 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.909 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.923 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:40.923 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:40.923 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:40.927 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/skus/100 detail=imageUrl: 图片URL不能超过512个字符
+17:00:41.286 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.286 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.287 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+17:00:41.322 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.323 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.323 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.329 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [业务异常] uri=/api/product/admin/spus code=10001 msg=类目不存在或已删除
+17:00:41.338 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.338 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.338 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.346 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [业务异常] uri=/api/product/admin/spus code=10001 msg=品牌不存在或已删除
+17:00:41.366 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.366 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.366 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.371 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=pageNum: pageNum 不能为空
+17:00:41.389 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.389 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.389 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.396 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=pageSize: pageSize 不能为空
+17:00:41.407 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.408 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.408 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.421 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=pageNum: Failed to convert property value of type 'java.lang.String' to required type 'java.lang.Integer' for property 'pageNum'; For input string: "abc"
+17:00:41.429 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.429 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.429 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.432 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=pageSize: Failed to convert property value of type 'java.lang.String' to required type 'java.lang.Integer' for property 'pageSize'; For input string: "abc"
+17:00:41.439 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.439 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.439 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.443 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=pageNum: 页码不能小于 1
+17:00:41.449 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.449 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.450 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+17:00:41.453 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=pageSize: 每页条数不能小于 1
+17:00:41.461 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.461 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.461 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.465 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=pageSize: 每页条数不能大于 200
+17:00:41.474 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.475 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.475 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.479 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=pageNum: Failed to convert property value of type 'java.lang.String' to required type 'java.lang.Integer' for property 'pageNum'; For input string: "2147483648"
+17:00:41.486 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.486 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.486 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.489 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=pageSize: Failed to convert property value of type 'java.lang.String' to required type 'java.lang.Integer' for property 'pageSize'; For input string: "2147483648"
+17:00:41.496 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.496 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.496 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.504 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=pageNum: 页码不能小于 1
+17:00:41.512 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.512 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.512 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.516 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=pageSize: 每页条数不能小于 1
+17:00:41.528 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.528 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.528 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.532 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=status: must be greater than or equal to 0
+17:00:41.546 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.546 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.546 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.553 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=status: must be less than or equal to 2
+17:00:41.563 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.563 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.563 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.571 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=status: Failed to convert property value of type 'java.lang.String' to required type 'java.lang.Integer' for property 'status'; For input string: "draft"
+17:00:41.586 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.586 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.586 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.590 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=categoryId: must be greater than or equal to 1
+17:00:41.598 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.598 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.598 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.603 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=categoryId: must be greater than or equal to 1
+17:00:41.623 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.623 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.623 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.630 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=categoryId: Failed to convert property value of type 'java.lang.String' to required type 'java.lang.Long' for property 'categoryId'; For input string: "abc"
+17:00:41.638 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.638 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.638 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.640 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=brandId: must be greater than or equal to 1
+17:00:41.648 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.648 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.648 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.655 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=brandId: must be greater than or equal to 1
+17:00:41.665 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.666 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.666 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.671 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=brandId: Failed to convert property value of type 'java.lang.String' to required type 'java.lang.Long' for property 'brandId'; For input string: "NONE"
+17:00:41.683 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.683 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.684 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+17:00:41.688 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=brandId: Failed to convert property value of type 'java.lang.String' to required type 'java.lang.Long' for property 'brandId'; For input string: "9223372036854775808"
+17:00:41.698 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.698 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.698 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.710 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=noBrand: Failed to convert property value of type 'java.lang.String' to required type 'java.lang.Boolean' for property 'noBrand'; Invalid boolean value [abc]
+17:00:41.723 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.723 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.723 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.736 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [业务异常] uri=/api/product/admin/spus code=10001 msg=createdFrom 格式必须为 yyyy-MM-dd HH:mm:ss
+17:00:41.747 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.747 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.747 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.755 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [业务异常] uri=/api/product/admin/spus code=10001 msg=createdTo 格式必须为 yyyy-MM-dd HH:mm:ss
+17:00:41.767 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.767 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.768 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+17:00:41.789 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.789 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.789 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.795 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [业务异常] uri=/api/product/admin/spus code=10001 msg=brandId 与 noBrand=true 不能同时传
+17:00:41.798 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [业务异常] uri=/api/product/admin/spus code=10001 msg=createdFrom 必须早于 createdTo
+17:00:41.805 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.805 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.805 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.809 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=keyword: size must be between 0 and 128
+17:00:41.815 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.815 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.815 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.819 [main] WARN com.flowmart.common.web.GlobalExceptionHandler -- [参数校验失败] uri=/api/product/admin/spus detail=spuCode: size must be between 0 and 64
+17:00:41.829 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.829 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.829 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:41.847 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+17:00:41.847 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+17:00:41.847 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+17:00:46.922 [main] WARN com.baomidou.mybatisplus.core.toolkit.Sequence -- Initialization Sequence Very Slow! Get datacenterId:2 workerId:1
+17:00:47.170 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 删除并上提类目成功: categoryId=2, reparented=1, levelAdjusted=2
+17:00:47.174 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 删除并上提类目成功: categoryId=5, reparented=0, levelAdjusted=0
+17:00:47.175 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 级联删除类目成功: categoryId=1, affected=3
+17:00:47.182 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 查询前台类目树
+17:00:47.182 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 查询到1条类目数据
+17:00:47.183 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 查询前台类目树
+17:00:47.183 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 查询到1条类目数据
+17:00:47.187 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 查询后台类目树
+17:00:47.188 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 查询到5条类目数据
+17:00:47.190 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 查询前台类目树
+17:00:47.190 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 查询到5条类目数据
+17:00:47.191 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 查询前台类目树
+17:00:47.191 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 查询到5条类目数据
+17:00:47.193 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 查询前台类目树
+17:00:47.193 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 查询到3条类目数据
+17:00:47.194 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 查询前台类目树
+17:00:47.194 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 查询到5条类目数据
+17:00:47.195 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 查询后台类目树
+17:00:47.195 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 查询到5条类目数据
+17:00:47.201 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 创建SPU草稿请求: name= 手机 , categoryId=1, brandId=null
+17:00:47.205 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 创建SPU草稿请求: name= 手机 , categoryId=1, brandId=null
+17:00:47.207 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 创建SPU草稿请求: name= 手机 , categoryId=1, brandId=null
+17:00:47.211 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 创建SPU草稿请求: name= 手机 , categoryId=1, brandId=null
+17:00:47.213 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 创建SPU草稿请求: name= 手机 , categoryId=1, brandId=null
+17:00:47.214 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 创建SPU草稿请求: name= 手机 , categoryId=1, brandId=2
+17:00:47.215 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 创建SPU草稿请求: name= 手机 , categoryId=1, brandId=2
+17:00:47.219 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 创建SPU草稿请求: name= 手机 , categoryId=1, brandId=2
+17:00:47.221 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 创建SPU草稿请求: name= 手机 , categoryId=1, brandId=2
+17:00:47.223 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 创建SPU草稿请求: name= 手机 , categoryId=1, brandId=null
+17:00:47.223 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 创建spu成功，id=100,spuCode=SPU123,categoryId=1
+17:00:47.224 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 创建SPU草稿请求: name= 手机 , categoryId=1, brandId=null
+17:00:47.224 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 创建spu成功，id=100,spuCode=SPU123,categoryId=1
+17:00:47.227 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 创建SPU草稿请求: name= 手机 , categoryId=1, brandId=null
+17:00:47.228 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 创建SPU草稿请求: name= 手机 , categoryId=1, brandId=null
+17:00:47.228 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 创建SPU草稿请求: name= 手机 , categoryId=1, brandId=null
+17:00:47.229 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 创建SPU草稿请求: name= 手机 , categoryId=1, brandId=null
+17:00:47.230 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 创建SPU草稿请求: name= 手机 , categoryId=1, brandId=2
+17:00:47.230 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 创建spu成功，id=100,spuCode=SPU123,categoryId=1
+17:00:47.237 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 创建SPU草稿请求: name= 手机 , categoryId=1, brandId=null
+17:00:47.237 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 创建spu成功，id=100,spuCode=SPU123,categoryId=1
+17:00:47.263 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 创建SPU草稿请求: name= 手机 , categoryId=1, brandId=null
+17:00:47.354 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 开始移动类目: id=2, targetParentId=4
+17:00:47.357 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 开始移动类目: id=5, targetParentId=1
+17:00:47.359 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 移动类目成功: id=5, 原父类目=4, 新父类目=1, delta=0
+17:00:47.361 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 开始移动类目: id=3, targetParentId=1
+17:00:47.361 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 移动类目成功: id=3, 原父类目=2, 新父类目=1, delta=-1
+17:00:47.364 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 开始移动类目: id=3, targetParentId=7
+17:00:47.378 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 开始移动类目: id=2, targetParentId=8
+17:00:47.383 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 开始移动类目: id=3, targetParentId=3
+17:00:47.387 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 开始移动类目: id=2, targetParentId=1
+17:00:47.390 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 开始移动类目: id=3, targetParentId=999
+17:00:47.396 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 开始移动类目: id=3, targetParentId=1
+17:00:47.412 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 开始移动类目: id=5, targetParentId=1
+17:00:47.412 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 移动类目成功: id=5, 原父类目=4, 新父类目=1, delta=0
+17:00:47.414 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 开始移动类目: id=2, targetParentId=0
+17:00:47.414 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 移动类目成功: id=2, 原父类目=1, 新父类目=0, delta=-1
+17:00:47.417 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 开始移动类目: id=3, targetParentId=1
+17:00:47.419 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 开始移动类目: id=5, targetParentId=6
+17:00:47.421 [main] INFO com.flowmart.product.service.impl.CategoryServiceImpl -- 开始移动类目: id=3, targetParentId=1
+17:00:47.427 [main] INFO com.flowmart.product.service.impl.CategoryBrandServiceImpl -- 替换类目品牌绑定执行完成: categoryId=1, 旧绑定删除数=0, 新绑定数=0
+17:00:47.446 [main] INFO com.flowmart.product.service.impl.CategoryBrandServiceImpl -- 替换类目品牌绑定执行完成: categoryId=1, 旧绑定删除数=0, 新绑定数=2
+17:00:47.448 [main] INFO com.flowmart.product.service.impl.CategoryBrandServiceImpl -- 替换类目品牌绑定执行完成: categoryId=1, 旧绑定删除数=0, 新绑定数=2
+17:00:47.450 [main] INFO com.flowmart.product.service.impl.CategoryBrandServiceImpl -- 替换类目品牌绑定执行完成: categoryId=1, 旧绑定删除数=0, 新绑定数=2
+17:00:47.461 [main] INFO com.flowmart.product.service.impl.CategoryBrandServiceImpl -- 替换类目品牌绑定执行完成: categoryId=1, 旧绑定删除数=0, 新绑定数=0
+17:00:47.465 [main] INFO com.flowmart.product.service.impl.CategoryBrandServiceImpl -- 替换类目品牌绑定执行完成: categoryId=1, 旧绑定删除数=0, 新绑定数=0
+17:00:47.472 [main] INFO com.flowmart.product.service.impl.CategoryBrandServiceImpl -- 替换类目品牌绑定执行完成: categoryId=1, 旧绑定删除数=0, 新绑定数=0
+17:00:47.475 [main] INFO com.flowmart.product.service.impl.CategoryBrandServiceImpl -- 替换类目品牌绑定执行完成: categoryId=1, 旧绑定删除数=0, 新绑定数=2
+17:00:47.481 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=3
+17:00:47.481 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿完成: id=1, 原version=128, categoryId=2, brandId=3
+17:00:47.495 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=3
+17:00:47.499 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=3
+17:00:47.503 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=3
+17:00:47.506 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=3
+17:00:47.513 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=3
+17:00:47.518 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=3
+17:00:47.523 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=null
+17:00:47.523 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿完成: id=1, 原version=128, categoryId=2, brandId=null
+17:00:47.526 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=5
+17:00:47.529 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=5
+17:00:47.530 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=5
+17:00:47.531 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=5
+17:00:47.532 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=5
+17:00:47.533 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=5
+17:00:47.534 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=3
+17:00:47.536 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=3
+17:00:47.537 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=3
+17:00:47.539 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=3
+17:00:47.543 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=127, brandId=3
+17:00:47.545 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=3
+17:00:47.546 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=5
+17:00:47.547 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=3
+17:00:47.548 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=3
+17:00:47.548 [main] WARN com.flowmart.product.service.impl.SpuServiceImpl -- 更新SPU草稿失败: id=1, 请求version=128, 查询时version=128, 查询时status=0
+17:00:47.549 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=3
+17:00:47.549 [main] WARN com.flowmart.product.service.impl.SpuServiceImpl -- 更新SPU草稿失败: id=1, 请求version=128, 查询时version=128, 查询时status=0
+17:00:47.550 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=3
+17:00:47.550 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿完成: id=1, 原version=128, categoryId=2, brandId=3
+17:00:47.551 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=5
+17:00:47.551 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿完成: id=1, 原version=128, categoryId=4, brandId=5
+17:00:47.551 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿请求: id=1, version=128, brandId=3
+17:00:47.552 [main] INFO com.flowmart.product.service.impl.SpuServiceImpl -- 修改SPU草稿完成: id=1, 原version=128, categoryId=2, brandId=3
+17:00:47.583 [main] INFO com.flowmart.product.service.impl.SkuGenerateService -- 生成SKU执行完成: spuId=1, count=6, actor=0
+17:00:47.660 [main] WARN com.flowmart.product.service.impl.SkuGenerateService -- 生成SKU发生唯一约束冲突: spuId=1
+org.springframework.dao.DuplicateKeyException: duplicate
+	at com.flowmart.product.service.impl.SkuGenerateServiceTest.secondBatchFailure_stopsAndPropagates(SkuGenerateServiceTest.java:186)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:728)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:156)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:147)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestTemplateMethod(TimeoutExtension.java:94)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:103)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:93)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:92)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:86)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:218)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:214)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:139)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:156)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask$DefaultDynamicTestExecutor.execute(NodeTestTask.java:231)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask$DefaultDynamicTestExecutor.execute(NodeTestTask.java:209)
+	at org.junit.jupiter.engine.descriptor.TestTemplateTestDescriptor.execute(TestTemplateTestDescriptor.java:142)
+	at org.junit.jupiter.engine.descriptor.TestTemplateTestDescriptor.lambda$execute$2(TestTemplateTestDescriptor.java:110)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:1024)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at org.junit.jupiter.engine.descriptor.TestTemplateTestDescriptor.execute(TestTemplateTestDescriptor.java:110)
+	at org.junit.jupiter.engine.descriptor.TestTemplateTestDescriptor.execute(TestTemplateTestDescriptor.java:44)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:156)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:198)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:169)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:93)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:141)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:57)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.apache.maven.surefire.junitplatform.LazyLauncher.execute(LazyLauncher.java:56)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:184)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:148)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:122)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+17:00:47.665 [main] INFO com.flowmart.product.service.impl.SkuGenerateService -- 生成SKU执行完成: spuId=1, count=210, actor=0
+17:00:47.668 [main] INFO com.flowmart.product.service.impl.SkuGenerateService -- 生成SKU执行完成: spuId=1, count=1, actor=42
+17:00:47.669 [main] INFO com.flowmart.product.service.impl.SkuGenerateService -- 生成SKU执行完成: spuId=1, count=1, actor=42
+17:00:47.672 [main] INFO com.flowmart.product.service.impl.SkuGenerateService -- 生成SKU执行完成: spuId=1, count=1, actor=42
+17:00:47.673 [main] INFO com.flowmart.product.service.impl.SkuGenerateService -- 生成SKU执行完成: spuId=1, count=1, actor=42
+17:00:47.694 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 删除品牌请求: id=1
+17:00:47.694 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 删除品牌成功: id=1, name=null, version=7
+17:00:47.697 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 删除品牌请求: id=1
+17:00:47.698 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 删除品牌成功: id=1, name=null, version=7
+17:00:47.712 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 删除品牌请求: id=1
+17:00:47.716 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 删除品牌请求: id=1
+17:00:47.720 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 删除品牌请求: id=1
+17:00:47.722 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 删除品牌请求: id=1
+17:00:47.723 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 删除品牌请求: id=1
+17:00:47.724 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 删除品牌请求: id=1
+17:00:47.727 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 删除品牌请求: id=1
+17:00:47.729 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 删除品牌请求: id=1
+17:00:47.763 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 创建品牌请求: name=华为, initial=H
+17:00:47.764 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 创建品牌成功: brandId=100, name=华为
+17:00:47.765 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 更新品牌状态请求: id=1, status=1
+17:00:47.765 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 更新品牌状态成功: id=1, newStatus=1
+17:00:47.766 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 更新品牌状态请求: id=1, status=0
+17:00:47.769 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 更新品牌请求: id=1, name=小米
+17:00:47.775 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 更新品牌请求: id=999, name=华为
+17:00:47.778 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 更新品牌状态请求: id=999, status=0
+17:00:47.783 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 更新品牌状态请求: id=1, status=1
+17:00:47.784 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 品牌状态未变化，跳过更新: id=1, status=1
+17:00:47.784 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 更新品牌状态请求: id=1, status=0
+17:00:47.784 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 品牌状态未变化，跳过更新: id=1, status=0
+17:00:47.785 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 更新品牌请求: id=1, name=小米
+17:00:47.785 [main] WARN com.flowmart.product.service.impl.BrandServiceImpl -- 并发更新品牌名称冲突: id=1, name=小米
+org.springframework.dao.DuplicateKeyException: Duplicate entry
+	at com.flowmart.product.service.impl.BrandServiceImpl.updateBrand(BrandServiceImpl.java:102)
+	at com.flowmart.product.service.impl.BrandServiceImplTest.lambda$updateBrand_concurrentDuplicateKey_throwsNameDuplicate$8(BrandServiceImplTest.java:392)
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:53)
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:35)
+	at org.junit.jupiter.api.Assertions.assertThrows(Assertions.java:3115)
+	at com.flowmart.product.service.impl.BrandServiceImplTest.updateBrand_concurrentDuplicateKey_throwsNameDuplicate(BrandServiceImplTest.java:390)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:728)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:156)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:147)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:103)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:93)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:92)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:86)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:218)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:214)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:139)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:156)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:198)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:169)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:93)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:141)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:57)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.apache.maven.surefire.junitplatform.LazyLauncher.execute(LazyLauncher.java:56)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:184)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:148)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:122)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+17:00:47.787 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 更新品牌请求: id=1, name=华为技术
+17:00:47.790 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 更新品牌状态请求: id=1, status=0
+17:00:47.791 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 更新品牌状态成功: id=1, newStatus=0
+17:00:47.792 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 更新品牌请求: id=1, name=华为技术
+17:00:47.794 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 创建品牌请求: name=华为, initial=H
+17:00:47.796 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 更新品牌请求: id=1, name=华为
+17:00:47.796 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 更新品牌成功: id=1, name=华为
+17:00:47.797 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 更新品牌请求: id=1, name=新品牌
+17:00:47.797 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 更新品牌成功: id=1, name=新品牌
+17:00:47.801 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 更新品牌请求: id=1, name=华为技术
+17:00:47.801 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 更新品牌成功: id=1, name=华为技术
+17:00:47.803 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 创建品牌请求: name=华为, initial=H
+17:00:47.806 [main] INFO com.flowmart.product.service.impl.BrandServiceImpl -- 创建品牌请求: name=华为, initial=H
+17:00:47.806 [main] WARN com.flowmart.product.service.impl.BrandServiceImpl -- 并发创建同名品牌冲突: name=华为
+org.springframework.dao.DuplicateKeyException: Duplicate entry
+	at com.flowmart.product.service.impl.BrandServiceImpl.createBrand(BrandServiceImpl.java:56)
+	at com.flowmart.product.service.impl.BrandServiceImplTest.lambda$createBrand_concurrentDuplicateKey_throwsNameDuplicate$2(BrandServiceImplTest.java:133)
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:53)
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:35)
+	at org.junit.jupiter.api.Assertions.assertThrows(Assertions.java:3115)
+	at com.flowmart.product.service.impl.BrandServiceImplTest.createBrand_concurrentDuplicateKey_throwsNameDuplicate(BrandServiceImplTest.java:131)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:728)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:156)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:147)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:103)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:93)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:92)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:86)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:218)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:214)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:139)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:156)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:198)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:169)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:93)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:141)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:57)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.apache.maven.surefire.junitplatform.LazyLauncher.execute(LazyLauncher.java:56)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:184)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:148)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:122)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+17:00:47.826 [main] WARN com.flowmart.product.service.impl.SpuServiceImpl -- SPU关联类目缺失: spuId=1, categoryId=2
+17:00:47.882 [main] INFO com.flowmart.product.service.impl.SkuServiceImpl -- SKU价格图片更新执行完成: skuId=100, spuId=42, 请求version=3, actor=0
+17:00:47.882 [main] INFO com.flowmart.product.service.impl.SkuServiceImpl -- SKU价格图片更新执行完成: skuId=100, spuId=42, 请求version=3, actor=0
+17:00:47.948 [main] INFO com.flowmart.product.service.impl.SkuServiceImpl -- SKU价格图片更新执行完成: skuId=100, spuId=42, 请求version=3, actor=0
+17:00:47.952 [main] INFO com.flowmart.product.service.impl.SkuServiceImpl -- SKU价格图片更新执行完成: skuId=100, spuId=42, 请求version=0, actor=0
+17:00:47.953 [main] INFO com.flowmart.product.service.impl.SkuServiceImpl -- SKU价格图片更新执行完成: skuId=100, spuId=42, 请求version=0, actor=0
+17:00:47.953 [main] INFO com.flowmart.product.service.impl.SkuServiceImpl -- SKU价格图片更新执行完成: skuId=100, spuId=42, 请求version=0, actor=0
+17:00:48.030 [main] INFO com.flowmart.product.service.impl.CategoryBrandServiceImpl -- 替换类目品牌绑定执行完成: categoryId=1, 旧绑定删除数=0, 新绑定数=0
+17:00:48.037 [main] INFO com.flowmart.product.service.impl.CategoryBrandServiceImpl -- 替换类目品牌绑定执行完成: categoryId=1, 旧绑定删除数=0, 新绑定数=501
+17:00:48.041 [main] INFO com.flowmart.product.service.impl.CategoryBrandServiceImpl -- 替换类目品牌绑定执行完成: categoryId=1, 旧绑定删除数=0, 新绑定数=2

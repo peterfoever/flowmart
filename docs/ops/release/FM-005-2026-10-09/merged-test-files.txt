@@ -1,0 +1,3 @@
+flowmart-product/src/test/java/com/flowmart/product/controller/SpuPageControllerTest.java
+flowmart-product/src/test/java/com/flowmart/product/mapper/SpuPageSqlTest.java
+flowmart-product/src/test/java/com/flowmart/product/service/impl/SpuPageServiceTest.java

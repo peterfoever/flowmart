@@ -1,0 +1,279 @@
+(node:85454) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
+(Use `node --trace-deprecation ...` to show where the warning was created)
+newman
+
+FM-005 商品分页查询验收（32条专属夹具）
+
+→ 01 默认分页（仅隔离测试数据）
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009 [200 OK, 8.77kB, 345ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=31，本页=20条
+
+→ 02 第1页，每页5条
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&pageNum=1&pageSize=5 [200 OK, 2.42kB, 11ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=31，本页=5条
+  ✓  排序及编码
+
+→ 03 第2页，每页5条
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&pageNum=2&pageSize=5 [200 OK, 2.23kB, 11ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=31，本页=5条
+  ✓  排序及编码
+
+→ 04 最后一页
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&pageNum=7&pageSize=5 [200 OK, 775B, 12ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=31，本页=1条
+  ✓  排序及编码
+
+→ 05 超页保留total
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&pageNum=8&pageSize=5 [200 OK, 321B, 9ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=31，本页=0条
+
+→ 06 数码父类目包含后代
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&categoryId=9100051000 [200 OK, 9.26kB, 38ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=23，本页=20条
+
+→ 07 手机叶子类目
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&categoryId=9100051001 [200 OK, 6.06kB, 47ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=13，本页=13条
+
+→ 08 食品父类目排除已删除子类目
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&categoryId=9100051100 [200 OK, 2.61kB, 17ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=6，本页=6条
+
+→ 09 禁用类目仍可筛选
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&categoryId=9100051102 [200 OK, 1.1kB, 12ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=2，本页=2条
+
+→ 10 正常品牌
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&brandId=9100052001 [200 OK, 9.27kB, 15ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=21，本页=20条
+
+→ 11 无品牌
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&noBrand=true [200 OK, 2.99kB, 8ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=7，本页=7条
+
+→ 12 noBrand=false不限制
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&noBrand=false [200 OK, 8.77kB, 8ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=31，本页=20条
+
+→ 13 禁用品牌仍可筛选
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&brandId=9100052002 [200 OK, 781B, 11ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=1，本页=1条
+  ✓  排序及编码
+
+→ 14 草稿状态0
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&status=0 [200 OK, 4.72kB, 15ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=10，本页=10条
+
+→ 15 上架状态1
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&status=1 [200 OK, 5.06kB, 8ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=11，本页=11条
+
+→ 16 下架状态2
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&status=2 [200 OK, 4.54kB, 13ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=10，本页=10条
+
+→ 17 多条件AND
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&categoryId=9100051000&brandId=9100052001&status=0 [200 OK, 3.49kB, 13ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=7，本页=7条
+
+→ 18 编码trim精确查询
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&spuCode=  FM005QA20261009-002   [200 OK, 771B, 8ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=1，本页=1条
+  ✓  排序及编码
+
+→ 19 已删除商品不展示
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&spuCode=FM005QA20261009-031 [200 OK, 321B, 6ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=0，本页=0条
+
+→ 20 百分号按字面量
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009 折扣100% [200 OK, 8.77kB, 15ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  1. 总数=1，本页=1条
+  2. 排序及编码
+
+→ 21 下划线按字面量
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009 型号A_B [200 OK, 771B, 8ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=1，本页=1条
+  ✓  排序及编码
+
+→ 22 感叹号按字面量
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009 促销! [200 OK, 778B, 11ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=1，本页=1条
+  ✓  排序及编码
+
+→ 23 全天左闭右开
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&createdFrom=2026-10-07 00:00:00&createdTo=2026-10-08 00:00:00 [200 OK, 8.76kB, 12ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=29，本页=20条
+
+→ 24 仅开始时间
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&createdFrom=2026-10-08 00:00:00 [200 OK, 781B, 8ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=1，本页=1条
+  ✓  排序及编码
+
+→ 25 仅结束时间
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&createdTo=2026-10-07 00:00:00 [200 OK, 775B, 8ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=1，本页=1条
+  ✓  排序及编码
+
+→ 26 已删除品牌关联保留商品
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&spuCode=FM005QA20261009-005 [200 OK, 725B, 11ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=1，本页=1条
+  ✓  排序及编码
+  ✓  关联失效展示
+
+→ 27 不存在品牌关联保留商品
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&spuCode=FM005QA20261009-006 [200 OK, 725B, 9ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=1，本页=1条
+  ✓  排序及编码
+  ✓  关联失效展示
+
+→ 28 已删除类目关联保留商品
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&spuCode=FM005QA20261009-029 [200 OK, 724B, 12ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=1，本页=1条
+  ✓  排序及编码
+  ✓  关联失效展示
+
+→ 29 不存在类目关联保留商品
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&spuCode=FM005QA20261009-030 [200 OK, 724B, 8ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+  ✓  总数=1，本页=1条
+  ✓  排序及编码
+  ✓  关联失效展示
+
+→ 30 不存在品牌
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&brandId=9100052099 [200 OK, 293B, 9ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+
+→ 31 已删除品牌
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&brandId=9100052003 [200 OK, 293B, 6ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+
+→ 32 不存在类目
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&categoryId=9100051199 [200 OK, 293B, 7ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+
+→ 33 已删除类目
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&categoryId=9100051103 [200 OK, 293B, 5ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+
+→ 34 品牌与无品牌互斥
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&brandId=9100052001&noBrand=true [200 OK, 306B, 4ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+
+→ 35 显式空页码
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&pageNum= [200 OK, 295B, 8ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+
+→ 36 页码非数字
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&pageNum=abc [200 OK, 421B, 7ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+
+→ 37 页大小超限
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&pageSize=201 [200 OK, 304B, 4ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+
+→ 38 非法日期
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&createdFrom=2026-02-30 00:00:00 [200 OK, 313B, 4ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+
+→ 39 相等时间边界
+  GET http://127.0.0.1:8081/api/product/admin/spus?keyword=FM005QA20261009&createdFrom=2026-10-07 00:00:00&createdTo=2026-10-07 00:00:00 [200 OK, 300B, 4ms]
+  ✓  HTTP 200
+  ✓  业务码与成功标识
+
+┌─────────────────────────┬───────────────────┬──────────────────┐
+│                         │          executed │           failed │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│              iterations │                 1 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│                requests │                39 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│            test-scripts │                39 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│      prerequest-scripts │                 0 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│              assertions │               125 │                2 │
+├─────────────────────────┴───────────────────┴──────────────────┤
+│ total run duration: 1237ms                                     │
+├────────────────────────────────────────────────────────────────┤
+│ total data received: 93.37kB (approx)                          │
+├────────────────────────────────────────────────────────────────┤
+│ average response time: 19ms [min: 4ms, max: 345ms, s.d.: 53ms] │
+└────────────────────────────────────────────────────────────────┘
+
+  #  failure         detail
+
+ 1.  AssertionError  总数=1，本页=1条
+                     expected 31 to deeply equal 1
+                     at assertion:2 in test-script
+                     inside "20 百分号按字面量"
+
+ 2.  AssertionError  排序及编码
+                     expected [ 'FM005QA20261009-004', …(19) ] to deeply equal [ 'FM005QA20261009-007' ]
+                     at assertion:3 in test-script
+                     inside "20 百分号按字面量"

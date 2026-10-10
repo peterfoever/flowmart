@@ -1,0 +1,2 @@
+doc.html HTTP 200
+v3/api-docs HTTP 200

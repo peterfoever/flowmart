@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="FM-005 商品分页查询验收（32条专属夹具）" tests="39" time="0.767">
+  <testsuite name="01 默认分页（仅隔离测试数据）" id="a6bad974-3ec9-4940-8fbb-374997c3522f" timestamp="2026-10-09T09:12:25.243Z" tests="3" failures="0" errors="0" time="0.345">
+    <testcase name="HTTP 200" time="0.345" classname="01"/>
+    <testcase name="业务码与成功标识" time="0.345" classname="01"/>
+    <testcase name="总数=31，本页=20条" time="0.345" classname="01"/>
+  </testsuite>
+  <testsuite name="02 第1页，每页5条" id="a73ecbb4-7c76-40a9-ae23-39ef791d46c7" timestamp="2026-10-09T09:12:25.243Z" tests="4" failures="0" errors="0" time="0.011">
+    <testcase name="HTTP 200" time="0.011" classname="0215"/>
+    <testcase name="业务码与成功标识" time="0.011" classname="0215"/>
+    <testcase name="总数=31，本页=5条" time="0.011" classname="0215"/>
+    <testcase name="排序及编码" time="0.011" classname="0215"/>
+  </testsuite>
+  <testsuite name="03 第2页，每页5条" id="d745a2e7-8312-4df6-b8a8-2043c01e9775" timestamp="2026-10-09T09:12:25.243Z" tests="4" failures="0" errors="0" time="0.011">
+    <testcase name="HTTP 200" time="0.011" classname="0325"/>
+    <testcase name="业务码与成功标识" time="0.011" classname="0325"/>
+    <testcase name="总数=31，本页=5条" time="0.011" classname="0325"/>
+    <testcase name="排序及编码" time="0.011" classname="0325"/>
+  </testsuite>
+  <testsuite name="04 最后一页" id="aca1ac9d-fe26-4585-92e6-953e1e35f5b6" timestamp="2026-10-09T09:12:25.243Z" tests="4" failures="0" errors="0" time="0.012">
+    <testcase name="HTTP 200" time="0.012" classname="04"/>
+    <testcase name="业务码与成功标识" time="0.012" classname="04"/>
+    <testcase name="总数=31，本页=1条" time="0.012" classname="04"/>
+    <testcase name="排序及编码" time="0.012" classname="04"/>
+  </testsuite>
+  <testsuite name="05 超页保留total" id="28ea3c69-3796-42cf-a42a-be5c241eaec5" timestamp="2026-10-09T09:12:25.243Z" tests="3" failures="0" errors="0" time="0.009">
+    <testcase name="HTTP 200" time="0.009" classname="05total"/>
+    <testcase name="业务码与成功标识" time="0.009" classname="05total"/>
+    <testcase name="总数=31，本页=0条" time="0.009" classname="05total"/>
+  </testsuite>
+  <testsuite name="06 数码父类目包含后代" id="8ff1ffc9-8224-448f-a1d0-6f83b748dfec" timestamp="2026-10-09T09:12:25.243Z" tests="3" failures="0" errors="0" time="0.038">
+    <testcase name="HTTP 200" time="0.038" classname="06"/>
+    <testcase name="业务码与成功标识" time="0.038" classname="06"/>
+    <testcase name="总数=23，本页=20条" time="0.038" classname="06"/>
+  </testsuite>
+  <testsuite name="07 手机叶子类目" id="9f254ccb-407c-4e9f-bbe4-3a83e152388c" timestamp="2026-10-09T09:12:25.243Z" tests="3" failures="0" errors="0" time="0.047">
+    <testcase name="HTTP 200" time="0.047" classname="07"/>
+    <testcase name="业务码与成功标识" time="0.047" classname="07"/>
+    <testcase name="总数=13，本页=13条" time="0.047" classname="07"/>
+  </testsuite>
+  <testsuite name="08 食品父类目排除已删除子类目" id="2009d42c-9456-4b64-aa30-9af941fe0d9e" timestamp="2026-10-09T09:12:25.243Z" tests="3" failures="0" errors="0" time="0.017">
+    <testcase name="HTTP 200" time="0.017" classname="08"/>
+    <testcase name="业务码与成功标识" time="0.017" classname="08"/>
+    <testcase name="总数=6，本页=6条" time="0.017" classname="08"/>
+  </testsuite>
+  <testsuite name="09 禁用类目仍可筛选" id="793626a9-dcbb-46a8-b433-f9a70613a863" timestamp="2026-10-09T09:12:25.243Z" tests="3" failures="0" errors="0" time="0.012">
+    <testcase name="HTTP 200" time="0.012" classname="09"/>
+    <testcase name="业务码与成功标识" time="0.012" classname="09"/>
+    <testcase name="总数=2，本页=2条" time="0.012" classname="09"/>
+  </testsuite>
+  <testsuite name="10 正常品牌" id="8b3f5a4a-11fd-434c-b6f5-fe7c005f3471" timestamp="2026-10-09T09:12:25.243Z" tests="3" failures="0" errors="0" time="0.015">
+    <testcase name="HTTP 200" time="0.015" classname="10"/>
+    <testcase name="业务码与成功标识" time="0.015" classname="10"/>
+    <testcase name="总数=21，本页=20条" time="0.015" classname="10"/>
+  </testsuite>
+  <testsuite name="11 无品牌" id="89abd8e7-5b95-4d92-ba8f-b65a2837ea08" timestamp="2026-10-09T09:12:25.243Z" tests="3" failures="0" errors="0" time="0.008">
+    <testcase name="HTTP 200" time="0.008" classname="11"/>
+    <testcase name="业务码与成功标识" time="0.008" classname="11"/>
+    <testcase name="总数=7，本页=7条" time="0.008" classname="11"/>
+  </testsuite>
+  <testsuite name="12 noBrand=false不限制" id="d0e73efa-4b94-450e-8f8e-0766c5a19e09" timestamp="2026-10-09T09:12:25.243Z" tests="3" failures="0" errors="0" time="0.008">
+    <testcase name="HTTP 200" time="0.008" classname="12NoBrandFalse"/>
+    <testcase name="业务码与成功标识" time="0.008" classname="12NoBrandFalse"/>
+    <testcase name="总数=31，本页=20条" time="0.008" classname="12NoBrandFalse"/>
+  </testsuite>
+  <testsuite name="13 禁用品牌仍可筛选" id="559809ca-fd09-429a-b06e-55e456fb99d1" timestamp="2026-10-09T09:12:25.243Z" tests="4" failures="0" errors="0" time="0.011">
+    <testcase name="HTTP 200" time="0.011" classname="13"/>
+    <testcase name="业务码与成功标识" time="0.011" classname="13"/>
+    <testcase name="总数=1，本页=1条" time="0.011" classname="13"/>
+    <testcase name="排序及编码" time="0.011" classname="13"/>
+  </testsuite>
+  <testsuite name="14 草稿状态0" id="2148977e-1f21-4ca2-a736-05682018cdb7" timestamp="2026-10-09T09:12:25.243Z" tests="3" failures="0" errors="0" time="0.015">
+    <testcase name="HTTP 200" time="0.015" classname="140"/>
+    <testcase name="业务码与成功标识" time="0.015" classname="140"/>
+    <testcase name="总数=10，本页=10条" time="0.015" classname="140"/>
+  </testsuite>
+  <testsuite name="15 上架状态1" id="bd471b2d-be7b-4d01-a674-0a1df661c710" timestamp="2026-10-09T09:12:25.243Z" tests="3" failures="0" errors="0" time="0.008">
+    <testcase name="HTTP 200" time="0.008" classname="151"/>
+    <testcase name="业务码与成功标识" time="0.008" classname="151"/>
+    <testcase name="总数=11，本页=11条" time="0.008" classname="151"/>
+  </testsuite>
+  <testsuite name="16 下架状态2" id="38366953-da8b-4c1d-92cf-ab50dc185587" timestamp="2026-10-09T09:12:25.243Z" tests="3" failures="0" errors="0" time="0.013">
+    <testcase name="HTTP 200" time="0.013" classname="162"/>
+    <testcase name="业务码与成功标识" time="0.013" classname="162"/>
+    <testcase name="总数=10，本页=10条" time="0.013" classname="162"/>
+  </testsuite>
+  <testsuite name="17 多条件AND" id="47517fe6-df4f-4319-8942-c66b6182acec" timestamp="2026-10-09T09:12:25.243Z" tests="3" failures="0" errors="0" time="0.013">
+    <testcase name="HTTP 200" time="0.013" classname="17and"/>
+    <testcase name="业务码与成功标识" time="0.013" classname="17and"/>
+    <testcase name="总数=7，本页=7条" time="0.013" classname="17and"/>
+  </testsuite>
+  <testsuite name="18 编码trim精确查询" id="a726cca4-f8f8-4d33-a787-25bda6da929e" timestamp="2026-10-09T09:12:25.243Z" tests="4" failures="0" errors="0" time="0.008">
+    <testcase name="HTTP 200" time="0.008" classname="18trim"/>
+    <testcase name="业务码与成功标识" time="0.008" classname="18trim"/>
+    <testcase name="总数=1，本页=1条" time="0.008" classname="18trim"/>
+    <testcase name="排序及编码" time="0.008" classname="18trim"/>
+  </testsuite>
+  <testsuite name="19 已删除商品不展示" id="befa38dd-35f2-4988-a487-7cc46cfa9d7c" timestamp="2026-10-09T09:12:25.243Z" tests="3" failures="0" errors="0" time="0.006">
+    <testcase name="HTTP 200" time="0.006" classname="19"/>
+    <testcase name="业务码与成功标识" time="0.006" classname="19"/>
+    <testcase name="总数=0，本页=0条" time="0.006" classname="19"/>
+  </testsuite>
+  <testsuite name="20 百分号按字面量" id="07e5fe44-3f89-4dd6-9d50-670e14370cca" timestamp="2026-10-09T09:12:25.243Z" tests="4" failures="2" errors="0" time="0.015">
+    <testcase name="HTTP 200" time="0.015" classname="20"/>
+    <testcase name="业务码与成功标识" time="0.015" classname="20"/>
+    <testcase name="总数=1，本页=1条" time="0.015" classname="20">
+      <failure type="AssertionFailure" message="expected 31 to deeply equal 1">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: e0651073-d980-40f7-914f-bc069cedbbf3.]]>
+        <![CDATA[Collection name: FM-005 商品分页查询验收（32条专属夹具）.]]>
+        <![CDATA[Request name: 20 百分号按字面量.]]>
+        <![CDATA[Test description: 总数=1，本页=1条.]]>
+        <![CDATA[Error message: expected 31 to deeply equal 1.]]>
+        <![CDATA[Stacktrace: AssertionError: expected 31 to deeply equal 1
+   at Object.eval sandbox-script.js:3:20).]]>
+      </failure>
+    </testcase>
+    <testcase name="排序及编码" time="0.015" classname="20">
+      <failure type="AssertionFailure" message="expected [ 'FM005QA20261009-004', …(19) ] to deeply equal [ 'FM005QA20261009-007' ]">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: e0651073-d980-40f7-914f-bc069cedbbf3.]]>
+        <![CDATA[Collection name: FM-005 商品分页查询验收（32条专属夹具）.]]>
+        <![CDATA[Request name: 20 百分号按字面量.]]>
+        <![CDATA[Test description: 排序及编码.]]>
+        <![CDATA[Error message: expected [ 'FM005QA20261009-004', …(19) ] to deeply equal [ 'FM005QA20261009-007' ].]]>
+        <![CDATA[Stacktrace: AssertionError: expected [ 'FM005QA20261009-004', …(19) ] to deeply equal [ 'FM005QA20261009-007' ]
+   at Object.eval sandbox-script.js:4:20).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="21 下划线按字面量" id="9d9ead51-9287-4440-980c-7e64c7c7e2cb" timestamp="2026-10-09T09:12:25.243Z" tests="4" failures="0" errors="0" time="0.008">
+    <testcase name="HTTP 200" time="0.008" classname="21"/>
+    <testcase name="业务码与成功标识" time="0.008" classname="21"/>
+    <testcase name="总数=1，本页=1条" time="0.008" classname="21"/>
+    <testcase name="排序及编码" time="0.008" classname="21"/>
+  </testsuite>
+  <testsuite name="22 感叹号按字面量" id="52b66dce-6258-4b37-96a8-d8a9a67b8b5f" timestamp="2026-10-09T09:12:25.243Z" tests="4" failures="0" errors="0" time="0.011">
+    <testcase name="HTTP 200" time="0.011" classname="22"/>
+    <testcase name="业务码与成功标识" time="0.011" classname="22"/>
+    <testcase name="总数=1，本页=1条" time="0.011" classname="22"/>
+    <testcase name="排序及编码" time="0.011" classname="22"/>
+  </testsuite>
+  <testsuite name="23 全天左闭右开" id="c92e040c-e1c9-48a5-8238-8cfd59762303" timestamp="2026-10-09T09:12:25.243Z" tests="3" failures="0" errors="0" time="0.012">
+    <testcase name="HTTP 200" time="0.012" classname="23"/>
+    <testcase name="业务码与成功标识" time="0.012" classname="23"/>
+    <testcase name="总数=29，本页=20条" time="0.012" classname="23"/>
+  </testsuite>
+  <testsuite name="24 仅开始时间" id="df18efff-7134-4024-bc1c-314e22e0763e" timestamp="2026-10-09T09:12:25.243Z" tests="4" failures="0" errors="0" time="0.008">
+    <testcase name="HTTP 200" time="0.008" classname="24"/>
+    <testcase name="业务码与成功标识" time="0.008" classname="24"/>
+    <testcase name="总数=1，本页=1条" time="0.008" classname="24"/>
+    <testcase name="排序及编码" time="0.008" classname="24"/>
+  </testsuite>
+  <testsuite name="25 仅结束时间" id="7e9d3542-7800-4dc4-9da1-29c809a1ef84" timestamp="2026-10-09T09:12:25.243Z" tests="4" failures="0" errors="0" time="0.008">
+    <testcase name="HTTP 200" time="0.008" classname="25"/>
+    <testcase name="业务码与成功标识" time="0.008" classname="25"/>
+    <testcase name="总数=1，本页=1条" time="0.008" classname="25"/>
+    <testcase name="排序及编码" time="0.008" classname="25"/>
+  </testsuite>
+  <testsuite name="26 已删除品牌关联保留商品" id="ccb9acdc-6ffb-4a18-b785-6925f7fcf3ef" timestamp="2026-10-09T09:12:25.243Z" tests="5" failures="0" errors="0" time="0.011">
+    <testcase name="HTTP 200" time="0.011" classname="26"/>
+    <testcase name="业务码与成功标识" time="0.011" classname="26"/>
+    <testcase name="总数=1，本页=1条" time="0.011" classname="26"/>
+    <testcase name="排序及编码" time="0.011" classname="26"/>
+    <testcase name="关联失效展示" time="0.011" classname="26"/>
+  </testsuite>
+  <testsuite name="27 不存在品牌关联保留商品" id="b95cbe40-991a-43e4-adf6-389b38eb41fe" timestamp="2026-10-09T09:12:25.243Z" tests="5" failures="0" errors="0" time="0.009">
+    <testcase name="HTTP 200" time="0.009" classname="27"/>
+    <testcase name="业务码与成功标识" time="0.009" classname="27"/>
+    <testcase name="总数=1，本页=1条" time="0.009" classname="27"/>
+    <testcase name="排序及编码" time="0.009" classname="27"/>
+    <testcase name="关联失效展示" time="0.009" classname="27"/>
+  </testsuite>
+  <testsuite name="28 已删除类目关联保留商品" id="ac85795d-0994-40a3-ab6d-fb1dda0cb88a" timestamp="2026-10-09T09:12:25.243Z" tests="5" failures="0" errors="0" time="0.012">
+    <testcase name="HTTP 200" time="0.012" classname="28"/>
+    <testcase name="业务码与成功标识" time="0.012" classname="28"/>
+    <testcase name="总数=1，本页=1条" time="0.012" classname="28"/>
+    <testcase name="排序及编码" time="0.012" classname="28"/>
+    <testcase name="关联失效展示" time="0.012" classname="28"/>
+  </testsuite>
+  <testsuite name="29 不存在类目关联保留商品" id="7f6628e7-1b86-4f42-bdb3-ee5850d51fa1" timestamp="2026-10-09T09:12:25.243Z" tests="5" failures="0" errors="0" time="0.008">
+    <testcase name="HTTP 200" time="0.008" classname="29"/>
+    <testcase name="业务码与成功标识" time="0.008" classname="29"/>
+    <testcase name="总数=1，本页=1条" time="0.008" classname="29"/>
+    <testcase name="排序及编码" time="0.008" classname="29"/>
+    <testcase name="关联失效展示" time="0.008" classname="29"/>
+  </testsuite>
+  <testsuite name="30 不存在品牌" id="479f368f-b300-4e2d-9a16-055a75e26e3e" timestamp="2026-10-09T09:12:25.243Z" tests="2" failures="0" errors="0" time="0.009">
+    <testcase name="HTTP 200" time="0.009" classname="30"/>
+    <testcase name="业务码与成功标识" time="0.009" classname="30"/>
+  </testsuite>
+  <testsuite name="31 已删除品牌" id="fbbd20dd-3675-4f19-a32f-dfcda5e4c5d8" timestamp="2026-10-09T09:12:25.243Z" tests="2" failures="0" errors="0" time="0.006">
+    <testcase name="HTTP 200" time="0.006" classname="31"/>
+    <testcase name="业务码与成功标识" time="0.006" classname="31"/>
+  </testsuite>
+  <testsuite name="32 不存在类目" id="d4f60d9e-7f83-4e2e-b24b-74bcf65dab59" timestamp="2026-10-09T09:12:25.243Z" tests="2" failures="0" errors="0" time="0.007">
+    <testcase name="HTTP 200" time="0.007" classname="32"/>
+    <testcase name="业务码与成功标识" time="0.007" classname="32"/>
+  </testsuite>
+  <testsuite name="33 已删除类目" id="23f7feb4-b510-46fb-bf63-8ce2983ef8e3" timestamp="2026-10-09T09:12:25.243Z" tests="2" failures="0" errors="0" time="0.005">
+    <testcase name="HTTP 200" time="0.005" classname="33"/>
+    <testcase name="业务码与成功标识" time="0.005" classname="33"/>
+  </testsuite>
+  <testsuite name="34 品牌与无品牌互斥" id="9414faad-2e02-4d78-8a7e-f803ab1c8828" timestamp="2026-10-09T09:12:25.243Z" tests="2" failures="0" errors="0" time="0.004">
+    <testcase name="HTTP 200" time="0.004" classname="34"/>
+    <testcase name="业务码与成功标识" time="0.004" classname="34"/>
+  </testsuite>
+  <testsuite name="35 显式空页码" id="56b36f00-4ecd-433a-82ff-8daa9432b11e" timestamp="2026-10-09T09:12:25.243Z" tests="2" failures="0" errors="0" time="0.008">
+    <testcase name="HTTP 200" time="0.008" classname="35"/>
+    <testcase name="业务码与成功标识" time="0.008" classname="35"/>
+  </testsuite>
+  <testsuite name="36 页码非数字" id="f0fa4779-2a75-4ca3-b067-8155ce8fe581" timestamp="2026-10-09T09:12:25.243Z" tests="2" failures="0" errors="0" time="0.007">
+    <testcase name="HTTP 200" time="0.007" classname="36"/>
+    <testcase name="业务码与成功标识" time="0.007" classname="36"/>
+  </testsuite>
+  <testsuite name="37 页大小超限" id="96de9f5a-ead7-40dd-a6b8-3bb881534dc3" timestamp="2026-10-09T09:12:25.243Z" tests="2" failures="0" errors="0" time="0.004">
+    <testcase name="HTTP 200" time="0.004" classname="37"/>
+    <testcase name="业务码与成功标识" time="0.004" classname="37"/>
+  </testsuite>
+  <testsuite name="38 非法日期" id="229a5af0-e47c-4b43-9faa-df2a3f8d1443" timestamp="2026-10-09T09:12:25.243Z" tests="2" failures="0" errors="0" time="0.004">
+    <testcase name="HTTP 200" time="0.004" classname="38"/>
+    <testcase name="业务码与成功标识" time="0.004" classname="38"/>
+  </testsuite>
+  <testsuite name="39 相等时间边界" id="f7edecca-ab56-4bbc-993d-1fd44a3e983d" timestamp="2026-10-09T09:12:25.243Z" tests="2" failures="0" errors="0" time="0.004">
+    <testcase name="HTTP 200" time="0.004" classname="39"/>
+    <testcase name="业务码与成功标识" time="0.004" classname="39"/>
+  </testsuite>
+</testsuites>

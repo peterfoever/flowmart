@@ -1,0 +1,16 @@
++---------+-------------------------+---------+
+| version | description             | success |
++---------+-------------------------+---------+
+| 1       | baseline                |       1 |
+| 2       | product category        |       1 |
+| 3       | product brand           |       1 |
+| 4       | product category brand  |       1 |
+| 5       | product spu             |       1 |
+| 6       | product sku             |       1 |
+| 7       | product sku code unique |       1 |
++---------+-------------------------+---------+
++----------+--------------+
+| all_spus | visible_spus |
++----------+--------------+
+|       32 |           31 |
++----------+--------------+
