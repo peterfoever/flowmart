@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.flowmart.product.dto.SpecDTO;
 import com.flowmart.product.dto.SpuQueryDTO;
 import com.flowmart.product.entity.ProductSpu;
-import com.flowmart.product.enums.SpuStatus;
 import com.flowmart.product.vo.SpuListVO;
 import org.apache.ibatis.annotations.Param;
 

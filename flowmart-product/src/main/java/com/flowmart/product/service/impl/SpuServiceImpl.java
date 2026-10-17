@@ -42,8 +42,6 @@ import java.time.format.ResolverStyle;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static cn.hutool.core.collection.ListUtil.toList;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -332,6 +330,10 @@ public class SpuServiceImpl implements SpuService {
         return new PageResult<>(pageNum, pageSize, total, records);
     }
 
+    /**
+     * 草稿/下架商品上架。锁定 SPU 后重验关联资料与完整 SKU 组合，最后按旧版本更新。
+     * @throws BizException 状态、版本或上架条件不满足时拒绝操作
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void publish(Long id, Integer version) {
@@ -344,7 +346,7 @@ public class SpuServiceImpl implements SpuService {
 
         // ── 锁 SPU + 状态 + version ─────
         ProductSpu spu = spuMapper.selectByIdForUpdate(id);
-        if (spu == null) {
+        if (spu == null || !Long.valueOf(0L).equals(spu.getDeleted())) {
             throw new BizException(ProductErrorCode.SPU_NOT_FOUND);
         }
         if (!SpuStatus.DRAFT.matches(spu.getStatus()) && !SpuStatus.OFF_SHELF.matches(spu.getStatus())) {
@@ -366,24 +368,30 @@ public class SpuServiceImpl implements SpuService {
         if (spu.getCategoryId() == null || spu.getCategoryId() <= 0) {
             throw new BizException(CommonErrorCode.PARAM_INVALID);
         }
-        ProductCategory productCategory = categoryMapper.selectById(spu.getCategoryId());
-        if (productCategory == null || productCategory.getDeleted() != 0) {
+        // 与草稿修改保持 SPU → 类目 → 品牌的锁顺序。
+        ProductCategory productCategory = categoryMapper.selectByIdForUpdate(spu.getCategoryId());
+        if (productCategory == null || !Long.valueOf(0L).equals(productCategory.getDeleted())) {
             throw new BizException(ProductErrorCode.CATEGORY_NOT_FOUND);
         }
-        if (CategoryStatus.DISABLED.matches(productCategory.getStatus())) {
-            throw new BizException(ProductErrorCode.CATEGORY_NOT_FOUND);
+        if (!CategoryStatus.ENABLED.matches(productCategory.getStatus())) {
+            throw new BizException(ProductErrorCode.CATEGORY_DISABLED);
         }
         if (!categoryMapper.isLeafCategory(spu.getCategoryId())) {
             throw new BizException(ProductErrorCode.CATEGORY_NOT_LEAF);
         }
 
         // 校验品牌
-        ProductBrand brand = brandMapper.selectById(spu.getBrandId());
-        if (brand == null || !Long.valueOf(0L).equals(brand.getDeleted())) {
-            throw new BizException(ProductErrorCode.BRAND_NOT_FOUND);
-        }
-        if(!brandMapper.selectBrandsByCategoryId(spu.getCategoryId()).stream().anyMatch(s ->s.getId().equals(spu.getBrandId()))) {
-            throw new BizException(ProductErrorCode.BRAND_NOT_FOUND);
+        if (spu.getBrandId() != null) {
+            ProductBrand brand = brandMapper.selectByIdForUpdate(spu.getBrandId());
+            if (brand == null || !Long.valueOf(0L).equals(brand.getDeleted())) {
+                throw new BizException(ProductErrorCode.BRAND_NOT_FOUND);
+            }
+            if (!BrandStatus.ENABLED.matches(brand.getStatus())) {
+                throw new BizException(ProductErrorCode.BRAND_DISABLED);
+            }
+            if (!categoryMapper.existsByCategoryIdAndBrandId(spu.getCategoryId(), spu.getBrandId())) {
+                throw new BizException(ProductErrorCode.CATEGORY_BRAND_NOT_BOUND);
+            }
         }
 
         // 校验有效 SKU
@@ -391,8 +399,8 @@ public class SpuServiceImpl implements SpuService {
         if (skus.isEmpty()) {
             throw new BizException(ProductErrorCode.SKU_NOT_FOUND);
         }
-        if (skus.size() < 1 || skus.size() > 1000) {
-            throw new BizException(CommonErrorCode.PARAM_INVALID);
+        if (skus.size() > SpecCombinationGenerator.MAX_COMBINATIONS) {
+            throw new BizException(ProductErrorCode.TOO_MANY_COMBINATIONS);
         }
         for (ProductSku sku : skus) {
             validateSkuPrice(sku);
@@ -401,37 +409,41 @@ public class SpuServiceImpl implements SpuService {
                         "SKU " + sku.getId() + " 图片不能为空");
             }
         }
-        List<SpecDTO> specDefinition = spu.getSpecs();
-        boolean isDefaultProduct = specDefinition == null || specDefinition.isEmpty();
-
-        if (isDefaultProduct) {
-            if (skus.size() != 1) {
-                throw new BizException(ProductErrorCode.SKU_SPEC_MISMATCH,
-                        "无规格 SPU 必须恰好 1 条 SKU，实际 " + skus.size() + " 条");
-            }
-            ProductSku only = skus.get(0);
-            if (only.getSpecValues() != null && !only.getSpecValues().isEmpty()) {
-                throw new BizException(ProductErrorCode.SKU_SPEC_MISMATCH,
-                        "无规格 SPU 的 SKU 规格必须为空");
-            }
-        }
-
-        // 有规格：展开规格定义，得到期望的 spec_hash 集合
-        Set<String> expectedHashes = SpecCombinationGenerator.generate(specDefinition).stream()
-                .map(combo -> SpecHashCalculator.calculate(toList(combo)))
-                .collect(Collectors.toSet());
-
-        Set<String> actualHashes = skus.stream()
-                .map(ProductSku::getSpecHash)
-                .collect(Collectors.toSet());
-
-        if (!expectedHashes.equals(actualHashes)) {
-            throw new BizException(ProductErrorCode.SKU_SPEC_MISMATCH);
-        }
-        int affected = spuMapper.updateStatus(spu.getId(), spu.getStatus(),SpuStatus.ON_SHELF.getCode(),
+        validateSkuCombinations(spu, skus);
+        int affected = spuMapper.updateStatus(spu.getId(), spu.getStatus(), SpuStatus.ON_SHELF.getCode(),
                 spu.getVersion(), 0L, LocalDateTime.now());
         if (affected != 1) {
             throw new BizException(ProductErrorCode.SPU_UPDATE_FAILED);
+        }
+        log.info("SPU上架更新完成, spuId={}, oldStatus={}, oldVersion={}, skuCount={}",
+                id, spu.getStatus(), version, skus.size());
+    }
+
+    private void validateSkuCombinations(ProductSpu spu, List<ProductSku> skus) {
+        // 不把 JSON 映射失败或脏数据中的 null 当成合法的无规格 []。
+        if (spu.getSpecs() == null) {
+            throw new BizException(ProductErrorCode.SKU_SPEC_MISMATCH);
+        }
+        Set<String> expectedHashes = SpecCombinationGenerator.generate(spu.getSpecs()).stream()
+                .map(SpecHashCalculator::calculate).collect(Collectors.toSet());
+        boolean defaultProduct = spu.getSpecs().isEmpty();
+        Set<String> actualHashes = new HashSet<>();
+        for (ProductSku sku : skus) {
+            if (!Boolean.valueOf(defaultProduct).equals(sku.getIsDefault()) || sku.getSpecValues() == null) {
+                throw new BizException(ProductErrorCode.SKU_SPEC_MISMATCH);
+            }
+            String calculatedHash;
+            try {
+                calculatedHash = SpecHashCalculator.calculate(sku.getSpecValues());
+            } catch (BizException e) {
+                throw new BizException(ProductErrorCode.SKU_SPEC_MISMATCH);
+            }
+            if (!calculatedHash.equals(sku.getSpecHash()) || !actualHashes.add(calculatedHash)) {
+                throw new BizException(ProductErrorCode.SKU_SPEC_MISMATCH);
+            }
+        }
+        if (skus.size() != expectedHashes.size() || !expectedHashes.equals(actualHashes)) {
+            throw new BizException(ProductErrorCode.SKU_SPEC_MISMATCH);
         }
     }
 
