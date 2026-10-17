@@ -37,7 +37,7 @@ public enum ProductErrorCode implements ErrorCode {
     BRAND_NAME_DUPLICATE(20031,"品牌名称已存在"),
     BRAND_DISABLED(20032,"品牌已禁用"),
     BRAND_BOUND_BY_CATEGORY(20033,"品牌已被类目绑定"),
-    CATEGORY_NOT_LEAF(20034,"只能给叶子类目绑定品牌"),
+    CATEGORY_NOT_LEAF(20034,"只能给叶子类目绑定品牌、商品"),
     CATEGORY_BRAND_REPLACE_FAILED(20035,"类目品牌绑定替换失败"),
     BRAND_CREATE_FAILED(20036,"品牌创建失败，请稍后重试"),
     BRAND_UPDATE_FAILED(20037,"品牌修改失败，请稍后重试"),
@@ -61,6 +61,7 @@ public enum ProductErrorCode implements ErrorCode {
     MAIN_IMAGE_IN_CAROUSEL(20052,"主图不能同时出现在轮播图中"),
     SPEC_NAME_DUPLICATE(20053,"规格名重复"),
     SPEC_VALUE_DUPLICATE(20054,"同一规格内规格值重复"),
+    SPU_INVALID_STATE(20055,"SPU非草稿或下架状态，不允许上架"),
 
 
     /**
@@ -75,7 +76,9 @@ public enum ProductErrorCode implements ErrorCode {
     SKU_NOT_FOUND(20067,"SKU不存在"),
     SKU_VERSION_CONFLICT(20068,"SKU 已被其他人修改，请刷新后重试"),
     SKU_UPDATE_FAILED(20069,"SKU 更新失败"),
-
+    SKU_PRICE_INVALID(20070,"SKU 价格不合法"),
+    SKU_IMAGE_REQUIRED(20071, "SKU 图片不能为空"),
+    SKU_SPEC_MISMATCH(20072, "SKU 规格组合与 SPU 规格定义不一致"),
     ;
 
 

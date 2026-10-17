@@ -60,7 +60,7 @@ public class CategoryServiceImpl implements CategoryService {
             // 一级类目
             level = 1;
         } else {
-//            非一级类目
+            //  非一级类目
             ProductCategory parent = productCategoryMapper.selectById(categoryDTO.getParentId());
             if (parent == null) {
                 throw new BizException(ProductErrorCode.CATEGORY_PARENT_NOT_FOUND);

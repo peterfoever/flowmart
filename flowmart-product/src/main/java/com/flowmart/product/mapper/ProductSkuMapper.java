@@ -32,4 +32,8 @@ public interface ProductSkuMapper extends BaseMapper<ProductSku> {
                             @Param("imageUrl") String imageUrl,
                             @Param("actor") Long actor,
                             @Param("now") LocalDateTime now);
+
+    /** 上架校验读取有效 SKU，最多1001条（业务上限1000，多一条用于识别超限）。 */
+    List<ProductSku> selectActiveBySpuId(@Param("spuId") Long spuId);
+
 }

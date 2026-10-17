@@ -154,4 +154,16 @@
         FROM product_spu spu
         <include refid="spuFilter"/>
     </select>
+
+    <update id="updateStatus">
+        UPDATE product_spu
+        SET status      = #{newStatus},
+        version     = version + 1,
+        updated_by  = #{actor},
+        updated_at  = #{now}
+        WHERE id        = #{id}
+        AND deleted   = 0
+        AND status    = #{expectedStatus}
+        AND version   = #{version}
+    </update>
 </mapper>

@@ -4,6 +4,7 @@ import com.flowmart.common.result.PageResult;
 import com.flowmart.common.result.R;
 import com.flowmart.product.dto.CreateSpuDTO;
 import com.flowmart.product.dto.SpuQueryDTO;
+import com.flowmart.product.dto.SpuPublishDTO;
 import com.flowmart.product.dto.UpdateSpuDTO;
 import com.flowmart.product.service.SpuService;
 import com.flowmart.product.vo.SpuDetailVO;
@@ -13,7 +14,6 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,5 +45,12 @@ public class SpuController {
     @GetMapping("/spus")
     public R<PageResult<SpuListVO>> page(@Valid @ModelAttribute SpuQueryDTO request) {
         return R.ok(spuService.page(request));
+    }
+
+    @PostMapping("/spus/{id}/publish")
+    public R<Void> publish(@PathVariable @NotNull @Min(1) Long id,
+                           @Valid @RequestBody SpuPublishDTO request) {
+        spuService.publish(id, request.getVersion());
+        return R.ok();
     }
 }
