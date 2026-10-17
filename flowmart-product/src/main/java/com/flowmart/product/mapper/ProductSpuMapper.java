@@ -4,9 +4,11 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.flowmart.product.dto.SpecDTO;
 import com.flowmart.product.dto.SpuQueryDTO;
 import com.flowmart.product.entity.ProductSpu;
+import com.flowmart.product.enums.SpuStatus;
 import com.flowmart.product.vo.SpuListVO;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ProductSpuMapper extends BaseMapper<ProductSpu> {
@@ -63,4 +65,16 @@ public interface ProductSpuMapper extends BaseMapper<ProductSpu> {
     long countSpu(@Param("q") SpuQueryDTO q,
                   @Param("keywordPattern") String keywordPattern,
                   @Param("categoryIds") List<Long> categoryIds);
+
+    /**
+     * 条件更新 SPU 状态。
+     * 条件：id + deleted=0 + 旧状态 + version。
+     * 成功时 version = version + 1。
+     */
+    int updateStatus(@Param("id") Long id,
+                     @Param("expectedStatus") SpuStatus expectedStatus,
+                     @Param("newStatus") SpuStatus newStatus,
+                     @Param("version") Integer version,
+                     @Param("actor") Long actor,
+                     @Param("now") LocalDateTime now);
 }

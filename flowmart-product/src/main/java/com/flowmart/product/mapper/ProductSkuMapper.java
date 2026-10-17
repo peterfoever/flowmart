@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.flowmart.product.entity.ProductSku;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -32,4 +33,13 @@ public interface ProductSkuMapper extends BaseMapper<ProductSku> {
                             @Param("imageUrl") String imageUrl,
                             @Param("actor") Long actor,
                             @Param("now") LocalDateTime now);
+
+    /** 查询 SPU 下所有有效 SKU，用于上架前校验。 */
+    @Select("""
+            SELECT * FROM product_sku
+            WHERE spu_id = #{spuId} AND deleted = 0
+            ORDER BY id ASC
+            """)
+    List<ProductSku> selectActiveBySpuId(@Param("spuId") Long spuId);
+
 }

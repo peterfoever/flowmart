@@ -46,4 +46,10 @@ public class SpuController {
     public R<PageResult<SpuListVO>> page(@Valid @ModelAttribute SpuQueryDTO request) {
         return R.ok(spuService.page(request));
     }
+
+    @PostMapping("/spus/{id}/publish")
+    public R<Void> publish(@PathVariable @NotNull @Min(1) Long id,@NotNull @Min(0) Integer version) {
+        spuService.publish(id, version);
+        return R.ok();
+    }
 }

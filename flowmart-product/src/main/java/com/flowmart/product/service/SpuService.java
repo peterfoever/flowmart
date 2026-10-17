@@ -22,4 +22,6 @@ public interface SpuService {
 
     // spu分页查询
     PageResult<SpuListVO> page(SpuQueryDTO request);
+
+    void publish(Long id, Integer version);
 }

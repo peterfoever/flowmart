@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.flowmart.common.exception.BizException;
 import com.flowmart.common.exception.CommonErrorCode;
 import com.flowmart.common.result.PageResult;
+import com.flowmart.product.calculator.SpecHashCalculator;
 import com.flowmart.product.convert.SpuConverter;
 import com.flowmart.product.dto.CreateSpuDTO;
 import com.flowmart.product.dto.SpecDTO;
@@ -12,11 +13,13 @@ import com.flowmart.product.dto.SpuQueryDTO;
 import com.flowmart.product.dto.UpdateSpuDTO;
 import com.flowmart.product.entity.ProductBrand;
 import com.flowmart.product.entity.ProductCategory;
+import com.flowmart.product.entity.ProductSku;
 import com.flowmart.product.entity.ProductSpu;
 import com.flowmart.product.enums.BrandStatus;
 import com.flowmart.product.enums.CategoryStatus;
 import com.flowmart.product.enums.ProductErrorCode;
 import com.flowmart.product.enums.SpuStatus;
+import com.flowmart.product.generator.SpecCombinationGenerator;
 import com.flowmart.product.generator.SpuCodeGenerator;
 import com.flowmart.product.mapper.ProductBrandMapper;
 import com.flowmart.product.mapper.ProductCategoryMapper;
@@ -31,12 +34,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static cn.hutool.core.collection.ListUtil.toList;
 
 @Service
 @Slf4j
@@ -49,6 +55,7 @@ public class SpuServiceImpl implements SpuService {
     private final SpuCodeGenerator codeGenerator;
     private final ProductSkuMapper skuMapper;
 
+
     // spu分页查询
     private static final DateTimeFormatter DATE_TIME_FMT =
             DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss")
@@ -56,6 +63,7 @@ public class SpuServiceImpl implements SpuService {
     private static final int PAGE_NUM_MIN = 1;
     private static final int PAGE_SIZE_MIN = 1;
     private static final int PAGE_SIZE_MAX = 200;
+    private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999999999.99");
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -322,6 +330,129 @@ public class SpuServiceImpl implements SpuService {
             records.forEach(this::fillDisplayText);
         }
         return new PageResult<>(pageNum, pageSize, total, records);
+    }
+
+    @Override
+    public void publish(Long id, Integer version) {
+        if (id == null || id <= 0) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID);
+        }
+        if (version == null || version < 0) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID);
+        }
+
+        // ── 锁 SPU + 状态 + version ─────
+        ProductSpu spu = spuMapper.selectByIdForUpdate(id);
+        if (spu == null) {
+            throw new BizException(ProductErrorCode.SPU_NOT_FOUND);
+        }
+        if (!SpuStatus.DRAFT.matches(spu.getStatus()) && !SpuStatus.OFF_SHELF.matches(spu.getStatus())) {
+            throw new BizException(ProductErrorCode.SPU_INVALID_STATE);
+        }
+        if (!Objects.equals(spu.getVersion(), version)) {
+            throw new BizException(ProductErrorCode.SPU_VERSION_CONFLICT);
+        }
+
+        // 校验商品资料
+        if (StrUtil.isBlank(spu.getName())) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID);
+        }
+        if (StrUtil.isBlank(spu.getMainImageUrl())) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID);
+        }
+
+        // 校验类目
+        if (spu.getCategoryId() == null || spu.getCategoryId() <= 0) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID);
+        }
+        ProductCategory productCategory = categoryMapper.selectById(spu.getCategoryId());
+        if (productCategory == null || productCategory.getDeleted() != 0) {
+            throw new BizException(ProductErrorCode.CATEGORY_NOT_FOUND);
+        }
+        if (CategoryStatus.DISABLED.matches(productCategory.getStatus())) {
+            throw new BizException(ProductErrorCode.CATEGORY_NOT_FOUND);
+        }
+        if (!categoryMapper.isLeafCategory(spu.getCategoryId())) {
+            throw new BizException(ProductErrorCode.CATEGORY_NOT_LEAF);
+        }
+
+        // 校验品牌
+        if (spu.getBrandId() == null) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID);
+        }
+        ProductBrand brand = brandMapper.selectById(spu.getBrandId());
+        if (brand == null || !Long.valueOf(0L).equals(brand.getDeleted())) {
+            throw new BizException(ProductErrorCode.BRAND_NOT_FOUND);
+        }
+        if(!brandMapper.selectBrandsByCategoryId(spu.getCategoryId()).stream().anyMatch(s ->s.getId().equals(spu.getBrandId()))) {
+            throw new BizException(ProductErrorCode.BRAND_NOT_FOUND);
+        }
+
+        // 校验有效 SKU
+        List<ProductSku> skus = skuMapper.selectActiveBySpuId(spu.getId());
+        if (skus.isEmpty()) {
+            throw new BizException(ProductErrorCode.SKU_NOT_FOUND);
+        }
+        if (skus.size() < 1 || skus.size() > 1000) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID);
+        }
+        for (ProductSku sku : skus) {
+            validateSkuPrice(sku);
+            if (StrUtil.isBlank(sku.getImageUrl())) {
+                throw new BizException(ProductErrorCode.SKU_IMAGE_REQUIRED,
+                        "SKU " + sku.getId() + " 图片不能为空");
+            }
+        }
+        List<SpecDTO> specDefinition = spu.getSpecs();
+        boolean isDefaultProduct = specDefinition == null || specDefinition.isEmpty();
+
+        if (isDefaultProduct) {
+            if (skus.size() != 1) {
+                throw new BizException(ProductErrorCode.SKU_SPEC_MISMATCH,
+                        "无规格 SPU 必须恰好 1 条 SKU，实际 " + skus.size() + " 条");
+            }
+            ProductSku only = skus.get(0);
+            if (only.getSpecValues() != null && !only.getSpecValues().isEmpty()) {
+                throw new BizException(ProductErrorCode.SKU_SPEC_MISMATCH,
+                        "无规格 SPU 的 SKU 规格必须为空");
+            }
+            return;
+        }
+
+        // 有规格：展开规格定义，得到期望的 spec_hash 集合
+        Set<String> expectedHashes = SpecCombinationGenerator.generate(specDefinition).stream()
+                .map(combo -> SpecHashCalculator.calculate(toList(combo)))
+                .collect(Collectors.toSet());
+
+        Set<String> actualHashes = skus.stream()
+                .map(ProductSku::getSpecHash)
+                .collect(Collectors.toSet());
+
+        if (!expectedHashes.equals(actualHashes)) {
+            throw new BizException(ProductErrorCode.SKU_SPEC_MISMATCH);
+        }
+        int affected = spuMapper.updateStatus(spu.getId(), spu.getStatus(),SpuStatus.ON_SHELF,
+                spu.getVersion() + 1, 0L, LocalDateTime.now());
+        if (affected != 1) {
+            throw new BizException(ProductErrorCode.SPU_UPDATE_FAILED);
+        }
+    }
+
+    private void validateSkuPrice(ProductSku sku) {
+        BigDecimal p = sku.getPrice();
+        if (p == null) {
+            throw new BizException(ProductErrorCode.SKU_PRICE_INVALID, "SKU " + sku.getId() + " 价格不能为空");
+        }
+        if (p.signum() < 0) {
+            throw new BizException(ProductErrorCode.SKU_PRICE_INVALID, "SKU " + sku.getId() + " 价格不能为负");
+        }
+        if (p.scale() > 2) {
+            throw new BizException(ProductErrorCode.SKU_PRICE_INVALID,
+                    "SKU " + sku.getId() + " 价格最多两位小数，实际 scale=" + p.scale());
+        }
+        if (p.compareTo(MAX_AMOUNT) > 0) {
+            throw new BizException(ProductErrorCode.SKU_PRICE_INVALID, "SKU " + sku.getId() + " 价格超过上限");
+        }
     }
 
     // ── 关键词转义：先 !，再 %、_，配合 ESCAPE '!' ───────────────
