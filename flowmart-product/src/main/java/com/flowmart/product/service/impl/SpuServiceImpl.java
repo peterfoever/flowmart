@@ -421,6 +421,10 @@ public class SpuServiceImpl implements SpuService {
                 id, spu.getStatus(), version, skus.size());
     }
 
+    /**
+     * 下架仅校验商品身份、状态和版本，不因关联资料失效阻止撤下商品。
+     * @throws BizException 参数非法、商品不存在、状态/版本不符或更新失败
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void unpublish(Long id, Integer version) {
@@ -447,6 +451,8 @@ public class SpuServiceImpl implements SpuService {
         if (affected != 1) {
             throw new BizException(ProductErrorCode.SPU_UPDATE_FAILED);
         }
+        log.info("SPU下架更新完成, spuId={}, oldStatus={}, oldVersion={}, actor={}",
+                id, spu.getStatus(), version, 0L);
     }
 
     private void validateSkuCombinations(ProductSpu spu, List<ProductSku> skus) {

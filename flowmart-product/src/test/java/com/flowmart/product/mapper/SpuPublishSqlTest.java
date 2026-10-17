@@ -11,6 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -33,20 +34,20 @@ class SpuPublishSqlTest {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {0, 2})
-    @DisplayName("上架SQL以数字绑定新旧状态，用旧版本匹配，只修改状态版本及审计字段")
-    void updateStatus_bindsNumericStatesAndOldVersion(int oldState) throws Exception {
+    @CsvSource({"0,1", "2,1", "1,2"})
+    @DisplayName("上下架SQL以数字绑定新旧状态，用旧版本匹配，只修改状态版本及审计字段")
+    void updateStatus_bindsNumericStatesAndOldVersion(int oldState, int newState) throws Exception {
         var config = config("mapper/ProductSpuMapper.xml");
         var method = ProductSpuMapper.class.getMethod("updateStatus", Long.class, Integer.class,
                 Integer.class, Integer.class, Long.class, LocalDateTime.class);
         var now = LocalDateTime.of(2026, 10, 17, 12, 0);
         Object parameters = new ParamNameResolver(config, method).getNamedParams(
-                new Object[]{42L, oldState, 1, 7, 9L, now});
+                new Object[]{42L, oldState, newState, 7, 9L, now});
         var statement = config.getMappedStatement(ProductSpuMapper.class.getName() + ".updateStatus");
         var bound = statement.getBoundSql(parameters);
         var jdbc = mock(PreparedStatement.class);
         new DefaultParameterHandler(statement, parameters, bound).setParameters(jdbc);
-        verify(jdbc).setInt(1, 1);
+        verify(jdbc).setInt(1, newState);
         verify(jdbc).setLong(2, 9L);
         verify(jdbc).setObject(3, now);
         verify(jdbc).setLong(4, 42L);

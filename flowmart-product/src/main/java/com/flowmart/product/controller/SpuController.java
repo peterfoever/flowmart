@@ -51,7 +51,7 @@ public class SpuController {
         return R.ok();
     }
 
-    @PostMapping("spus/{id}/unpublish")
+    @PostMapping("/spus/{id}/unpublish")
     public R<Void> unpublish(@PathVariable @NotNull @Min(1) Long id,
                            @Valid @RequestBody SpuUnpublishDTO request) {
         spuService.unpublish(id, request.getVersion());

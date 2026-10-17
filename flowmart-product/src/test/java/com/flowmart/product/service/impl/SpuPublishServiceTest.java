@@ -106,6 +106,41 @@ class SpuPublishServiceTest {
     }
 
     @Test
+    @DisplayName("Service状态机回归：上架、下架、重新上架，重复操作不得再次更新")
+    void lifecycle_usesLatestVersionOnEveryTransition() {
+        // 仅用Mock模拟状态落库，验证Service编排，不作为数据库版本递增的证据。
+        when(spus.updateStatus(any(), any(), any(), any(), any(), any())).thenAnswer(call -> {
+            assertEquals(spu.getStatus(), call.getArgument(1));
+            assertEquals(spu.getVersion(), call.getArgument(3));
+            var stored = new ProductSpu();
+            stored.setId(spu.getId()); stored.setDeleted(0L); stored.setName(spu.getName());
+            stored.setMainImageUrl(spu.getMainImageUrl()); stored.setCategoryId(spu.getCategoryId());
+            stored.setSpecs(spu.getSpecs()); stored.setStatus(call.getArgument(2));
+            stored.setVersion(spu.getVersion() + 1);
+            spu = stored;
+            when(spus.selectByIdForUpdate(42L)).thenReturn(stored);
+            return 1;
+        });
+        service.publish(42L, 7);
+        assertEquals(1, spu.getStatus()); assertEquals(8, spu.getVersion());
+        assertEquals(ProductErrorCode.SPU_INVALID_STATE.getCode(),
+                assertThrows(BizException.class, () -> service.publish(42L, 8)).getCode());
+        assertEquals(ProductErrorCode.SPU_VERSION_CONFLICT.getCode(),
+                assertThrows(BizException.class, () -> service.unpublish(42L, 7)).getCode());
+        service.unpublish(42L, 8);
+        assertEquals(2, spu.getStatus()); assertEquals(9, spu.getVersion());
+        assertEquals(ProductErrorCode.SPU_NOT_ON_SHELF.getCode(),
+                assertThrows(BizException.class, () -> service.unpublish(42L, 9)).getCode());
+        service.publish(42L, 9);
+        assertEquals(1, spu.getStatus()); assertEquals(10, spu.getVersion());
+        var order = inOrder(spus);
+        order.verify(spus).updateStatus(eq(42L), eq(0), eq(1), eq(7), eq(0L), any());
+        order.verify(spus).updateStatus(eq(42L), eq(1), eq(2), eq(8), eq(0L), any());
+        order.verify(spus).updateStatus(eq(42L), eq(2), eq(1), eq(9), eq(0L), any());
+        verify(spus, times(3)).updateStatus(any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
     @DisplayName("完整多规格组合可上架，SKU返回顺序不影响结果")
     void completeCombinations_ignoreRowOrder() {
         withColorSpecs();
