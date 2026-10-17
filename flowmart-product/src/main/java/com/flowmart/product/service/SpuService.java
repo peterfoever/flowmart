@@ -24,4 +24,5 @@ public interface SpuService {
     PageResult<SpuListVO> page(SpuQueryDTO request);
 
     void publish(Long id, Integer version);
+    void unpublish(Long id, Integer version);
 }

@@ -332,11 +332,13 @@ public class SpuServiceImpl implements SpuService {
 
     /**
      * 草稿/下架商品上架。锁定 SPU 后重验关联资料与完整 SKU 组合，最后按旧版本更新。
+     *
      * @throws BizException 状态、版本或上架条件不满足时拒绝操作
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void publish(Long id, Integer version) {
+        log.debug("SPU商品上架");
         if (id == null || id <= 0) {
             throw new BizException(CommonErrorCode.PARAM_INVALID);
         }
@@ -417,6 +419,31 @@ public class SpuServiceImpl implements SpuService {
         }
         log.info("SPU上架更新完成, spuId={}, oldStatus={}, oldVersion={}, skuCount={}",
                 id, spu.getStatus(), version, skus.size());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void unpublish(Long id, Integer version) {
+        log.debug("SPU商品下架");
+        ProductSpu spu = spuMapper.selectByIdForUpdate(id);
+        if (spu == null || !Long.valueOf(0L).equals(spu.getDeleted())) {
+            throw new BizException(ProductErrorCode.SPU_NOT_FOUND);
+        }
+
+        // 状态必须是ON_SHELF
+        if (!SpuStatus.ON_SHELF.matches(spu.getStatus())) {
+            throw new BizException(ProductErrorCode.SPU_NOT_ON_SHELF, "当前状态 code=" + spu.getStatus() + "，无法下架");
+        }
+
+        // ── version 必须匹配 ─────────
+        if (spu.getVersion() != version) {
+            throw new BizException(ProductErrorCode.SPU_VERSION_CONFLICT);
+        }
+
+        int affected = spuMapper.updateStatus(id, spu.getStatus(), SpuStatus.OFF_SHELF.getCode(), version, 0L, LocalDateTime.now());
+        if (affected != 1) {
+            throw new BizException(ProductErrorCode.SPU_UPDATE_FAILED);
+        }
     }
 
     private void validateSkuCombinations(ProductSpu spu, List<ProductSku> skus) {

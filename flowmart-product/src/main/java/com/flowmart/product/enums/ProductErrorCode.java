@@ -62,7 +62,7 @@ public enum ProductErrorCode implements ErrorCode {
     SPEC_NAME_DUPLICATE(20053,"规格名重复"),
     SPEC_VALUE_DUPLICATE(20054,"同一规格内规格值重复"),
     SPU_INVALID_STATE(20055,"SPU非草稿或下架状态，不允许上架"),
-
+    SPU_NOT_ON_SHELF(20056,"SPU不是上架状态"),
 
     /**
      * sku商品错误码
