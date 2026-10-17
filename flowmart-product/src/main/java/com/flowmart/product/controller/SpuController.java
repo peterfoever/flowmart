@@ -48,7 +48,7 @@ public class SpuController {
     }
 
     @PostMapping("/spus/{id}/publish")
-    public R<Void> publish(@PathVariable @NotNull @Min(1) Long id,@NotNull @Min(0) Integer version) {
+    public R<Void> publish(@PathVariable @NotNull @Min(1) Long id,@RequestBody @NotNull @Min(0) Integer version) {
         spuService.publish(id, version);
         return R.ok();
     }

@@ -63,7 +63,7 @@ public class SpuServiceImpl implements SpuService {
     private static final int PAGE_NUM_MIN = 1;
     private static final int PAGE_SIZE_MIN = 1;
     private static final int PAGE_SIZE_MAX = 200;
-    private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999999999.99");
+    private static final BigDecimal MAX_AMOUNT = new BigDecimal("99999999.99");
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -333,6 +333,7 @@ public class SpuServiceImpl implements SpuService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void publish(Long id, Integer version) {
         if (id == null || id <= 0) {
             throw new BizException(CommonErrorCode.PARAM_INVALID);
@@ -377,9 +378,6 @@ public class SpuServiceImpl implements SpuService {
         }
 
         // 校验品牌
-        if (spu.getBrandId() == null) {
-            throw new BizException(CommonErrorCode.PARAM_INVALID);
-        }
         ProductBrand brand = brandMapper.selectById(spu.getBrandId());
         if (brand == null || !Long.valueOf(0L).equals(brand.getDeleted())) {
             throw new BizException(ProductErrorCode.BRAND_NOT_FOUND);
@@ -416,7 +414,6 @@ public class SpuServiceImpl implements SpuService {
                 throw new BizException(ProductErrorCode.SKU_SPEC_MISMATCH,
                         "无规格 SPU 的 SKU 规格必须为空");
             }
-            return;
         }
 
         // 有规格：展开规格定义，得到期望的 spec_hash 集合
@@ -431,8 +428,8 @@ public class SpuServiceImpl implements SpuService {
         if (!expectedHashes.equals(actualHashes)) {
             throw new BizException(ProductErrorCode.SKU_SPEC_MISMATCH);
         }
-        int affected = spuMapper.updateStatus(spu.getId(), spu.getStatus(),SpuStatus.ON_SHELF,
-                spu.getVersion() + 1, 0L, LocalDateTime.now());
+        int affected = spuMapper.updateStatus(spu.getId(), spu.getStatus(),SpuStatus.ON_SHELF.getCode(),
+                spu.getVersion(), 0L, LocalDateTime.now());
         if (affected != 1) {
             throw new BizException(ProductErrorCode.SPU_UPDATE_FAILED);
         }

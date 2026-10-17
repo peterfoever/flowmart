@@ -72,8 +72,8 @@ public interface ProductSpuMapper extends BaseMapper<ProductSpu> {
      * 成功时 version = version + 1。
      */
     int updateStatus(@Param("id") Long id,
-                     @Param("expectedStatus") SpuStatus expectedStatus,
-                     @Param("newStatus") SpuStatus newStatus,
+                     @Param("expectedStatus") Integer expectedStatus,
+                     @Param("newStatus") Integer newStatus,
                      @Param("version") Integer version,
                      @Param("actor") Long actor,
                      @Param("now") LocalDateTime now);
