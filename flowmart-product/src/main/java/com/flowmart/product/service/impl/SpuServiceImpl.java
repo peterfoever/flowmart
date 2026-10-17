@@ -425,6 +425,9 @@ public class SpuServiceImpl implements SpuService {
     @Transactional(rollbackFor = Exception.class)
     public void unpublish(Long id, Integer version) {
         log.debug("SPU商品下架");
+        if (id == null || id <= 0 || version == null || version < 0) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID);
+        }
         ProductSpu spu = spuMapper.selectByIdForUpdate(id);
         if (spu == null || !Long.valueOf(0L).equals(spu.getDeleted())) {
             throw new BizException(ProductErrorCode.SPU_NOT_FOUND);
@@ -436,7 +439,7 @@ public class SpuServiceImpl implements SpuService {
         }
 
         // ── version 必须匹配 ─────────
-        if (spu.getVersion() != version) {
+        if (!Objects.equals(spu.getVersion(), version)) {
             throw new BizException(ProductErrorCode.SPU_VERSION_CONFLICT);
         }
 
