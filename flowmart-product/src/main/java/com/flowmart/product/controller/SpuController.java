@@ -2,10 +2,7 @@ package com.flowmart.product.controller;
 
 import com.flowmart.common.result.PageResult;
 import com.flowmart.common.result.R;
-import com.flowmart.product.dto.CreateSpuDTO;
-import com.flowmart.product.dto.SpuQueryDTO;
-import com.flowmart.product.dto.SpuPublishDTO;
-import com.flowmart.product.dto.UpdateSpuDTO;
+import com.flowmart.product.dto.*;
 import com.flowmart.product.service.SpuService;
 import com.flowmart.product.vo.SpuDetailVO;
 import com.flowmart.product.vo.SpuListVO;
@@ -51,6 +48,13 @@ public class SpuController {
     public R<Void> publish(@PathVariable @NotNull @Min(1) Long id,
                            @Valid @RequestBody SpuPublishDTO request) {
         spuService.publish(id, request.getVersion());
+        return R.ok();
+    }
+
+    @PostMapping("/spus/{id}/unpublish")
+    public R<Void> unpublish(@PathVariable @NotNull @Min(1) Long id,
+                           @Valid @RequestBody SpuUnpublishDTO request) {
+        spuService.unpublish(id, request.getVersion());
         return R.ok();
     }
 }
