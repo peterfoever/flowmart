@@ -1,0 +1,33 @@
+CREATE TABLE import_batch
+(
+    id                         BIGINT       NOT NULL,
+    owner_id                   BIGINT       NOT NULL,
+    operator_id                BIGINT       NOT NULL,
+    idempotency_key            VARCHAR(64)  NOT NULL,
+    request_fingerprint        CHAR(64)     NOT NULL,
+    file_name                  VARCHAR(255) NOT NULL,
+    file_hash                  CHAR(64)     NOT NULL,
+    file_url                   VARCHAR(512) NULL,
+    total_spu_count            INT          NOT NULL DEFAULT 0,
+    success_spu_count          INT          NOT NULL DEFAULT 0,
+    failed_spu_count           INT          NOT NULL DEFAULT 0,
+    ungrouped_failed_row_count INT          NOT NULL DEFAULT 0,
+    unprocessed_spu_count      INT          NOT NULL DEFAULT 0,
+    total_row_count            INT          NOT NULL DEFAULT 0,
+    success_row_count          INT          NOT NULL DEFAULT 0,
+    failed_row_count           INT          NOT NULL DEFAULT 0,
+    status                     VARCHAR(16)  NOT NULL,
+    error_summary              VARCHAR(512) NULL,
+    warnings                   JSON NULL,
+    started_at                 DATETIME(3)  NULL,
+    finished_at                DATETIME(3)  NULL,
+    created_at                 DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    updated_at                 DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
+                                        ON UPDATE CURRENT_TIMESTAMP(3),
+    created_by                 BIGINT       NOT NULL,
+    updated_by                 BIGINT       NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_import_batch_idem (owner_id, idempotency_key),
+    KEY                        idx_import_batch_hash (owner_id, file_hash),
+    KEY                        idx_import_batch_status (status, started_at)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
