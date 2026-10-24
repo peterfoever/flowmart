@@ -7,6 +7,11 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+/**
+ * 跨文件防重凭证，不随商品逻辑删除而失效。
+ * 事务内允许占位；提交前必须回填商品和分组结果，失败时随组事务回滚。
+ * ID、操作人由 Writer 显式填充。
+ */
 @Data
 @TableName(value = "import_item_owner", autoResultMap = true)
 public class ImportItemOwnerEntity {

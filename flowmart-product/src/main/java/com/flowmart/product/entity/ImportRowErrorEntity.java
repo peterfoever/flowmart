@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+/** 每批次每个 Excel 原始行号一条代表错误；无法归组时 groupResultId 可为空。 */
 @Data
 @TableName(value = "import_row_error", autoResultMap = true)
 public class ImportRowErrorEntity {

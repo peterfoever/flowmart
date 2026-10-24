@@ -8,6 +8,7 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+/** 仅保存具有合法分组标识的结果；ID、操作人由 Writer 显式填充。 */
 @Data
 @TableName(value = "import_group_result", autoResultMap = true)
 public class ImportGroupResultEntity {

@@ -11,7 +11,7 @@ public enum ImportBatchStatus {
     SUCCEEDED("SUCCEEDED", "全部成功"),
     PARTIAL("PARTIAL", "部分成功"),
     FAILED("FAILED", "全部失败或文件级拒绝"),
-    INTERRUPTED("INTERRUPTED", "处理中断，存在未处理组"),
+    INTERRUPTED("INTERRUPTED", "处理中断，需核对持久化结果"),
     ;
     private final String code;
     private final String description;

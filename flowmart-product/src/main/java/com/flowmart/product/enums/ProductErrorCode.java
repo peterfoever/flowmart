@@ -79,6 +79,12 @@ public enum ProductErrorCode implements ErrorCode {
     SKU_PRICE_INVALID(20070,"SKU 价格不合法"),
     SKU_IMAGE_REQUIRED(20071, "SKU 图片不能为空"),
     SKU_SPEC_MISMATCH(20072, "SKU 规格组合与 SPU 规格定义不一致"),
+
+    // Excel导入商品错误码
+    IMPORT_ITEM_KEY_INVALID(20080, "导入商品标识缺失或不合法"),
+    GROUP_FIELD_INCONSISTENT(20081, "同组字段不一致"),
+    GROUP_SPEC_COMBINATION_DUPLICATE(20082, "同组规格组合重复"),
+    GROUP_NO_SPEC_MULTIPLE_ROWS(20083, "无规格商品只能有一行"),
     ;
 
 
