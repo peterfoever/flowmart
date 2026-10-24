@@ -85,6 +85,7 @@ public enum ProductErrorCode implements ErrorCode {
     GROUP_FIELD_INCONSISTENT(20081, "同组字段不一致"),
     GROUP_SPEC_COMBINATION_DUPLICATE(20082, "同组规格组合重复"),
     GROUP_NO_SPEC_MULTIPLE_ROWS(20083, "无规格商品只能有一行"),
+    GROUP_SPEC_DEFINITION_INVALID(20084, "规格定义不合法"),
     ;
 
 

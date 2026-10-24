@@ -9,7 +9,7 @@ public record ImportGroup(
         Long categoryId,
         Long brandId,
         String mainImage,
-        List<SkuSpecValueDTO> specDefinition,
+        List<SpecDTO> specDefinition,
         List<ImportRow> rows
 ) {
     public ImportGroup {
