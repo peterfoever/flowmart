@@ -4,16 +4,18 @@ import cn.hutool.core.util.StrUtil;
 import com.flowmart.common.exception.BizException;
 import com.flowmart.common.exception.CommonErrorCode;
 import com.flowmart.product.calculator.SpecHashCalculator;
-import com.flowmart.product.dto.ImportGroup;
-import com.flowmart.product.dto.ImportGroupingResult;
-import com.flowmart.product.dto.ImportRow;
-import com.flowmart.product.dto.InvalidGroup;
+import com.flowmart.product.dto.imports.ImportGroup;
+import com.flowmart.product.dto.imports.ImportGroupingResult;
+import com.flowmart.product.dto.imports.ImportRow;
+import com.flowmart.product.dto.imports.InvalidGroup;
+import com.flowmart.product.dto.imports.RowError;
 import com.flowmart.product.dto.SpecDTO;
-import com.flowmart.product.dto.UngroupedRow;
+import com.flowmart.product.dto.imports.UngroupedRow;
 import com.flowmart.product.enums.ProductErrorCode;
 import com.flowmart.product.generator.SpecCombinationGenerator;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -30,54 +32,131 @@ import java.util.stream.Collectors;
  */
 public final class ImportRowGrouper {
 
-    /**
-     * 保留首次出现的组顺序与 Excel 原始行号，不修改输入 DTO。
-     * 空输入返回空结果，文件层负责把空文件判为失败。
-     * @throws BizException 行对象为空、行号小于2或重复（解析器违反输入契约）
-     */
+    /** 兼容原入口；无解析错误时仍执行原有组内校验。 */
     public ImportGroupingResult group(List<ImportRow> rows) {
-        if (rows == null || rows.isEmpty()) {
-            return new ImportGroupingResult(List.of(), List.of(), List.of());
-        }
+        return group(rows, List.of());
+    }
+
+    /**
+     * 两类行统一归组，任一解析错误使所属商品组整体失败。
+     * 输出组和组内行均按真实行号排序；空输入由文件层决定是否拒绝。
+     * @throws BizException 空行对象、非法/重复行号、错误信息缺失或规范化标识矛盾
+     */
+    public ImportGroupingResult group(List<ImportRow> rows, List<RowError> rowErrors) {
+        List<ImportRow> parsedRows = rows == null ? List.of() : rows;
+        List<RowError> errors = rowErrors == null ? List.of() : rowErrors;
         List<UngroupedRow> ungrouped = new ArrayList<>();
-        Map<String, List<ImportRow>> byKey = new LinkedHashMap<>();
+        Map<String, GroupBucket> byKey = new LinkedHashMap<>();
         Set<Integer> rowNumbers = new HashSet<>();
-        for (ImportRow row : rows) {
-            if (row == null || row.rowNum() < 2 || !rowNumbers.add(row.rowNum())) {
-                throw new BizException(CommonErrorCode.PARAM_INVALID, "解析行必须非空，真实行号须从2开始且不能重复");
-            }
-            String normalized;
-            try {
-                normalized = ImportItemKeyNormalizer.normalize(row.importItemKey());
-            } catch (BizException e) {
-                // 只转换已知的标识输入错误；不能吞掉未来增加的其他业务异常。
-                if (e.getCode() != CommonErrorCode.PARAM_INVALID.getCode()) throw e;
-                ungrouped.add(new UngroupedRow(row.rowNum(), row.importItemKey(),
+
+        for (ImportRow row : parsedRows) {
+            if (row == null) throw invalidInput("解析行对象不能为空");
+            registerRowNum(row.rowNum(), rowNumbers);
+            String normalized = normalizeKeyOrNull(row.importItemKey());
+            if (normalized == null) {
+                ungrouped.add(new UngroupedRow(row.rowNum(), row.importItemKey(), "importItemKey",
+                        ProductErrorCode.IMPORT_ITEM_KEY_INVALID.name(),
                         ProductErrorCode.IMPORT_ITEM_KEY_INVALID.getMessage()));
                 continue;
             }
-            byKey.computeIfAbsent(normalized, k -> new ArrayList<>()).add(row);
+            GroupBucket bucket = byKey.computeIfAbsent(normalized, GroupBucket::new);
+            bucket.rows.add(row);
+            bucket.includePosition(row.rowNum(), row.importItemKey());
+        }
+
+        for (RowError error : errors) {
+            if (error == null) throw invalidInput("行错误对象不能为空");
+            registerRowNum(error.rowNum(), rowNumbers);
+            if (StrUtil.isBlank(error.errorCode()) || StrUtil.isBlank(error.errorMessage())) {
+                throw invalidInput("行错误必须包含错误码和说明");
+            }
+            // 不能信任漏填/伪造的规范化值，否则错误行可能被丢出原组，导致部分商品误导入。
+            String normalized = normalizeKeyOrNull(error.importItemKey());
+            if (!Objects.equals(normalized, error.importItemKeyNormalized())) {
+                throw invalidInput("行错误的规范化标识与原始标识不一致，行号=" + error.rowNum());
+            }
+            if (normalized == null) {
+                ungrouped.add(new UngroupedRow(error.rowNum(), error.importItemKey(),
+                        error.field(), error.errorCode(), error.errorMessage()));
+                continue;
+            }
+            GroupBucket bucket = byKey.computeIfAbsent(normalized, GroupBucket::new);
+            bucket.parseErrors.add(error);
+            bucket.includePosition(error.rowNum(), error.importItemKey());
         }
 
         List<ImportGroup> groups = new ArrayList<>();
         List<InvalidGroup> invalidGroups = new ArrayList<>();
-        for (var entry : byKey.entrySet()) {
-            List<ImportRow> groupRows = entry.getValue();
-            ImportRow first = groupRows.getFirst();
-            ProductErrorCode error = validateGroup(groupRows);
-            if (error == null) {
-                groups.add(new ImportGroup(first.importItemKey(), entry.getKey(),
-                        StrUtil.trim(first.spuName()), first.categoryId(), first.brandId(),
-                        StrUtil.trim(first.mainImage()), cleanedDefinition(first.specDefinition()), groupRows));
-            } else {
-                // 非连续行不能用 rowFrom..rowTo 生成错误行；写错误时必须遍历 rows。
-                int rowFrom = groupRows.stream().mapToInt(ImportRow::rowNum).min().orElseThrow();
-                int rowTo = groupRows.stream().mapToInt(ImportRow::rowNum).max().orElseThrow();
-                invalidGroups.add(new InvalidGroup(first.importItemKey(), entry.getKey(),
-                        rowFrom, rowTo, groupRows.size(), error.name(), error.getMessage(), groupRows));
+        // 先收成功行再收错误行会改变 Map 插入顺序，因此显式按两类行的最早行号排序。
+        var orderedBuckets = byKey.values().stream()
+                .sorted(Comparator.comparingInt(bucket -> bucket.rowFrom)).toList();
+        for (GroupBucket bucket : orderedBuckets) {
+            bucket.rows.sort(Comparator.comparingInt(ImportRow::rowNum));
+            bucket.parseErrors.sort(Comparator.comparingInt(RowError::rowNum));
+            if (!bucket.parseErrors.isEmpty()) {
+                invalidGroups.add(bucket.failure(ProductErrorCode.PARSE_ROW_FAILED));
+                continue;
             }
+            ProductErrorCode error = validateGroup(bucket.rows);
+            if (error != null) {
+                invalidGroups.add(bucket.failure(error));
+                continue;
+            }
+            ImportRow first = bucket.rows.getFirst();
+            groups.add(new ImportGroup(bucket.originalKey, bucket.normalizedKey,
+                    StrUtil.trim(first.spuName()), first.categoryId(), first.brandId(),
+                    StrUtil.trim(first.mainImage()), cleanedDefinition(first.specDefinition()), bucket.rows));
         }
+        ungrouped.sort(Comparator.comparingInt(UngroupedRow::rowNum));
         return new ImportGroupingResult(groups, ungrouped, invalidGroups);
+    }
+
+    /** 只把已知的标识格式错误转为无法归组，不吞掉其他业务/系统异常。 */
+    private String normalizeKeyOrNull(String key) {
+        try {
+            return ImportItemKeyNormalizer.normalize(key);
+        } catch (BizException e) {
+            if (e.getCode() != CommonErrorCode.PARAM_INVALID.getCode()) throw e;
+            return null;
+        }
+    }
+
+    private void registerRowNum(int rowNum, Set<Integer> seen) {
+        if (rowNum < 2 || !seen.add(rowNum)) {
+            throw invalidInput("真实行号须从2开始且不能重复，行号=" + rowNum);
+        }
+    }
+
+    private BizException invalidInput(String message) {
+        return new BizException(CommonErrorCode.PARAM_INVALID, message);
+    }
+
+    /** 仅作方法内部聚合，不访问数据库；结果 record 会复制列表，避免泄漏可变容器。 */
+    private static final class GroupBucket {
+        private final String normalizedKey;
+        private final List<ImportRow> rows = new ArrayList<>();
+        private final List<RowError> parseErrors = new ArrayList<>();
+        private String originalKey;
+        private int rowFrom = Integer.MAX_VALUE;
+        private int rowTo = Integer.MIN_VALUE;
+
+        private GroupBucket(String normalizedKey) {
+            this.normalizedKey = normalizedKey;
+        }
+
+        private void includePosition(int rowNum, String rawKey) {
+            if (rowNum < rowFrom) {
+                rowFrom = rowNum;
+                originalKey = rawKey;
+            }
+            rowTo = Math.max(rowTo, rowNum);
+        }
+
+        private InvalidGroup failure(ProductErrorCode error) {
+            // 行号已跨两类列表查重，才能安全相加；范围不能用来伪造连续错误行。
+            return new InvalidGroup(originalKey, normalizedKey, rowFrom, rowTo,
+                    rows.size() + parseErrors.size(), error.name(), error.getMessage(), rows, parseErrors);
+        }
     }
 
     /** 成功返回 null，失败返回明确枚举，不进行字符串和整数错误码的反查。 */

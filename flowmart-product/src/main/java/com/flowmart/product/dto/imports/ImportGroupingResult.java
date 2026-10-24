@@ -1,4 +1,4 @@
-package com.flowmart.product.dto;
+package com.flowmart.product.dto.imports;
 
 import java.util.List;
 

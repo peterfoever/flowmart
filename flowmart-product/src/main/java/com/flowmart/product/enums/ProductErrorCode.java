@@ -86,6 +86,7 @@ public enum ProductErrorCode implements ErrorCode {
     GROUP_SPEC_COMBINATION_DUPLICATE(20082, "同组规格组合重复"),
     GROUP_NO_SPEC_MULTIPLE_ROWS(20083, "无规格商品只能有一行"),
     GROUP_SPEC_DEFINITION_INVALID(20084, "规格定义不合法"),
+    PARSE_ROW_FAILED(20085, "组内存在解析失败的行，整组未导入"),
     ;
 
 

@@ -1,4 +1,6 @@
-package com.flowmart.product.dto;
+package com.flowmart.product.dto.imports;
+
+import com.flowmart.product.dto.SpecDTO;
 
 import java.util.List;
 

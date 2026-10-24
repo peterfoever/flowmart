@@ -103,6 +103,27 @@ docker rm -f -v flowmart-fm007-check
 
 ## 下一步练习
 
+### 2026-10-24 解析错误与分组器整合
+
+- 保留 `group(List<ImportRow>)`，委托新入口
+  `group(List<ImportRow>, List<RowError>)`。旧有39个分组测试继续通过。
+- 同一规范化标识的成功行和错误行进入同一个内部容器。存在解析错误时，
+  整组返回 `PARSE_ROW_FAILED`，不再进入合法商品组；只有错误行的组也不会丢失。
+- `InvalidGroup.rows` 保留成功解析的连带失败行，
+  `parseErrors` 保留具体错误行；每行只允许一个代表错误。
+  行数是两类行数之和，起止行号和原始标识取自两类行，输出按真实行号排序。
+- 共享行号集合检查两类行的重复/重叠。错误行必须包含错误码、说明，
+  其规范化标识必须与原始标识重新计算的结果一致；违约抛 `PARAM_INVALID`，
+  不能默默遗漏错误行后继续导入。
+- `UngroupedRow` 增加 field、errorCode；这类行只计失败行，不计失败商品组。
+- 增加 `ImportParseResult` / `FileLevelError`：
+  文件级拒绝不能携带任何部分解析结果，DTO 构造时检查此内部契约；
+  编排层仍必须先检查 `hasFileLevelError()`，有错误直接结束，不能调用分组器。
+- 新增38个测试（分组解析错误30个、解析结果DTO 8个）。
+  `mvn clean verify` 成功，product 共717个测试通过、0失败、0错误。
+  本次没有连接数据库，MySQL测试类按配置报告9个跳过条目，未改迁移和Mapper。
+- 下一步才接 Excel Reader / Validator；本次没有实现文件读取、字段转换或商品写库。
+
 ### 2026-10-24 分组逻辑修复记录
 
 - `ImportRowGrouper` 已修复编译和异常类型问题，内部使用枚举，失败结果保存枚举名称与说明。
