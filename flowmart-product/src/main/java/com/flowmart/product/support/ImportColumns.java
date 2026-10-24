@@ -1,6 +1,7 @@
 package com.flowmart.product.support;
 
 public final class ImportColumns {
+    static final int COLUMN_COUNT = 9;
     static final int IMPORT_ITEM_KEY = 0;
     static final int SPU_NAME = 1;
     static final int CATEGORY_ID = 2;

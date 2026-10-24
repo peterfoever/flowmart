@@ -1,297 +1,232 @@
 package com.flowmart.product.support;
 
-
-
-
-
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.core.StreamReadFeature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.flowmart.common.exception.BizException;
+import com.flowmart.common.exception.CommonErrorCode;
+import com.flowmart.product.dto.SkuSpecValueDTO;
+import com.flowmart.product.dto.SpecDTO;
 import com.flowmart.product.dto.imports.ImportParseResult;
 import com.flowmart.product.dto.imports.ImportRow;
+import com.flowmart.product.dto.imports.RawCell;
+import com.flowmart.product.dto.imports.RawImportRow;
 import com.flowmart.product.dto.imports.RowError;
 import com.flowmart.product.enums.ProductErrorCode;
+import com.flowmart.product.enums.RawCellType;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * 把原始单元格转换成 ImportRow 或 RowError。
- *
- * 不访问数据库，不判断类目、品牌是否存在，也不判断同组字段是否一致。
- * 每行只保留一个代表错误，检查顺序固定：
- * 标识 → 名称 → 类目 → 品牌 → 主图 → 规格定义 → 规格组合 → 价格 → SKU 图片
+ * 事务外把原始单元格转换成业务行或一个代表错误，不访问数据库。
+ * 顺序固定：标识→名称→类目→品牌→主图→定义→组合→价格→SKU图片。
+ * 规格重复、组内一致性及组合与定义匹配由ImportRowGrouper负责。
  */
 public final class ImportRowValidator {
-
-    private static final Pattern SNOWFLAKE_ID = Pattern.compile("^[1-9][0-9]{0,18}$");
-    private static final BigDecimal MAX_PRICE = new BigDecimal("9999999999999999.99");
-    private static final int MAX_SPU_NAME = 128;
-    private static final int MAX_IMAGE_URL = 512;
+    private static final Pattern POSITIVE_ID = Pattern.compile("[1-9][0-9]{0,18}");
+    // 与现有SKU服务及DECIMAL(10,2)保持一致，不允许通过舍入修复输入。
+    private static final BigDecimal MAX_PRICE = new BigDecimal("99999999.99");
+    private static final int MAX_NAME_LENGTH = 128;
+    private static final int MAX_URL_LENGTH = 512;
+    private static final int MAX_SPEC_JSON_LENGTH = 4096;
 
     private static final ObjectMapper JSON = new ObjectMapper(JsonFactory.builder()
             .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION)
             .streamReadConstraints(StreamReadConstraints.builder().maxNestingDepth(50).build())
-            .build())
-            .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-            .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
+            .build()).enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
 
-    public ImportParseResult validate(List<ImportRow> rawRows) {
-        if (rawRows == null || rawRows.isEmpty()) {
-            return ImportParseResult.empty();
-        }
-
+    /**
+     * 全空行跳过但保留后续真实行号；null列表视为空输入。
+     * @throws BizException 空行对象、非法/重复行号、超出模板列范围（程序输入契约错误）
+     */
+    public ImportParseResult validate(List<RawImportRow> rawRows) {
         List<ImportRow> rows = new ArrayList<>();
         List<RowError> errors = new ArrayList<>();
-
-        for (ImportRow raw : rawRows) {
-            if (raw == null) continue;
-            if (raw.allBlank()) continue;
-            validateOne(raw, rows, errors);
+        Set<Integer> seenRows = new HashSet<>();
+        if (rawRows != null) {
+            for (RawImportRow raw : rawRows) {
+                if (raw == null || raw.rowNum() < 2 || !seenRows.add(raw.rowNum())) {
+                    throw new BizException(CommonErrorCode.PARAM_INVALID, "原始行须非空，真实行号从2开始且不能重复");
+                }
+                if (raw.cells().keySet().stream().anyMatch(column -> column >= ImportColumns.COLUMN_COUNT)) {
+                    throw new BizException(CommonErrorCode.PARAM_INVALID, "原始行包含模板以外的列");
+                }
+                if (!raw.allBlank()) validateOne(raw, rows, errors);
+            }
         }
-
         return new ImportParseResult(rows, errors, null);
     }
 
-    private void validateOne(ImportRow raw, List<ImportRow> rows, List<RowError> errors) {
-
-        // 1. 标识先处理，保存规范化值
-        String rawKey = raw.cell(ImportColumns.IMPORT_ITEM_KEY).rawValue();
+    private void validateOne(RawImportRow raw, List<ImportRow> rows, List<RowError> errors) {
+        RawCell keyCell = raw.cell(ImportColumns.IMPORT_ITEM_KEY);
+        // 非文本标识不是可信的业务标识：不把数字/公式缓存值交给分组器建立商品归属。
+        String rawKey = keyCell.type() == RawCellType.TEXT ? keyCell.rawValue() : null;
         String normalizedKey = null;
-        String keyError = null;
-        if (StrUtil.isNotBlank(rawKey)) {
+        try {
+            checkCell(keyCell, "importItemKey", false);
             try {
                 normalizedKey = ImportItemKeyNormalizer.normalize(rawKey);
-            } catch (RuntimeException e) {
-                keyError = "导入商品标识缺失或不合法";
+            } catch (BizException e) {
+                if (e.getCode() != CommonErrorCode.PARAM_INVALID.getCode()) throw e;
+                throw fail("importItemKey", ProductErrorCode.IMPORT_ITEM_KEY_INVALID, e.getMessage());
             }
-        } else {
-            keyError = "导入商品标识缺失";
+            String name = requiredText(raw, ImportColumns.SPU_NAME, "spuName", MAX_NAME_LENGTH,
+                    ProductErrorCode.IMPORT_FIELD_REQUIRED);
+            Long categoryId = readId(raw, ImportColumns.CATEGORY_ID, "categoryId", false);
+            Long brandId = readId(raw, ImportColumns.BRAND_ID, "brandId", true);
+            String mainImage = requiredText(raw, ImportColumns.MAIN_IMAGE, "mainImage", MAX_URL_LENGTH,
+                    ProductErrorCode.IMPORT_FIELD_REQUIRED);
+            List<SpecDTO> definition = readDefinition(raw);
+            List<SkuSpecValueDTO> combination = readCombination(raw);
+            BigDecimal price = readPrice(raw);
+            String skuImage = requiredText(raw, ImportColumns.SKU_IMAGE, "skuImage", MAX_URL_LENGTH,
+                    ProductErrorCode.SKU_IMAGE_REQUIRED);
+            rows.add(new ImportRow(raw.rowNum(), rawKey, name, categoryId, brandId,
+                    mainImage, definition, combination, price, skuImage));
+        } catch (CellValidationException e) {
+            // 只捕获本类明确产生的字段错误，系统故障必须上抛，不能伪装成某行填错。
+            errors.add(new RowError(raw.rowNum(), rawKey, normalizedKey,
+                    e.field, e.code.name(), e.getMessage()));
         }
-        if (keyError != null) {
-            errors.add(new RowError(raw.rowNum(), rawKey, null,
-                    "importItemKey", ProductErrorCode.IMPORT_ITEM_KEY_INVALID.name(), keyError));
-            return;
-        }
-
-        // 2. 名称
-        String spuName = readRequiredText(raw, ImportColumns.SPU_NAME, rawKey, normalizedKey, errors,
-                "spuName", ProductErrorCode.SPU_NAME_REQUIRED.name(), MAX_SPU_NAME);
-        if (spuName == null) return;
-
-        // 3. 类目 ID
-        Long categoryId = readRequiredId(raw, ImportColumns.CATEGORY_ID, rawKey, normalizedKey, errors,
-                "categoryId", ProductErrorCode.CATEGORY_REQUIRED.name());
-        if (categoryId == null) return;
-
-        // 4. 品牌 ID（可空）
-        Long brandId = readOptionalId(raw, ImportColumns.BRAND_ID, rawKey, normalizedKey, errors, "brandId");
-        if (hasError(errors, raw.rowNum())) return;
-
-        // 5. 主图
-        String mainImage = readRequiredText(raw, ImportColumns.MAIN_IMAGE, rawKey, normalizedKey, errors,
-                "mainImage", ProductErrorCode.MAIN_IMAGE_REQUIRED.name(), MAX_IMAGE_URL);
-        if (mainImage == null) return;
-
-        // 6. 规格定义
-        List<SpecDTO> specDefinition = readSpecDefinition(raw, rawKey, normalizedKey, errors);
-        if (hasError(errors, raw.rowNum())) return;
-
-        // 7. 规格组合
-        List<SkuSpecValueDTO> specCombination = readSpecCombination(raw, rawKey, normalizedKey, errors);
-        if (hasError(errors, raw.rowNum())) return;
-
-        // 8. 价格
-        BigDecimal price = readPrice(raw, rawKey, normalizedKey, errors);
-        if (price == null) return;
-
-        // 9. SKU 图片
-        String skuImage = readRequiredText(raw, ImportColumns.SKU_IMAGE, rawKey, normalizedKey, errors,
-                "skuImage", ProductErrorCode.SKU_IMAGE_REQUIRED.name(), MAX_IMAGE_URL);
-        if (skuImage == null) return;
-
-        rows.add(new ImportRow(raw.rowNum(), rawKey, spuName, categoryId, brandId, mainImage,
-                specDefinition, specCombination, price, skuImage));
     }
 
-    // ── 文本字段 ───────────────────────────────────────────────────
-
-    private String readRequiredText(RawImportRow raw, int column, String rawKey, String normalizedKey,
-                                    List<RowError> errors, String field, String requiredCode, int maxLength) {
+    private String requiredText(RawImportRow raw, int column, String field, int maxLength,
+                                ProductErrorCode requiredCode) {
         RawCell cell = raw.cell(column);
-        rejectFormulaOrError(raw, cell, rawKey, normalizedKey, errors, field);
-        if (hasError(errors, raw.rowNum())) return null;
-        String value = cell.rawValue();
-        if (StrUtil.isBlank(value)) {
-            errors.add(error(raw, rawKey, normalizedKey, field, requiredCode, "字段不能为空"));
-            return null;
+        checkCell(cell, field, false);
+        String value = StrUtil.trim(cell.rawValue());
+        if (StrUtil.isBlank(value)) throw fail(field, requiredCode, "字段不能为空");
+        if (value.length() > maxLength) {
+            throw fail(field, ProductErrorCode.IMPORT_TEXT_TOO_LONG, "字段长度不能超过" + maxLength);
         }
-        String trimmed = value.trim();
-        if (trimmed.length() > maxLength) {
-            errors.add(error(raw, rawKey, normalizedKey, field,
-                    ProductErrorCode.TEXT_TOO_LONG.name(), "字段长度不能超过 " + maxLength + " 字符"));
-            return null;
-        }
-        return trimmed;
+        return value;
     }
 
-    // ── ID 字段 ────────────────────────────────────────────────────
-
-    private Long readRequiredId(RawImportRow raw, int column, String rawKey, String normalizedKey,
-                                List<RowError> errors, String field, String requiredCode) {
-        Long id = readId(raw, column, rawKey, normalizedKey, errors, field, false);
-        if (hasError(errors, raw.rowNum())) return null;
-        if (id == null) {
-            errors.add(error(raw, rawKey, normalizedKey, field, requiredCode, "字段不能为空"));
-            return null;
-        }
-        return id;
-    }
-
-    private Long readOptionalId(RawImportRow raw, int column, String rawKey, String normalizedKey,
-                                List<RowError> errors, String field) {
-        return readId(raw, column, rawKey, normalizedKey, errors, field, true);
-    }
-
-    private Long readId(RawImportRow raw, int column, String rawKey, String normalizedKey,
-                        List<RowError> errors, String field, boolean optional) {
+    private Long readId(RawImportRow raw, int column, String field, boolean optional) {
         RawCell cell = raw.cell(column);
         if (cell.type() == RawCellType.NUMBER) {
-            errors.add(error(raw, rawKey, normalizedKey, field,
-                    ProductErrorCode.ID_NOT_TEXT.name(),
-                    "ID 必须为文本格式的雪花 ID，请将单元格设置为文本"));
-            return null;
+            throw fail(field, ProductErrorCode.IMPORT_ID_NOT_TEXT, "ID必须来自文本单元格，请按原始ID重新填写");
         }
-        rejectFormulaOrError(raw, cell, rawKey, normalizedKey, errors, field);
-        if (hasError(errors, raw.rowNum())) return null;
-        String value = cell.rawValue();
+        checkCell(cell, field, false);
+        String value = StrUtil.trim(cell.rawValue());
         if (StrUtil.isBlank(value)) {
             if (optional) return null;
-            errors.add(error(raw, rawKey, normalizedKey, field,
-                    ProductErrorCode.ID_REQUIRED.name(), "字段不能为空"));
-            return null;
+            throw fail(field, ProductErrorCode.IMPORT_FIELD_REQUIRED, "ID不能为空");
         }
-        String trimmed = value.trim();
-        if (!SNOWFLAKE_ID.matcher(trimmed).matches()) {
-            errors.add(error(raw, rawKey, normalizedKey, field,
-                    ProductErrorCode.ID_INVALID.name(), "ID 必须为 1~19 位正整数"));
-            return null;
+        if (!POSITIVE_ID.matcher(value).matches()) {
+            throw fail(field, ProductErrorCode.IMPORT_ID_INVALID, "ID必须为1～19位正整数");
         }
         try {
-            return Long.parseLong(trimmed);
+            return Long.parseLong(value);
         } catch (NumberFormatException e) {
-            errors.add(error(raw, rawKey, normalizedKey, field,
-                    ProductErrorCode.ID_INVALID.name(), "ID 超出 Long 范围"));
-            return null;
+            throw fail(field, ProductErrorCode.IMPORT_ID_INVALID, "ID超出Long范围");
         }
     }
 
-    // ── 规格 ──────────────────────────────────────────────────────
-
-    private List<SpecDTO> readSpecDefinition(RawImportRow raw, String rawKey, String normalizedKey,
-                                             List<RowError> errors) {
-        RawCell cell = raw.cell(ImportColumns.SPEC_DEFINITION);
-        rejectFormulaOrError(raw, cell, rawKey, normalizedKey, errors, "specDefinition");
-        if (hasError(errors, raw.rowNum())) return List.of();
-        String value = cell.rawValue();
-        if (StrUtil.isBlank(value) || "[]".equals(value.trim())) {
-            return List.of();
+    private List<SpecDTO> readDefinition(RawImportRow raw) {
+        String field = "specDefinition";
+        ProductErrorCode code = ProductErrorCode.SPEC_DEFINITION_INVALID;
+        JsonNode root = readSpecArray(raw.cell(ImportColumns.SPEC_DEFINITION), field, code);
+        List<SpecDTO> result = new ArrayList<>();
+        for (JsonNode item : root) {
+            if (!item.isObject() || item.size() != 2 || !item.path("name").isTextual()
+                    || !item.path("values").isArray()) throw fail(field, code, code.getMessage());
+            List<String> values = new ArrayList<>();
+            for (JsonNode value : item.get("values")) {
+                if (!value.isTextual()) throw fail(field, code, "规格值必须为字符串，不能自动转换数字或布尔值");
+                values.add(value.textValue());
+            }
+            SpecDTO spec = new SpecDTO();
+            spec.setName(item.get("name").textValue());
+            spec.setValues(List.copyOf(values));
+            result.add(spec);
         }
+        return result;
+    }
+
+    private List<SkuSpecValueDTO> readCombination(RawImportRow raw) {
+        String field = "specCombination";
+        ProductErrorCode code = ProductErrorCode.SPEC_COMBINATION_INVALID;
+        JsonNode root = readSpecArray(raw.cell(ImportColumns.SPEC_COMBINATION), field, code);
+        List<SkuSpecValueDTO> result = new ArrayList<>();
+        for (JsonNode item : root) {
+            if (!item.isObject() || item.size() != 2 || !item.path("name").isTextual()
+                    || !item.path("value").isTextual()) throw fail(field, code, code.getMessage());
+            SkuSpecValueDTO spec = new SkuSpecValueDTO();
+            spec.setName(item.get("name").textValue());
+            spec.setValue(item.get("value").textValue());
+            result.add(spec);
+        }
+        return result;
+    }
+
+    /** 显式校验JSON树类型，不依赖Jackson把数字/布尔值强制转换成String。 */
+    private JsonNode readSpecArray(RawCell cell, String field, ProductErrorCode code) {
+        checkCell(cell, field, false);
+        String value = StrUtil.trim(cell.rawValue());
+        if (StrUtil.isBlank(value)) return JSON.createArrayNode();
+        if (value.length() > MAX_SPEC_JSON_LENGTH) throw fail(field, code, "规格JSON不能超过4096个字符");
         try {
-            List<SpecDTO> list = JSON.readValue(value,
-                    JSON.getTypeFactory().constructCollectionType(List.class, SpecDTO.class));
-            return list == null ? List.of() : list;
-        } catch (Exception e) {
-            errors.add(error(raw, rawKey, normalizedKey, "specDefinition",
-                    ProductErrorCode.SPEC_DEFINITION_INVALID.name(),
-                    "规格定义必须是合法的 JSON 数组"));
-            return List.of();
+            JsonNode node = JSON.readTree(value);
+            if (node == null || !node.isArray()) throw fail(field, code, "必须为JSON数组，不能为null或对象");
+            return node;
+        } catch (JsonProcessingException e) {
+            throw fail(field, code, "JSON格式非法，不能含重复键、尾随内容或过深嵌套");
         }
     }
 
-    private List<SkuSpecValueDTO> readSpecCombination(RawImportRow raw, String rawKey, String normalizedKey,
-                                                      List<RowError> errors) {
-        RawCell cell = raw.cell(ImportColumns.SPEC_COMBINATION);
-        rejectFormulaOrError(raw, cell, rawKey, normalizedKey, errors, "specCombination");
-        if (hasError(errors, raw.rowNum())) return List.of();
-        String value = cell.rawValue();
-        if (StrUtil.isBlank(value) || "[]".equals(value.trim())) {
-            return List.of();
-        }
-        try {
-            List<SkuSpecValueDTO> list = JSON.readValue(value,
-                    JSON.getTypeFactory().constructCollectionType(List.class, SkuSpecValueDTO.class));
-            return list == null ? List.of() : list;
-        } catch (Exception e) {
-            errors.add(error(raw, rawKey, normalizedKey, "specCombination",
-                    ProductErrorCode.SPEC_COMBINATION_INVALID.name(),
-                    "规格组合必须是合法的 JSON 数组"));
-            return List.of();
-        }
-    }
-
-    // ── 价格 ──────────────────────────────────────────────────────
-
-    private BigDecimal readPrice(RawImportRow raw, String rawKey, String normalizedKey, List<RowError> errors) {
+    private BigDecimal readPrice(RawImportRow raw) {
         RawCell cell = raw.cell(ImportColumns.PRICE);
-        rejectFormulaOrError(raw, cell, rawKey, normalizedKey, errors, "price");
-        if (hasError(errors, raw.rowNum())) return null;
-        String value = cell.rawValue();
-        if (StrUtil.isBlank(value)) {
-            errors.add(error(raw, rawKey, normalizedKey, "price",
-                    ProductErrorCode.SKU_PRICE_REQUIRED.name(), "销售价不能为空"));
-            return null;
-        }
+        checkCell(cell, "price", true);
+        String value = StrUtil.trim(cell.rawValue());
+        if (StrUtil.isBlank(value)) throw fail("price", ProductErrorCode.SKU_PRICE_INVALID, "销售价不能为空");
         BigDecimal price;
         try {
-            price = new BigDecimal(value.trim());
+            price = new BigDecimal(value);
         } catch (NumberFormatException e) {
-            errors.add(error(raw, rawKey, normalizedKey, "price",
-                    ProductErrorCode.SKU_PRICE_INVALID.name(), "销售价必须为合法数字"));
-            return null;
+            throw fail("price", ProductErrorCode.SKU_PRICE_INVALID, "销售价必须为合法数字");
         }
-        if (price.signum() < 0) {
-            errors.add(error(raw, rawKey, normalizedKey, "price",
-                    ProductErrorCode.SKU_PRICE_NEGATIVE.name(), "销售价不能为负数"));
-            return null;
-        }
-        if (price.scale() > 2) {
-            errors.add(error(raw, rawKey, normalizedKey, "price",
-                    ProductErrorCode.SKU_PRICE_SCALE_EXCEEDED.name(), "销售价最多两位小数"));
-            return null;
-        }
-        if (price.compareTo(MAX_PRICE) > 0) {
-            errors.add(error(raw, rawKey, normalizedKey, "price",
-                    ProductErrorCode.SKU_PRICE_OVER_LIMIT.name(), "销售价超过上限"));
-            return null;
+        if (price.signum() < 0 || price.compareTo(MAX_PRICE) > 0 || price.scale() > 2) {
+            throw fail("price", ProductErrorCode.SKU_PRICE_INVALID, "销售价须在0～99999999.99之间且最多两位小数");
         }
         return price;
     }
 
-    // ── 公共辅助 ──────────────────────────────────────────────────
-
-    private void rejectFormulaOrError(RawImportRow raw, RawCell cell, String rawKey, String normalizedKey,
-                                      List<RowError> errors, String field) {
+    private void checkCell(RawCell cell, String field, boolean allowNumber) {
         if (cell.type() == RawCellType.FORMULA) {
-            errors.add(error(raw, rawKey, normalizedKey, field,
-                    ProductErrorCode.CELL_FORMULA_NOT_ALLOWED.name(),
-                    "公式单元格不允许，请粘贴为值"));
-        } else if (cell.type() == RawCellType.ERROR) {
-            errors.add(error(raw, rawKey, normalizedKey, field,
-                    ProductErrorCode.CELL_ERROR_VALUE.name(),
-                    "单元格为错误值，请检查公式或数据来源"));
+            throw fail(field, ProductErrorCode.CELL_FORMULA_NOT_ALLOWED, "公式单元格不允许，请粘贴为值");
+        }
+        if (cell.type() == RawCellType.ERROR) {
+            throw fail(field, ProductErrorCode.CELL_ERROR_VALUE, "单元格为错误值，请检查原始文件");
+        }
+        if (!allowNumber && cell.type() == RawCellType.NUMBER) {
+            throw fail(field, ProductErrorCode.IMPORT_CELL_TYPE_INVALID, "该字段必须为文本单元格");
         }
     }
 
-    private static boolean hasError(List<RowError> errors, int rowNum) {
-        return errors.stream().anyMatch(e -> e.rowNum() == rowNum);
+    private CellValidationException fail(String field, ProductErrorCode code, String message) {
+        return new CellValidationException(field, code, message);
     }
 
-    private static RowError error(RawImportRow raw, String rawKey, String normalizedKey,
-                                  String field, String code, String message) {
-        return new RowError(raw.rowNum(), rawKey, normalizedKey, field, code, message);
+    /** 方法内部控制一行快速失败，不跨出Validator，不代替项目统一BizException。 */
+    private static final class CellValidationException extends RuntimeException {
+        private final String field;
+        private final ProductErrorCode code;
+
+        private CellValidationException(String field, ProductErrorCode code, String message) {
+            super(message, null, false, false);
+            this.field = field;
+            this.code = code;
+        }
     }
 }
