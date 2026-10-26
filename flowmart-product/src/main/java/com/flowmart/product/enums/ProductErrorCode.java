@@ -96,6 +96,11 @@ public enum ProductErrorCode implements ErrorCode {
     CELL_FORMULA_NOT_ALLOWED(20092, "公式单元格不允许，请粘贴为值"),
     CELL_ERROR_VALUE(20093, "单元格为错误值"),
     IMPORT_CELL_TYPE_INVALID(20094, "单元格类型不符合字段要求"),
+    IDEMPOTENCY_KEY_CONFLICT(20200, "同一幂等键不能用于不同导入内容"),
+    IMPORT_BATCH_NOT_FOUND(20201, "导入批次不存在"),
+    IMPORT_ITEM_DUPLICATED(20202, "该导入商品标识已成功导入，不支持覆盖"),
+    IMPORT_ABORTED(20203, "导入中断，请查询批次结果，勿盲目重试"),
+    IMPORT_FILE_INVALID(20204, "仅支持不超过5MiB的xlsx文件"),
     ;
 
 

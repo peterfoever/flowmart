@@ -25,12 +25,14 @@ services:
       REDIS_PORT: ${REDIS_PORT:?缺少 REDIS_PORT}
       REDIS_PASSWORD: ${REDIS_PASSWORD:?缺少 REDIS_PASSWORD}
       LOG_PATH: /app/logs
+      IMPORT_STORAGE_DIR: /app/data/imports
       JAVA_OPTS: >-
         -Xms1g -Xmx1g -XX:+UseG1GC -XX:MaxGCPauseMillis=200
         -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/app/logs
         -XX:+ExitOnOutOfMemoryError
     volumes:
       - ./logs/app-1:/app/logs
+      - imports-data:/app/data/imports
     deploy:
       resources:
         limits:
@@ -56,3 +58,7 @@ services:
       - "8082:8080"
     volumes:
       - ./logs/app-2:/app/logs
+      - imports-data:/app/data/imports
+
+volumes:
+  imports-data:

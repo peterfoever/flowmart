@@ -69,9 +69,9 @@ class ImportSchemaMysqlTest {
     }
 
     @Test
-    @DisplayName("V1到V11全部迁移成功")
+    @DisplayName("V1到V12全部迁移成功")
     void allMigrationsApplied() throws SQLException {
-        assertEquals(11L, scalar("SELECT COUNT(*) FROM flyway_schema_history WHERE success = 1"));
+        assertEquals(12L, scalar("SELECT COUNT(*) FROM flyway_schema_history WHERE success = 1"));
     }
 
     @Test

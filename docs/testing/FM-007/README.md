@@ -1,4 +1,79 @@
-# FM-007 骨架验证与后续练习
+# FM-007 导入实现与验收
+
+## 2026-10-26 完整实现与本地验收
+
+当前实现不再仅限骨架。需求和接口契约见 [FM-007需求卡](../../prd/FM-007-商品Excel批量导入.md)。
+此前各节保留为历史记录，不代表目前尚未实现Reader/Writer。
+
+已接通：模板下载 → 私有原文件存储 → 流式文件读取 → 行校验/分组 → 批量预检 →
+逐SPU独立事务 → 错误报告独立事务 → 持久化统计收尾 → 批次/分组/行错误查询。
+包含请求幂等、跨文件防重、错误xlsx下载及无进展批次超时中断。
+
+Reader采用Apache POI 5.5.1的事件读取接口配合安全StAX，保留原始文本/数字/公式类型；
+没有使用将数字ID格式化为字符串的便捷映射，也不依赖EasyExcel读取公式缓存。
+ZIP与XML分别限制资源使用，XML外部实体禁止。模板及报告由POI生成。
+
+### 自动化验证
+
+本次构建命令、源码基线及jar校验值见 [验证记录](verification-2026-10-26.md)。
+
+2026-10-26 本地全量 `clean verify`：product 853个 + bootstrap 27个 = **880个通过，0失败、0错误、0跳过**。
+bootstrap含12个真实数据库迁移/约束用例及15个Spring端到端用例（并发场景重复3轮）。
+使用专用临时MySQL 8.0容器及fm007_check库，不连接dev/test库；HTTP通过MockMvc走真实Controller和Service。
+这不是远程CI、人工Postman或test环境发布的验收记录。
+
+覆盖重点：
+
+- 正常带品牌导入、默认SKU、正确审计、来源回填、草稿状态。
+- 同请求键重放、不同指纹冲突、不同请求键重复商品、不同owner隔离。
+- 同请求键并发、同来源并发；只产生一份商品，不将主键等其他唯一冲突冒充来源重复。
+- 同组坏行整组失败，其他组继续；失败修正后新请求可导入。
+- 201个SKU第二批由MySQL触发器注入失败，确认第一批、SPU、来源占位全部回滚。
+- 错误报告写入失败，确认失败组结果回滚并中止后续组。
+- 预检后引用变化的锁内复核、无品牌预检、无归属行统计、跨owner查询拒绝。
+- 收尾失败/系统故障不伪造业务失败；超时中断再次检查心跳。
+- ZIP膨胀、恶意XML、超限、非文本ID、公式、真实行号、错误报告公式注入防护。
+
+复现命令沿用下方隔离MySQL说明。数据库必须为本机显式端口的fm007_check。
+**ProductImportMysqlTest会清空该隔离库中的商品及导入测试表**，不能用于任何共享业务库。
+新增V12仅添加超时扫描索引，V1～V11未修改。
+CI配置现在包含一次性MySQL服务，并传入隔离库属性，避免数据库测试在CI中静默跳过。
+
+### Postman验收
+
+导入 [FM-007.postman_collection.json](FM-007.postman_collection.json)。设置baseUrl（dev默认8080，test按实际端口）。
+先执行01下载模板并保存；手工填完后，在02和03的Body → form-data → file选择**同一个文件**。
+不要手工填写HTTP Content-Type整体请求头，multipart boundary由Postman生成；文件part使用xlsx MIME。
+新的一次上传修改集合变量idempotencyKey；超时重试保留该键且不重新保存/改动原文件。
+
+最低验收数据（类目ID先替换成你的启用叶子类目，Excel列必须为文本）：
+
+| importItemKey | SPU名称 | 类目ID | 品牌ID | 主图URL | 规格定义 | 规格组合 | 销售价 | SKU图片URL |
+|---|---|---|---|---|---|---|---|---|
+| FM007-OK-001 | 导入测试商品 | 替换成真实ID | 留空 | https://example.com/main.png | 留空 | 留空 | 12.30 | https://example.com/sku.png |
+
+第一轮预期SUCCEEDED、successSpuCount=1、successRowCount=1，数据库新增草稿SPU和默认SKU。
+03重放应replayed=true、batchId不变，商品数量不增加。
+改idempotencyKey但仍传原文件：FAILED，组结果IMPORT_ITEM_DUPLICATED，warnings含FILE_ALREADY_IMPORTED。
+
+第二轮用新文件、新idempotencyKey，使用从未成功导入的标识：
+
+1. 增加一行合法无规格商品A。
+2. 增加两行同标识B，F列均填 `[{"name":"颜色","values":["红","蓝"]}]`。
+3. B第一行G为 `[{"name":"颜色","value":"红"}]`，价格正常；第二行G为蓝，价格填“十二元”。
+4. 预期PARTIAL、totalSpuCount=2、successSpuCount=1、failedSpuCount=1、successRowCount=1、failedRowCount=2。
+5. 06查询错误：B两行均有记录，具体坏行是SKU_PRICE_INVALID，其余行为GROUP_FAILED；07可下载对应报告。
+6. 只上传修正后的B，用新请求键，预期成功；再次上传已成功的A仍应拒绝重复。
+
+返回INTERRUPTED时不要当作普通失败重试：先按batchId核对已落库组结果。
+服务暂未集成登录身份，HTTP入口owner/actor固定0，仅用于受控训练环境。
+
+### 本次交付边界
+
+- 已实现并本地验证；没有代替用户commit、push、建PR、合并或发布test/prod。
+- test/prod Compose已声明导入文件持久卷，但本次没有启动这些环境；没有执行生产迁移。
+- 正式交付仍需人工验收、PR通过远程CI、合并版本构建及test发布记录。
+- 原文件不自动删除；目录容量监控、保留/清理策略、鉴权接入属于发布前运维检查项。
 
 ## 本次范围
 
@@ -61,7 +136,7 @@
 
 普通 `mvn clean verify` 会运行纯单元/映射测试；
 未提供 `import.mysql.url` 时，`ImportSchemaMysqlTest` 明确跳过。
-目前 CI 未配置该属性，因此 CI 绿灯不能替代下面的真实数据库验证。
+2026-10-26 起CI已配置隔离MySQL及该属性；本地不传该属性仍会跳过数据库用例。
 
 先创建仅用于此次测试的容器（固定名字冲突时先核对旧容器，不要盲删）：
 

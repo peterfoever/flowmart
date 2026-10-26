@@ -17,6 +17,7 @@ target/
 
 # --- 日志与运行产物 ---
 logs/
+data/imports/
 *.log
 *.hprof
 deploy/test/logs/
