@@ -37,6 +37,23 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    @ResponseStatus(HttpStatus.PAYLOAD_TOO_LARGE)
+    public R<Void> handleUploadTooLarge() {
+        return R.fail(CommonErrorCode.PARAM_INVALID, "上传文件不能超过5MiB");
+    }
+
+    @ExceptionHandler({org.springframework.web.multipart.support.MissingServletRequestPartException.class,
+            org.springframework.web.bind.MissingRequestHeaderException.class})
+    public R<Void> handleMissingUploadInput() {
+        return R.fail(CommonErrorCode.PARAM_INVALID, "缺少必填文件或请求头");
+    }
+
+    @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
+    public R<Void> handleArgumentTypeMismatch() {
+        return R.fail(CommonErrorCode.PARAM_INVALID, "路径或查询参数类型错误");
+    }
+
     @ExceptionHandler(BizException.class)
     public R<Void> handleBizException(BizException e, HttpServletRequest request) {
         log.warn("[业务异常] uri={} code={} msg={}", request.getRequestURI(), e.getCode(), e.getMessage());

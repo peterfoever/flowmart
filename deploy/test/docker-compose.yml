@@ -74,9 +74,11 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       LOG_PATH: /app/logs
+      IMPORT_STORAGE_DIR: /app/data/imports
       JAVA_OPTS: "-Xms512m -Xmx512m -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/app/logs"
     volumes:
       - ./logs:/app/logs
+      - imports-test-data:/app/data/imports
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health/readiness"]
       interval: 10s
@@ -87,3 +89,4 @@ services:
 volumes:
   mysql-test-data:
   redis-test-data:
+  imports-test-data:

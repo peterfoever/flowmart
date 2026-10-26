@@ -79,6 +79,28 @@ public enum ProductErrorCode implements ErrorCode {
     SKU_PRICE_INVALID(20070,"SKU 价格不合法"),
     SKU_IMAGE_REQUIRED(20071, "SKU 图片不能为空"),
     SKU_SPEC_MISMATCH(20072, "SKU 规格组合与 SPU 规格定义不一致"),
+
+    // Excel导入商品错误码
+    IMPORT_ITEM_KEY_INVALID(20080, "导入商品标识缺失或不合法"),
+    GROUP_FIELD_INCONSISTENT(20081, "同组字段不一致"),
+    GROUP_SPEC_COMBINATION_DUPLICATE(20082, "同组规格组合重复"),
+    GROUP_NO_SPEC_MULTIPLE_ROWS(20083, "无规格商品只能有一行"),
+    GROUP_SPEC_DEFINITION_INVALID(20084, "规格定义不合法"),
+    PARSE_ROW_FAILED(20085, "组内存在解析失败的行，整组未导入"),
+    IMPORT_FIELD_REQUIRED(20086, "导入字段不能为空"),
+    IMPORT_TEXT_TOO_LONG(20087, "导入字段长度超过限制"),
+    IMPORT_ID_NOT_TEXT(20088, "ID必须使用文本单元格"),
+    IMPORT_ID_INVALID(20089, "ID必须是Long范围内的正整数"),
+    SPEC_DEFINITION_INVALID(20090, "规格定义必须是符合结构要求的JSON数组"),
+    SPEC_COMBINATION_INVALID(20091, "规格组合必须是符合结构要求的JSON数组"),
+    CELL_FORMULA_NOT_ALLOWED(20092, "公式单元格不允许，请粘贴为值"),
+    CELL_ERROR_VALUE(20093, "单元格为错误值"),
+    IMPORT_CELL_TYPE_INVALID(20094, "单元格类型不符合字段要求"),
+    IDEMPOTENCY_KEY_CONFLICT(20200, "同一幂等键不能用于不同导入内容"),
+    IMPORT_BATCH_NOT_FOUND(20201, "导入批次不存在"),
+    IMPORT_ITEM_DUPLICATED(20202, "该导入商品标识已成功导入，不支持覆盖"),
+    IMPORT_ABORTED(20203, "导入中断，请查询批次结果，勿盲目重试"),
+    IMPORT_FILE_INVALID(20204, "仅支持不超过5MiB的xlsx文件"),
     ;
 
 

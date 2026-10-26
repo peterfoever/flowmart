@@ -96,6 +96,12 @@ log.info("用户登录, phone={}, password={}", phone, password);
 6. **批量操作必须分批**，单批不超过 500 条
 7. **`WHERE` 条件的字段必须有索引**，写完 SQL 自己 `EXPLAIN` 一遍
 
+**FM-007 已确认例外**：四张 `import_*` 表属于导入执行记录/跨文件防重凭证，
+不套用 BaseEntity 的 deleted/version，也不在唯一键中添加 deleted。
+否则商品被删除或批次被清理后可能意外允许重复导入。审计列以迁移为准，
+Writer 显式填充雪花 ID、createdBy/updatedBy；行错误表只保留 createdAt。
+后续清理或释放来源标识必须单独设计，不能复用普通商品逻辑删除。
+
 ## 七、命名
 
 ```java

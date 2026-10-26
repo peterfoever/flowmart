@@ -24,7 +24,7 @@ RUN apk add --no-cache tzdata wget \
     && addgroup -S app && adduser -S app -G app
 
 COPY --from=builder /build/flowmart-bootstrap/target/flowmart.jar app.jar
-RUN mkdir -p /app/logs && chown -R app:app /app
+RUN mkdir -p /app/logs /app/data/imports && chown -R app:app /app
 
 # 不要用 root 跑应用 —— 容器逃逸时 root 权限危害大得多
 USER app

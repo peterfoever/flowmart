@@ -17,6 +17,19 @@ jobs:
     name: 构建与测试
     runs-on: ubuntu-latest
 
+    # 每次CI使用一次性隔离库；真实组事务/并发测试不能被单元测试绿灯替代。
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: fm007-ci-only
+          MYSQL_DATABASE: fm007_check
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pfm007-ci-only"
+          --health-interval=5s --health-timeout=5s --health-retries=30
+
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
@@ -32,7 +45,11 @@ jobs:
         run: mvn -B clean compile
 
       - name: 运行测试
-        run: mvn -B test
+        run: >-
+          mvn -B test
+          '-Dimport.mysql.url=jdbc:mysql://127.0.0.1:3306/fm007_check?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai'
+          -Dimport.mysql.user=root
+          -Dimport.mysql.password=fm007-ci-only
 
       - name: 打包
         run: mvn -B package -DskipTests

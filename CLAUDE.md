@@ -32,6 +32,8 @@ Flyway · Knife4j · MapStruct · JUnit 5 + Testcontainers · Docker Compose · 
 
 - **所有 DDL 走 Flyway**，`flowmart-bootstrap/src/main/resources/db/migration/`，已执行的脚本不可修改
 - **所有业务表**继承 `BaseEntity` 的六个通用列，唯一索引必须带 `deleted`
+  - FM-007 导入执行记录/防重凭证是已确认的例外：四张 `import_*` 表不继承 BaseEntity，
+    不添加 deleted/version，来源标识不能随商品删除而释放；详见 `docs/testing/FM-007/README.md`。
 - **统一返回** `R<T>`，业务异常用 `BizException` + 模块错误码（模块号：1通用 2商品 3库存 4订单 5履约 6结算）
 - **分层**：Controller 不写业务逻辑，Entity 不直接返回给前端
 - **分支**：`feature/FM-XXX-xxx` → PR → `develop`，禁止直推 main/develop
